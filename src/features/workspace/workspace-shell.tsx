@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { CircleDotDashed } from "lucide-react"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
@@ -33,8 +32,7 @@ export function WorkspaceShell() {
           aria-label="Toile de dessin vide"
           className="drawing-stage"
         >
-          <div className="drawing-stage__status" aria-live="polite">
-            <CircleDotDashed aria-hidden="true" />
+          <div className="sr-only" aria-live="polite">
             {toolNames[activeTool]} sélectionné — simulation
           </div>
           <CameraPreview />

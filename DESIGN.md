@@ -89,7 +89,7 @@ Les composants définitifs seront documentés après leur génération par shadc
 
 ### Navigation
 
-Une barre supérieure compacte contient la marque, annuler, rétablir et exporter. Le rail gauche contient les outils de dessin. Les deux restent utilisables au clavier et à la souris.
+Une barre supérieure compacte contient la marque, annuler, rétablir et exporter. Sous cette barre, la toile blanche occupe toute la surface disponible. Le rail d’outils, l’aperçu caméra et l’instruction contextuelle flottent directement au-dessus de la toile, sans colonne réservée ni cadre périphérique. Tous restent utilisables au clavier et à la souris.
 
 ## Do's and Don'ts
 

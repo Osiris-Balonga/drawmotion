@@ -19,10 +19,7 @@ const colors = [
 
 export function ToolRail({ activeTool, onToolChange }: ToolRailProps) {
   return (
-    <aside
-      aria-label="Outils de dessin simulés"
-      className="border-border bg-shell-raised flex min-h-0 flex-col items-center gap-2 rounded-xl border py-3"
-    >
+    <aside aria-label="Outils de dessin simulés" className="tool-rail">
       <ToolButton
         label="Pointeur simulé"
         variant={activeTool === "pointer" ? "default" : "ghost"}
