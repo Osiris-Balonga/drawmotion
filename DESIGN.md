@@ -3,8 +3,6 @@ name: DrawMotion
 description: Une toile gestuelle guidée, précise et immédiatement compréhensible.
 ---
 
-<!-- SEED: re-run $impeccable document once there's code to capture the actual tokens and components. -->
-
 # Design System: DrawMotion
 
 ## Overview
@@ -25,28 +23,30 @@ La composition reprend la clarté de Figma, l'immédiateté d'Excalidraw et la l
 
 ## Colors
 
-Stratégie restreinte : neutres francs, toile blanche, coque presque noire et accent indigo-violet réservé aux actions, à la progression et au suivi actif. Les valeurs exactes seront résolues en OKLCH pendant le lot 2.
+Stratégie restreinte : neutres légèrement teintés vers le violet, toile blanche, coque presque noire et accent violet réservé aux actions, à la progression et au suivi actif. Les tokens canoniques vivent dans `src/styles/globals.css`.
 
 ### Primary
 
-- **Indigo de mouvement** `[à résoudre pendant l'implémentation]` : action principale, outil sélectionné, progression du tutoriel et focus.
+- **Violet de mouvement** `oklch(0.56 0.22 293)` : action principale, outil sélectionné et progression.
+- **Anneau de focus** `oklch(0.72 0.16 293)` : focus clavier contrasté sur coque sombre.
 
 ### Secondary
 
-- **Vert de suivi** `[à résoudre pendant l'implémentation]` : détection fiable et réussite.
-- **Orange d'attention** `[à résoudre pendant l'implémentation]` : cadrage imparfait et avertissements récupérables.
+- **Vert de suivi** `oklch(0.72 0.16 151)` : détection fiable et réussite.
+- **Orange d'attention** `oklch(0.80 0.15 75)` : cadrage imparfait et avertissements récupérables.
 
 ### Neutral
 
-- **Coque graphite** `[à résoudre pendant l'implémentation]` : arrière-plan et barres d'outils.
-- **Toile blanche pure** `[à résoudre pendant l'implémentation]` : surface de dessin uniquement.
-- **Encre claire** `[à résoudre pendant l'implémentation]` : texte principal sur la coque.
+- **Coque graphite** `oklch(0.16 0.012 286)` : arrière-plan et barres d'outils.
+- **Surface élevée** `oklch(0.22 0.016 286)` : panneaux flottants et rails.
+- **Toile blanche** `oklch(0.995 0.002 286)` : surface de dessin uniquement.
+- **Encre claire** `oklch(0.97 0.006 286)` : texte principal sur la coque.
 
 **The Rare Accent Rule.** L'indigo-violet ne décore jamais une surface inactive ; sa rareté indique une action ou un état réel.
 
 ## Typography
 
-**Display Font:** sans-serif technique unique `[famille à choisir pendant l'implémentation]`  
+**Display Font:** Geist Variable  
 **Body Font:** même famille sans-serif  
 **Label/Mono Font:** monospace réservé aux diagnostics de développement
 
@@ -61,6 +61,14 @@ Stratégie restreinte : neutres francs, toile blanche, coque presque noire et ac
 - **Label:** poids 500, casse naturelle et espacement normal.
 
 **The One Family Rule.** Une seule famille sans-serif porte toute l'interface ; la hiérarchie vient de la taille, du poids et de l'espace.
+
+Échelle fixe de produit : `0.75rem`, `0.875rem`, `1rem`, `1.25rem`, `1.5rem`. Le corps reste à `1rem` minimum ; les tailles inférieures sont réservées aux métadonnées et libellés courts.
+
+## Spacing and Motion
+
+L'espacement suit une base de 4 points : `0.25rem`, `0.5rem`, `0.75rem`, `1rem`, `1.5rem`, `2rem`, `3rem`. Les groupes proches utilisent 8–12 px ; les zones de travail distinctes utilisent 24–48 px.
+
+Les retours directs durent `120ms` et les transitions d'état `200ms`, avec `cubic-bezier(0.25, 1, 0.5, 1)`. La réduction de mouvement ramène toutes les transitions à un changement instantané perceptible.
 
 ## Elevation
 
