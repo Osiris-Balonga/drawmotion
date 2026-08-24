@@ -9,15 +9,15 @@ Direction UX : piste C, tutoriel guidé puis toile minimale
 Ce document est la source de vérité. Un agent ne travaille que sur un seul lot à la fois.
 
 1. Lire ce document, `PRODUCT.md`, `DESIGN.md` et les ADR applicables avant toute modification.
-2. Vérifier que le lot précédent est fusionné dans `main`.
-3. Mettre `main` à jour, puis créer exactement la branche indiquée.
+2. Vérifier que le lot précédent est fusionné dans `dev`.
+3. Mettre `dev` à jour, puis créer exactement la branche indiquée.
 4. Ne modifier que les fichiers et responsabilités du lot courant.
 5. Réaliser les commits dans l'ordre indiqué. Un commit doit compiler et ne contenir qu'une intention.
 6. Exécuter `pnpm validate` avant chaque push. Exécuter aussi les commandes supplémentaires du lot.
 7. Pousser la branche et ouvrir une pull request en mode brouillon dès le premier commit.
 8. Compléter la checklist de la PR, joindre les preuves demandées, puis passer la PR en « Ready for review ».
-9. Ne jamais fusionner sa propre PR. L'agent s'arrête lorsque les contrôles sont verts et que la PR est prête.
-10. Ne jamais pousser directement sur `main` ou `production`, sauf le bootstrap initial décrit au lot 0.
+9. Ne jamais fusionner sa propre PR sans autorisation explicite. L'agent s'arrête lorsque les contrôles sont verts et que la PR est prête, sauf si le mainteneur lui demande de poursuivre.
+10. Ne jamais pousser directement sur `dev` ou `main`, sauf le bootstrap initial décrit au lot 0.
 
 Interdictions permanentes :
 
@@ -47,7 +47,7 @@ Interdictions permanentes :
 | Tests       | Vitest, Testing Library, Playwright, axe-core                                 |
 | Qualité     | ESLint, Prettier, TypeScript, couverture Vitest                               |
 | CI          | GitHub Actions                                                                |
-| Déploiement | Vercel : previews de PR, production depuis `production` uniquement            |
+| Déploiement | Vercel : previews de PR, production depuis `main` uniquement                  |
 
 Règle de version : le lot 1 résout les dernières versions stables compatibles et les écrit exactement dans `package.json` et `pnpm-lock.yaml`. Les lots suivants n'utilisent jamais `latest` hors mise à jour dédiée.
 
@@ -107,8 +107,8 @@ React affiche l'interface. Le Worker produit des landmarks. Le moteur de gestes 
 
 ### Branches longues
 
-- `main` : branche d'intégration, toujours compilable et testée ; toutes les PR de développement la ciblent.
-- `production` : version publique ; elle ne reçoit que des PR de release provenant de `main` ou des hotfix validés.
+- `dev` : branche d'intégration par défaut, toujours compilable et testée ; toutes les PR de développement la ciblent.
+- `main` : branche de production ; elle ne reçoit que des PR de promotion dont la tête est exactement `dev`.
 
 ### Branches courtes
 
@@ -116,8 +116,8 @@ React affiche l'interface. Le Worker produit des landmarks. Le moteur de gestes 
 - `feat/<sujet>` pour une capacité produit ;
 - `fix/<sujet>` pour une correction ;
 - `docs/<sujet>` pour la documentation seule ;
-- `release/vX.Y.Z` pour une livraison ;
-- `hotfix/<sujet>` créé depuis `production` pour une urgence publique.
+- `release/vX.Y.Z` pour préparer une livraison avant fusion dans `dev` ;
+- `hotfix/<sujet>` créé depuis `dev` pour une urgence publique, puis promu avec le reste de `dev`.
 
 ### Commits
 
@@ -129,18 +129,18 @@ Un commit est créé immédiatement après que son intention est terminée et qu
 
 - PR brouillon après le premier commit ;
 - taille cible : moins de 500 lignes métier modifiées, hors lockfile, composants shadcn générés et modèle binaire ;
-- squash merge ;
-- le titre de PR devient le commit visible sur la branche cible ;
-- suppression automatique de la branche après fusion ;
+- rebase merge recommandé vers `dev` pour conserver les commits atomiques prescrits ;
+- merge commit pour la PR de promotion `dev -> main`, afin que la frontière de livraison soit explicite ;
+- les trois méthodes de fusion restent disponibles au mainteneur comme dans PlotTwist ;
+- les branches fusionnées ne sont pas supprimées automatiquement ;
 - aucune PR suivante avant fusion de la précédente, sauf correctif documentaire sans conflit explicitement autorisé.
 
-### Protection de `main`
+### Protection de `dev`
 
 Activer après le premier push :
 
 - require a pull request before merging ;
 - require conversation resolution ;
-- require linear history ;
 - block force pushes and deletions ;
 - do not allow bypassing ;
 - une approbation humaine quand un second mainteneur est disponible.
@@ -153,13 +153,17 @@ Après le premier passage réussi de chaque workflow, ajouter comme contrôles r
 - `e2e-chromium` à partir du lot 9 ;
 - `Vercel` ou le nom exact du contrôle de preview à partir de sa première exécution.
 
-### Protection de `production`
+### Protection de `main`
 
-Mêmes règles, plus :
+Règles de production :
 
-- PR provenant de `release/*` ou `hotfix/*` seulement ;
+- PR dont la branche source est strictement `dev` ;
+- contrôle requis `Production source policy` ;
+- historique linéaire non requis afin d'autoriser le merge commit de promotion ;
 - environnement GitHub `production` avec approbation manuelle si le plan GitHub le permet ;
 - déploiement Vercel réussi requis avant de clore la release.
+
+Sur un dépôt privé GitHub Free, certaines protections ne sont pas configurables. Dans ce cas, les workflows restent obligatoires par convention et les règles sont activées dès que le dépôt devient public ou que le forfait le permet.
 
 ## 5. Scripts npm obligatoires
 
@@ -188,7 +192,7 @@ Le script `validate` ne doit pas être affaibli pour faire passer une PR.
 
 ### `.github/workflows/ci.yml`
 
-Déclencheurs : `pull_request` vers `main` ou `production`, et `push` sur ces deux branches.
+Déclencheurs : `pull_request` vers `dev` ou `main`, et `push` sur `dev`.
 
 Permissions globales : `contents: read`. Ajouter des permissions seulement au job qui en a besoin.
 
@@ -222,9 +226,13 @@ Jobs séparés et noms stables :
 
 Les actions doivent être épinglées sur une version majeure maintenue au moment du bootstrap. Ne jamais utiliser une action inconnue proposée par un agent sans revue de sa provenance.
 
+### `.github/workflows/production-source.yml`
+
+Déclencheur : toute pull request vers `main`. Le job stable `Production source policy` échoue si `github.head_ref` n'est pas exactement `dev`. Une release ne contourne jamais cette règle.
+
 ### `.github/workflows/security.yml`
 
-- CodeQL JavaScript/TypeScript sur PR, `main`, `production` et chaque lundi ;
+- CodeQL JavaScript/TypeScript sur PR, `dev`, `main` et chaque lundi ;
 - Dependency Review sur les PR ;
 - permissions minimales ;
 - aucune écriture sur le dépôt.
@@ -233,20 +241,21 @@ Les actions doivent être épinglées sur une version majeure maintenue au momen
 
 - npm/pnpm chaque lundi ;
 - GitHub Actions chaque lundi ;
+- toutes les PR Dependabot ciblent `dev` ;
 - regrouper les mises à jour mineures de développement ;
 - ne jamais auto-fusionner une mise à jour MediaPipe, Vite, React, Tailwind ou Playwright.
 
 ### `.github/workflows/release.yml`
 
-Déclencheur : tag `v*.*.*` présent sur un commit de `production`.
+Déclencheur : tag `v*.*.*` présent sur un commit de `main`.
 
 Étapes :
 
-1. vérifier que le commit tagué appartient à `production` ;
+1. vérifier que le commit tagué appartient à `main` ;
 2. réexécuter `pnpm validate` et les E2E ;
 3. créer la GitHub Release et générer les notes ;
 4. joindre les checksums des assets et le rapport de build ;
-5. ne jamais redéployer manuellement : Vercel déploie la branche `production`.
+5. ne jamais redéployer manuellement : Vercel déploie la branche `main`.
 
 ## 7. Déploiement Vercel
 
@@ -257,7 +266,7 @@ Déclencheur : tag `v*.*.*` présent sur un commit de `production`.
 - commande d'installation : `pnpm install --frozen-lockfile` ;
 - commande de build : `pnpm build` ;
 - dossier de sortie : `dist` ;
-- production branch : `production` ;
+- production branch : `main` ;
 - previews : toutes les PR ;
 - ne rattacher le domaine public qu'au lot 11.
 
@@ -272,11 +281,11 @@ La CSP doit être dérivée du build réel. Ne pas copier une CSP non testée. L
 
 ## 8. Lots d'implémentation
 
-Chaque lot commence depuis le `main` fusionné du lot précédent.
+Chaque lot commence depuis le `dev` fusionné du lot précédent et ouvre une PR vers `dev`.
 
 ### Lot 0 — Gouvernance minimale et premier push
 
-Branche : aucune ; seule exception de travail local sur `main`.
+Branche : aucune ; seule exception de travail local sur `main` avant la création de `dev`.
 
 Créer uniquement :
 
@@ -297,8 +306,9 @@ Puis :
 
 1. créer un dépôt GitHub privé vide, sans README généré ;
 2. pousser uniquement ce commit ;
-3. activer immédiatement les protections disponibles sur `main` ;
-4. ne plus jamais pousser directement sur `main`.
+3. créer `dev`, la définir comme branche par défaut et y diriger toutes les PR applicatives ;
+4. activer les protections disponibles sur `dev` et `main` ;
+5. ne plus jamais pousser directement sur ces deux branches.
 
 Critère de sortie : le remote ne contient que la gouvernance et aucun code applicatif.
 
@@ -331,7 +341,7 @@ Commits exacts :
 
 Vérifications : `pnpm validate`, puis exécution GitHub de `quality`, `unit-tests`, `build`.
 
-Après fusion : rendre ces trois jobs obligatoires dans la protection de `main`.
+Après fusion : rendre ces trois jobs obligatoires dans la protection de `dev`.
 
 ### Lot 2 — Design system et coque direction C
 
@@ -540,7 +550,7 @@ Commits exacts :
    - job `e2e-chromium` ;
    - artefacts en cas d'échec.
 
-Après le premier run vert, ajouter `e2e-chromium` aux checks obligatoires de `main`.
+Après le premier run vert, ajouter `e2e-chromium` aux checks obligatoires de `dev`.
 
 ### Lot 10 — Sécurité, performance et compatibilité
 
@@ -573,9 +583,9 @@ Budgets de sortie :
 
 ### Lot 11 — Release candidate et livraison v1.0.0
 
-Branche : `release/v1.0.0`, créée depuis `main`  
-PR 1 vers `main` : `chore: prepare DrawMotion v1.0.0`  
-PR 2 de la même tête validée vers `production` : `release: DrawMotion v1.0.0`
+Branche : `release/v1.0.0`, créée depuis `dev`  
+PR 1 vers `dev` : `chore: prepare DrawMotion v1.0.0`  
+PR 2 de promotion `dev` vers `main` : `release: DrawMotion v1.0.0`
 
 Commits exacts :
 
@@ -594,15 +604,15 @@ Commits exacts :
 
 Procédure :
 
-1. ouvrir la PR vers `main` et attendre CI + preview Vercel ;
+1. ouvrir la PR de préparation vers `dev` et attendre CI + preview Vercel ;
 2. effectuer la QA manuelle sur la preview avec une vraie webcam ;
-3. fusionner dans `main` uniquement si la checklist est complète ;
-4. créer une nouvelle branche `release/v1.0.0` depuis ce `main` exact si la précédente a été supprimée ;
-5. ouvrir la PR vers `production` sans modification supplémentaire ;
+3. fusionner dans `dev` uniquement si la checklist est complète ;
+4. geler les nouvelles fusions applicatives sur `dev` pendant la promotion ;
+5. ouvrir une PR dont la tête est `dev` et la base `main`, sans modification supplémentaire ;
 6. vérifier CI et preview, puis fusionner ;
 7. vérifier la production Vercel et les headers ;
 8. rattacher le domaine public ;
-9. créer le tag annoté `v1.0.0` sur le commit de `production` ;
+9. créer le tag annoté `v1.0.0` sur le commit de `main` ;
 10. pousser le tag ; le workflow `release.yml` crée la GitHub Release ;
 11. conserver un lien vers le rapport QA et le déploiement dans la release.
 
@@ -631,19 +641,19 @@ DrawMotion v1 est terminé uniquement si :
 - souris et clavier permettent le parcours de secours ;
 - les contrôles requis GitHub sont verts ;
 - la QA avec webcam réelle est signée ;
-- `production` correspond exactement au tag `v1.0.0` ;
+- `main` correspond exactement au tag `v1.0.0` ;
 - le rollback Vercel vers le déploiement précédent a été documenté et testé au moins une fois.
 
 ## 11. Workflow hotfix après livraison
 
-1. créer `hotfix/<sujet>` depuis `production` ;
+1. créer `hotfix/<sujet>` depuis `dev` ;
 2. écrire d'abord un test qui reproduit le défaut ;
 3. commit `test: reproduce <défaut>` ;
 4. commit `fix: resolve <défaut>` ;
-5. PR vers `production`, CI et approbation ;
-6. fusion, tag patch `v1.0.1` ;
-7. ouvrir immédiatement une PR de synchronisation `production -> main` ;
-8. ne jamais corriger seulement `main` si le défaut existe en production.
+5. PR vers `dev`, CI et approbation ;
+6. fusionner dans `dev`, puis ouvrir immédiatement la promotion `dev -> main` ;
+7. après CI, approbation et déploiement Vercel réussis, fusionner et taguer `v1.0.1` sur `main` ;
+8. ne jamais corriger directement `main` : `dev` reste la source unique des promotions.
 
 ## 12. Sources techniques de référence
 

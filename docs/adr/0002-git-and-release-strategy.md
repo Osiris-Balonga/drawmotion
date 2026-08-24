@@ -11,11 +11,13 @@ Le projet doit progresser par lots révisables et ne jamais apparaître sur GitH
 
 - un premier commit direct contient uniquement gouvernance et documentation ;
 - toutes les capacités suivantes passent par une branche courte et une pull request ;
-- `main` est la branche d'intégration protégée ;
-- `production` est la seule branche déployée publiquement ;
-- les PR utilisent le squash merge et des contrôles GitHub Actions requis ;
-- les tags de version pointent exclusivement sur `production`.
+- `dev` est la branche d'intégration par défaut ;
+- `main` est la branche de production déployée publiquement ;
+- les branches courtes ouvrent des PR vers `dev` et conservent leurs commits atomiques par rebase merge ;
+- une action refuse toute PR vers `main` dont la tête n'est pas exactement `dev` ;
+- les promotions `dev -> main` utilisent un merge commit explicite ;
+- les tags de version pointent exclusivement sur `main`.
 
 ## Conséquences
 
-Les lots sont séquentiels. Un agent prépare une PR mais ne la fusionne pas. Les hotfix partent de `production` et sont ensuite resynchronisés vers `main`.
+Les lots sont séquentiels. Un agent prépare une PR et ne la fusionne qu'avec une autorisation explicite du mainteneur. Les hotfix passent eux aussi par `dev`, puis par la même promotion contrôlée vers `main`. Cette stratégie reprend le modèle éprouvé du dépôt PlotTwist tout en conservant les commits atomiques prescrits pour DrawMotion.
