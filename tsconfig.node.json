@@ -14,6 +14,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["vite.config.ts", "vitest.config.ts"]
+  "include": [
+    "eslint.config.js",
+    "prettier.config.mjs",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
 }
-

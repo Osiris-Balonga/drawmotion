@@ -101,4 +101,3 @@ Une barre supérieure compacte contient la marque, annuler, rétablir et exporte
 - **Don't** associer une action destructive à un geste facile à déclencher par erreur.
 - **Don't** imbriquer des cartes, surdimensionner les arrondis ou ralentir la tâche avec une chorégraphie.
 - **Don't** utiliser une bande latérale colorée de plus de 1 px comme accent de conteneur.
-

@@ -19,4 +19,3 @@ Le projet doit progresser par lots révisables et ne jamais apparaître sur GitH
 ## Conséquences
 
 Les lots sont séquentiels. Un agent prépare une PR mais ne la fusionne pas. Les hotfix partent de `production` et sont ensuite resynchronisés vers `main`.
-

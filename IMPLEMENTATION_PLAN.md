@@ -2,7 +2,7 @@
 
 Statut : plan approuvé à exécuter séquentiellement  
 Produit : démonstration technologique web de dessin 2D contrôlé par la main  
-Direction UX : piste C, tutoriel guidé puis toile minimale  
+Direction UX : piste C, tutoriel guidé puis toile minimale
 
 ## 1. Règles d'exécution pour tous les agents
 
@@ -33,21 +33,21 @@ Interdictions permanentes :
 
 ## 2. Stack verrouillée
 
-| Zone | Choix |
-| --- | --- |
-| Runtime | Node.js 24 LTS, fixé par `.nvmrc` et `package.json#engines` |
-| Paquets | pnpm, version exacte dans `packageManager` |
-| Application | React 19, TypeScript strict, Vite 8 |
-| Styles | Tailwind CSS 4.3.x installé avec versions exactes, plugin `@tailwindcss/vite` |
-| Composants | shadcn/ui CLI v4, preset Base Nova, primitives Base UI, sources commitées |
-| Icônes | Lucide React |
-| Vision | `@mediapipe/tasks-vision`, Hand Landmarker, traitement local |
-| Dessin | Canvas 2D natif, deux couches superposées |
-| État UI | Zustand ; ressources impératives hors store |
-| Tests | Vitest, Testing Library, Playwright, axe-core |
-| Qualité | ESLint, Prettier, TypeScript, couverture Vitest |
-| CI | GitHub Actions |
-| Déploiement | Vercel : previews de PR, production depuis `production` uniquement |
+| Zone        | Choix                                                                         |
+| ----------- | ----------------------------------------------------------------------------- |
+| Runtime     | Node.js 24 LTS, fixé par `.nvmrc` et `package.json#engines`                   |
+| Paquets     | pnpm, version exacte dans `packageManager`                                    |
+| Application | React 19, TypeScript strict, Vite 8                                           |
+| Styles      | Tailwind CSS 4.3.x installé avec versions exactes, plugin `@tailwindcss/vite` |
+| Composants  | shadcn/ui CLI v4, preset Base Nova, primitives Base UI, sources commitées     |
+| Icônes      | Lucide React                                                                  |
+| Vision      | `@mediapipe/tasks-vision`, Hand Landmarker, traitement local                  |
+| Dessin      | Canvas 2D natif, deux couches superposées                                     |
+| État UI     | Zustand ; ressources impératives hors store                                   |
+| Tests       | Vitest, Testing Library, Playwright, axe-core                                 |
+| Qualité     | ESLint, Prettier, TypeScript, couverture Vitest                               |
+| CI          | GitHub Actions                                                                |
+| Déploiement | Vercel : previews de PR, production depuis `production` uniquement            |
 
 Règle de version : le lot 1 résout les dernières versions stables compatibles et les écrit exactement dans `package.json` et `pnpm-lock.yaml`. Les lots suivants n'utilisent jamais `latest` hors mise à jour dédiée.
 
