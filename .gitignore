@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build and coverage
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Environment and local tooling
+.env
+.env.*
+!.env.example
+.vercel/
+.vite/
+*.local
+
+# Editors and operating systems
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+pnpm-debug.log*
+
