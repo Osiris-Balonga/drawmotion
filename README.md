@@ -16,5 +16,4 @@ Pré-implémentation. Le travail est découpé en lots séquentiels dans [IMPLEM
 
 ## Stack cible
 
-React 19, TypeScript strict, Vite 8, Tailwind CSS 4.3, shadcn/ui avec Base UI, MediaPipe Tasks Vision, Zustand, Vitest et Playwright.
-
+React 19, TypeScript strict, Vite 8, Tailwind CSS 4.3, shadcn/ui Base Nova avec Base UI, MediaPipe Tasks Vision, Zustand, Vitest et Playwright.

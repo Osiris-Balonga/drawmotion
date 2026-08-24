@@ -39,7 +39,7 @@ Interdictions permanentes :
 | Paquets | pnpm, version exacte dans `packageManager` |
 | Application | React 19, TypeScript strict, Vite 8 |
 | Styles | Tailwind CSS 4.3.x installé avec versions exactes, plugin `@tailwindcss/vite` |
-| Composants | shadcn/ui CLI v4, style `new-york`, base Base UI, sources commitées |
+| Composants | shadcn/ui CLI v4, preset Base Nova, primitives Base UI, sources commitées |
 | Icônes | Lucide React |
 | Vision | `@mediapipe/tasks-vision`, Hand Landmarker, traitement local |
 | Dessin | Canvas 2D natif, deux couches superposées |
@@ -318,8 +318,8 @@ Commits exacts :
 2. `chore(ui): configure Tailwind CSS and shadcn`
    - installer Tailwind 4.3.x et `@tailwindcss/vite` avec versions exactes ;
    - `@import "tailwindcss"` dans `src/styles/globals.css` ;
-   - exécuter `pnpm dlx shadcn@latest init -d --base base-ui` ;
-   - vérifier `new-york`, CSS variables, alias et `rsc: false` ;
+   - exécuter `pnpm dlx shadcn@latest init -d --base base` ;
+   - vérifier le preset Base Nova, CSS variables, alias et `rsc: false` ;
    - vérifier que `components.json` déclare Base UI et qu'aucun paquet `@radix-ui/*` ou `radix-ui` n'est installé ;
    - ne générer encore que `button` et `tooltip`.
 3. `chore(quality): add static analysis and unit test harness`
