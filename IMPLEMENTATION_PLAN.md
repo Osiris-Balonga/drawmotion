@@ -351,7 +351,7 @@ PR : `feat: establish the guided DrawMotion workspace`
 Commits exacts :
 
 1. `feat(ui): define DrawMotion semantic design tokens`
-   - thème sombre `new-york` en OKLCH ;
+   - thème sombre Base Nova en OKLCH ;
    - accent violet, succès vert, avertissement orange ;
    - contraste WCAG AA ;
    - `prefers-reduced-motion` ;
