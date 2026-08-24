@@ -39,4 +39,3 @@ Précise, pédagogique, spectaculaire. La voix est brève, rassurante et factuel
 ## Accessibility & Inclusion
 
 Objectif WCAG 2.2 AA pour les contrôles et contenus applicables. Tous les outils sont accessibles au clavier, les états sont annoncés textuellement, la couleur n'est jamais le seul signal, les animations respectent `prefers-reduced-motion` et le zoom navigateur à 200 % reste utilisable. La compatibilité gestuelle n'est jamais présentée comme l'unique moyen d'accomplir une action.
-
