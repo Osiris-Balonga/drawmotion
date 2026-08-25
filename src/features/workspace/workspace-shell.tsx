@@ -1,5 +1,11 @@
 import { useCallback, useRef, useState } from "react"
 
+import { Undo2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
+import type { AssistedPrimitive } from "@/core/drawing/drawing-model"
+import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import {
   initialGestureMachineState,
@@ -31,16 +37,22 @@ import {
   DrawingCanvas,
   type DrawingCanvasHandle,
 } from "@/features/workspace/drawing-canvas"
+import { PrecisionModeSelector } from "@/features/workspace/precision-mode-selector"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
-import { Button } from "@/components/ui/button"
-
 import "./workspace.css"
 
 const toolNames: Record<DrawingTool, string> = {
   pointer: "Pointeur",
   pen: "Stylo",
   eraser: "Gomme",
+}
+
+const primitiveNames: Record<AssistedPrimitive, string> = {
+  line: "Ligne",
+  circle: "Cercle",
+  ellipse: "Ellipse",
+  rectangle: "Rectangle",
 }
 
 export function WorkspaceShell() {
@@ -50,6 +62,10 @@ export function WorkspaceShell() {
       : initialOnboardingState,
   )
   const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
+  const [assistanceMode, setAssistanceMode] =
+    useState<StrokeAssistanceMode>("stabilized")
+  const [lastAssistance, setLastAssistance] =
+    useState<StrokeAssistanceFeedback | null>(null)
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(
     initialState.step,
   )
@@ -120,10 +136,29 @@ export function WorkspaceShell() {
         pinchPhase,
       })
       gestureStateRef.current = transition.state
+      if (
+        transition.intentions.some(
+          (intention) => intention.type === "DRAW_START",
+        )
+      ) {
+        setLastAssistance(null)
+      }
       drawingRef.current?.handleIntentions(transition.intentions)
     },
     [onboardingStep],
   )
+
+  const changeAssistanceMode = useCallback((mode: StrokeAssistanceMode) => {
+    setAssistanceMode(mode)
+    setLastAssistance(null)
+  }, [])
+
+  const revertLastAssistance = useCallback(() => {
+    if (!lastAssistance) return
+    if (drawingRef.current?.revertAssistance(lastAssistance.strokeId)) {
+      setLastAssistance(null)
+    }
+  }, [lastAssistance])
 
   return (
     <div className="workspace-shell">
@@ -141,7 +176,11 @@ export function WorkspaceShell() {
           aria-label="Toile de dessin vide"
           className="drawing-stage"
         >
-          <DrawingCanvas ref={drawingRef} />
+          <DrawingCanvas
+            ref={drawingRef}
+            assistanceMode={assistanceMode}
+            onAssistance={setLastAssistance}
+          />
           <div className="sr-only" aria-live="polite">
             {toolNames[activeTool]} sélectionné — simulation
           </div>
@@ -157,13 +196,38 @@ export function WorkspaceShell() {
             />
           ) : null}
           {onboardingStep === 3 ? (
-            <Button
-              className="gesture-review-action h-10 active:scale-[0.96]"
-              variant="secondary"
-              onClick={restartOnboarding}
-            >
-              Revoir les gestes
-            </Button>
+            <>
+              <PrecisionModeSelector
+                value={assistanceMode}
+                onValueChange={changeAssistanceMode}
+              />
+              {lastAssistance ? (
+                <div
+                  className="shape-assistance-feedback"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span>
+                    {primitiveNames[lastAssistance.primitive]} régularisé
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={revertLastAssistance}
+                  >
+                    <Undo2 aria-hidden="true" />
+                    Garder mon tracé
+                  </Button>
+                </div>
+              ) : null}
+              <Button
+                className="gesture-review-action h-10 active:scale-[0.96]"
+                variant="secondary"
+                onClick={restartOnboarding}
+              >
+                Revoir les gestes
+              </Button>
+            </>
           ) : null}
         </section>
       </main>

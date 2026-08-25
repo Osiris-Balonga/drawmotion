@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 
 import { AppProviders } from "@/app/providers"
 import { WorkspaceShell } from "@/features/workspace/workspace-shell"
+import { saveOnboardingCompletion } from "@/features/onboarding/onboarding-persistence"
 
 function renderWorkspace() {
   return render(
@@ -12,6 +13,8 @@ function renderWorkspace() {
     </AppProviders>,
   )
 }
+
+beforeEach(() => localStorage.clear())
 
 describe("WorkspaceShell", () => {
   it("expose une structure et des états techniques compréhensibles", () => {
@@ -78,5 +81,24 @@ describe("WorkspaceShell", () => {
     await user.tab()
 
     expect(screen.getByRole("link", { name: "Aller à la toile" })).toHaveFocus()
+  })
+
+  it("laisse choisir une assistance précise après le tutoriel", async () => {
+    const user = userEvent.setup()
+    saveOnboardingCompletion()
+    renderWorkspace()
+
+    const stabilized = screen.getByRole("button", {
+      name: /Stabilisé — Réduit les irrégularités/,
+    })
+    const shapes = screen.getByRole("button", {
+      name: /Formes — Régularise les lignes/,
+    })
+    expect(stabilized).toHaveAttribute("aria-pressed", "true")
+
+    await user.click(shapes)
+
+    expect(shapes).toHaveAttribute("aria-pressed", "true")
+    expect(stabilized).toHaveAttribute("aria-pressed", "false")
   })
 })

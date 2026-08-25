@@ -11,10 +11,12 @@ import {
 } from "./drawing-history"
 import {
   emptyDrawingDocument,
+  type AssistedPrimitive,
   type NormalizedPoint,
   type Stroke,
   type StrokeTool,
 } from "./drawing-model"
+import { assistStroke, type StrokeAssistanceMode } from "./stroke-assistance"
 import { TwoLayerCanvasRenderer } from "./two-layer-canvas-renderer"
 
 export type DrawingStyle = {
@@ -23,13 +25,21 @@ export type DrawingStyle = {
   width: number
 }
 
+export type StrokeAssistanceFeedback = {
+  strokeId: string
+  primitive: AssistedPrimitive
+  confidence: number
+}
+
 export class CanvasDrawingController {
   readonly #renderer: TwoLayerCanvasRenderer
   #history: DrawingHistory
   #bounds: CanvasBounds = { left: 0, top: 0, width: 1, height: 1 }
   #style: DrawingStyle = { tool: "pen", color: "#111111", width: 0.008 }
+  #assistanceMode: StrokeAssistanceMode = "stabilized"
   #activeStroke: Stroke | null = null
   #nextStrokeId = 1
+  #onAssistance: ((feedback: StrokeAssistanceFeedback) => void) | null = null
 
   constructor(renderer: TwoLayerCanvasRenderer, historyLimit = 50) {
     this.#renderer = renderer
@@ -48,6 +58,16 @@ export class CanvasDrawingController {
 
   setStyle(style: DrawingStyle) {
     this.#style = style
+  }
+
+  setAssistanceMode(mode: StrokeAssistanceMode) {
+    this.#assistanceMode = mode
+  }
+
+  setAssistanceListener(
+    listener: ((feedback: StrokeAssistanceFeedback) => void) | null,
+  ) {
+    this.#onAssistance = listener
   }
 
   handle(intention: DrawingIntention) {
@@ -98,16 +118,45 @@ export class CanvasDrawingController {
     this.#renderer.setDocument(this.#history.present)
   }
 
+  revertAssistance(strokeId: string) {
+    const strokeIndex = this.#history.present.strokes.findIndex(
+      (stroke) => stroke.id === strokeId && stroke.assistance,
+    )
+    if (strokeIndex < 0) return false
+    const stroke = this.#history.present.strokes[strokeIndex]
+    if (!stroke?.assistance) return false
+    const { assistance, ...unassistedStroke } = stroke
+    const strokes = [...this.#history.present.strokes]
+    strokes[strokeIndex] = {
+      ...unassistedStroke,
+      points: assistance.originalPoints,
+    }
+    this.#history = recordDrawing(this.#history, { strokes })
+    this.#renderer.setDocument(this.#history.present)
+    return true
+  }
+
   #finishStroke() {
     if (!this.#activeStroke) return
+    const assisted = assistStroke(
+      this.#activeStroke,
+      this.#bounds,
+      this.#assistanceMode,
+    )
     const next = applyDrawingCommand(this.#history.present, {
       type: "ADD_STROKE",
-      stroke: this.#activeStroke,
+      stroke: assisted.stroke,
     })
     this.#history = recordDrawing(this.#history, next)
     this.#activeStroke = null
     this.#renderer.setPreviewStroke(null)
     this.#renderer.setDocument(this.#history.present)
+    if (assisted.correction) {
+      this.#onAssistance?.({
+        strokeId: assisted.stroke.id,
+        ...assisted.correction,
+      })
+    }
   }
 
   #toLocalPoint(point: { x: number; y: number }) {

@@ -245,10 +245,10 @@ describe("CanvasDrawingController", () => {
       timestampMs: 32,
     })
 
-    expect(controller.document.strokes[0]?.points).toEqual([
-      { x: 0.25, y: 0.25 },
-      { x: 0.5, y: 0.5 },
-    ])
+    const points = controller.document.strokes[0]?.points
+    expect(points?.[0]).toEqual({ x: 0.25, y: 0.25 })
+    expect(points?.at(-1)).toEqual({ x: 0.5, y: 0.5 })
+    expect(points?.length).toBeGreaterThan(2)
     controller.undo()
     expect(controller.document.strokes).toEqual([])
     controller.redo()
@@ -299,5 +299,42 @@ describe("CanvasDrawingController", () => {
     controller.handle({ version: 1, type: "PAUSE", timestampMs: 1 })
 
     expect(controller.document.strokes).toEqual([])
+  })
+
+  it("applies confident shape assistance and can restore the original stroke", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    const feedback = vi.fn()
+    controller.setBounds({ left: 0, top: 0, width: 1000, height: 600 })
+    controller.setAssistanceMode("shapes")
+    controller.setAssistanceListener(feedback)
+
+    for (let index = 0; index < 25; index += 1) {
+      const intention = {
+        version: 1 as const,
+        type: index === 0 ? ("DRAW_START" as const) : ("DRAW_MOVE" as const),
+        point: { x: 100 + index * 20, y: 200 + Math.sin(index) },
+        timestampMs: index * 16,
+      }
+      controller.handle(intention)
+    }
+    controller.handle({
+      version: 1,
+      type: "DRAW_END",
+      point: { x: 580, y: 200 },
+      timestampMs: 400,
+    })
+
+    const assisted = controller.document.strokes[0]
+    expect(assisted?.points).toHaveLength(2)
+    expect(assisted?.assistance?.primitive).toBe("line")
+    expect(feedback).toHaveBeenCalledWith(
+      expect.objectContaining({ strokeId: "stroke-1", primitive: "line" }),
+    )
+
+    expect(controller.revertAssistance("stroke-1")).toBe(true)
+    expect(controller.document.strokes[0]?.points).toHaveLength(25)
+    expect(controller.document.strokes[0]?.assistance).toBeUndefined()
+    expect(controller.revertAssistance("stroke-1")).toBe(false)
   })
 })
