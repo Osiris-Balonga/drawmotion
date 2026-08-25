@@ -266,6 +266,17 @@
   height: 1.5rem;
 }
 
+.gesture-review-action {
+  position: absolute;
+  right: var(--space-xl);
+  bottom: var(--space-xl);
+  z-index: var(--z-floating-controls);
+  box-shadow: 0 0.25rem 0.75rem oklch(0.06 0.01 286 / 18%);
+  transition-property: transform;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out-quart);
+}
+
 .skip-link {
   position: fixed;
   top: var(--space-sm);
