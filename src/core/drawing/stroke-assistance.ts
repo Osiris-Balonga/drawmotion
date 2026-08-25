@@ -25,7 +25,7 @@ export type StrokeAssistanceResult = {
 
 const SAMPLE_SPACING_PX = 3
 const MIN_PRIMITIVE_SIZE_PX = 28
-const AUTO_CORRECTION_CONFIDENCE = 0.86
+const AUTO_CORRECTION_CONFIDENCE = 0.48
 
 type PrimitiveCandidate = StrokeCorrection & {
   points: Point2D[]
@@ -89,10 +89,10 @@ function lineCandidate(points: readonly Point2D[]): PrimitiveCandidate | null {
   const normalizedError =
     Math.sqrt(squaredError / points.length) / Math.max(endDistance, 1)
   const efficiency = endDistance / length
-  if (normalizedError > 0.035 || efficiency < 0.88) return null
+  if (normalizedError > 0.06 || efficiency < 0.82) return null
 
   const confidence = clampUnit(
-    0.55 * (1 - normalizedError / 0.035) + 0.45 * ((efficiency - 0.88) / 0.12),
+    0.7 * (1 - normalizedError / 0.12) + 0.3 * ((efficiency - 0.75) / 0.25),
   )
   return {
     primitive: "line",
@@ -117,7 +117,7 @@ function rectangleCandidate(
   const diagonal = boundsDiagonal(points)
   if (
     diagonal < MIN_PRIMITIVE_SIZE_PX ||
-    distance(first, last) / diagonal > 0.14
+    distance(first, last) / diagonal > 0.24
   ) {
     return null
   }
@@ -173,7 +173,7 @@ function rectangleCandidate(
   const visitsEveryEdge = edgeCounts.every(
     (count) => count / points.length >= 0.08,
   )
-  if (normalizedError > 0.028 || perimeterError > 0.22 || !visitsEveryEdge) {
+  if (normalizedError > 0.045 || perimeterError > 0.3 || !visitsEveryEdge) {
     return null
   }
 
@@ -226,7 +226,7 @@ function sampleEllipse(
     (startPoint.y - center.y) * cosRotation
   const startAngle = Math.atan2(localStartY / radiusY, localStartX / radiusX)
   const direction = clockwise ? 1 : -1
-  return Array.from({ length: 65 }, (_, index) => {
+  const samples = Array.from({ length: 65 }, (_, index) => {
     const angle = startAngle + direction * (index / 64) * Math.PI * 2
     const localX = Math.cos(angle) * radiusX
     const localY = Math.sin(angle) * radiusY
@@ -235,6 +235,8 @@ function sampleEllipse(
       y: center.y + localX * sinRotation + localY * cosRotation,
     }
   })
+  samples[samples.length - 1] = { ...samples[0]! }
+  return samples
 }
 
 function closedPrimitiveCandidate(
@@ -291,13 +293,26 @@ function closedPrimitiveCandidate(
     (majorRadius + minorRadius) *
     (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)))
   const coverageError = Math.abs(pathLength(points) / circumference - 1)
-  if (closure > 0.32 || radialError > 0.13 || coverageError > 0.3) return null
+  if (closure > 1.1 || radialError > 0.16 || coverageError > 0.35) return null
 
   const confidence = clampUnit(
-    1 - closure / 1.2 - radialError / 0.8 - coverageError / 1.2,
+    0.1 * (1 - closure / 1.2) +
+      0.6 * (1 - radialError / 0.2) +
+      0.3 * (1 - coverageError / 0.4),
   )
   const axisRatio = majorRadius / minorRadius
-  const primitive: AssistedPrimitive = axisRatio < 1.16 ? "circle" : "ellipse"
+  const spanX =
+    Math.max(...points.map((point) => point.x)) -
+    Math.min(...points.map((point) => point.x))
+  const spanY =
+    Math.max(...points.map((point) => point.y)) -
+    Math.min(...points.map((point) => point.y))
+  const boundsRatio =
+    Math.max(spanX, spanY) / Math.max(1, Math.min(spanX, spanY))
+  const primitive: AssistedPrimitive =
+    axisRatio < 1.16 || (axisRatio < 1.35 && boundsRatio < 1.18)
+      ? "circle"
+      : "ellipse"
   const circleRadius = (radiusX + radiusY) / 2
   const fittedRadiusX = primitive === "circle" ? circleRadius : radiusX
   const fittedRadiusY = primitive === "circle" ? circleRadius : radiusY

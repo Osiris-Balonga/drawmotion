@@ -62,6 +62,56 @@ function noisyRectangle() {
     .concat(corners[0]!)
 }
 
+function openCircle() {
+  return Array.from({ length: 64 }, (_, index) => {
+    const angle = 0.15 + (index / 63) * Math.PI * 1.68
+    return {
+      x: 0.5 + Math.cos(angle) * 0.16 + Math.sin(index * 1.9) * 0.004,
+      y: 0.5 + Math.sin(angle) * 0.27 + Math.cos(index * 1.6) * 0.004,
+    }
+  })
+}
+
+function imperfectRectangle() {
+  const corners = [
+    { x: 0.22, y: 0.22 },
+    { x: 0.72, y: 0.24 },
+    { x: 0.76, y: 0.68 },
+    { x: 0.19, y: 0.66 },
+    { x: 0.24, y: 0.25 },
+  ]
+  return corners.flatMap((corner, index) => {
+    const next = corners[index + 1]
+    if (!next) return []
+    return Array.from({ length: 14 }, (_, sample) => {
+      const progress = sample / 14
+      return {
+        x:
+          corner.x +
+          (next.x - corner.x) * progress +
+          Math.sin((index * 14 + sample) * 1.3) * 0.004,
+        y:
+          corner.y +
+          (next.y - corner.y) * progress +
+          Math.cos((index * 14 + sample) * 1.7) * 0.004,
+      }
+    })
+  })
+}
+
+function hookedLine() {
+  return [
+    { x: 0.12, y: 0.6 },
+    { x: 0.15, y: 0.56 },
+    ...Array.from({ length: 36 }, (_, index) => ({
+      x: 0.16 + index * 0.019,
+      y: 0.55 + Math.sin(index * 0.55) * 0.009,
+    })),
+    { x: 0.87, y: 0.58 },
+    { x: 0.84, y: 0.62 },
+  ]
+}
+
 describe("assistStroke", () => {
   it("keeps free drawing free while regularizing its samples", () => {
     const original = stroke([
@@ -109,6 +159,29 @@ describe("assistStroke", () => {
 
     expect(result.correction?.primitive).toBe("rectangle")
     expect(result.stroke.points).toHaveLength(5)
+  })
+
+  it("magnetically closes a clearly circular stroke with a realistic gap", () => {
+    const original = stroke(openCircle())
+    const result = assistStroke(original, bounds, "shapes")
+
+    expect(result.correction?.primitive).toBe("circle")
+    expect(result.stroke.points[0]).toEqual(result.stroke.points.at(-1))
+    expect(result.stroke.assistance?.originalPoints).toEqual(original.points)
+  })
+
+  it("beautifies a hand-drawn quadrilateral with uneven corners", () => {
+    const result = assistStroke(stroke(imperfectRectangle()), bounds, "shapes")
+
+    expect(result.correction?.primitive).toBe("rectangle")
+    expect(result.stroke.points).toHaveLength(5)
+  })
+
+  it("recognizes a mostly straight gesture despite small endpoint hooks", () => {
+    const result = assistStroke(stroke(hookedLine()), bounds, "shapes")
+
+    expect(result.correction?.primitive).toBe("line")
+    expect(result.stroke.points).toHaveLength(2)
   })
 
   it("does not force an ambiguous organic stroke into a primitive", () => {
