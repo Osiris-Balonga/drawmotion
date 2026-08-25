@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { HandTrackerOptions } from "@/infrastructure/mediapipe/hand-tracker-port"
-import { WorkerHandTracker } from "@/infrastructure/mediapipe/worker-hand-tracker"
+import {
+  DroppedFrameError,
+  WorkerHandTracker,
+} from "@/infrastructure/mediapipe/worker-hand-tracker"
 import { deterministicTrackingResult } from "@/test/fixtures/hand-landmarks"
 
 const options: HandTrackerOptions = {
@@ -106,6 +109,20 @@ describe("WorkerHandTracker", () => {
     })
 
     await expect(detection).rejects.toThrow("Inference failed")
+  })
+
+  it("releases a superseded detection without reporting a tracker failure", async () => {
+    const { worker } = createWorker()
+    const tracker = new WorkerHandTracker(() => worker)
+    const detection = tracker.detect(
+      { close: vi.fn() } as unknown as ImageBitmap,
+      10,
+      180,
+    )
+
+    emit(worker, { version: 1, type: "DROPPED", frameId: 10 })
+
+    await expect(detection).rejects.toBeInstanceOf(DroppedFrameError)
   })
 
   it("rejects pending work after an invalid response or worker crash", async () => {

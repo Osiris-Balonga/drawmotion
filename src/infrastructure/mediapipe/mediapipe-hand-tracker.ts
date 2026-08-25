@@ -50,16 +50,29 @@ export class MediaPipeHandTracker implements HandTrackerPort {
       options.wasmRootUrl,
       true,
     )
-    this.landmarker = await HandLandmarker.createFromOptions(fileset, {
+    const createOptions = (delegate?: "CPU" | "GPU") => ({
       baseOptions: {
         modelAssetPath: options.modelAssetUrl,
+        ...(delegate ? { delegate } : {}),
       },
       minHandDetectionConfidence: options.minDetectionConfidence,
       minHandPresenceConfidence: options.minPresenceConfidence,
       minTrackingConfidence: options.minTrackingConfidence,
       numHands: options.maxHands,
-      runningMode: "VIDEO",
+      runningMode: "VIDEO" as const,
     })
+    try {
+      this.landmarker = await HandLandmarker.createFromOptions(
+        fileset,
+        createOptions(options.delegate),
+      )
+    } catch (error) {
+      if (options.delegate !== "GPU") throw error
+      this.landmarker = await HandLandmarker.createFromOptions(
+        fileset,
+        createOptions("CPU"),
+      )
+    }
   }
 
   detect(

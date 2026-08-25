@@ -130,6 +130,7 @@ export function useHandTracking(
     })
     void session
       .start({
+        delegate: "GPU",
         maxHands: 1,
         minDetectionConfidence: 0.5,
         minPresenceConfidence: 0.5,

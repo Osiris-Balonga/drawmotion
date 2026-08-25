@@ -8,6 +8,7 @@ import {
   classifyTrackingQuality,
   HandTrackingSession,
 } from "@/infrastructure/mediapipe/hand-tracking-session"
+import { DroppedFrameError } from "@/infrastructure/mediapipe/worker-hand-tracker"
 import { deterministicTrackingResult } from "@/test/fixtures/hand-landmarks"
 
 const options: HandTrackerOptions = {
@@ -113,6 +114,63 @@ describe("HandTrackingSession", () => {
       "reliable",
     )
     expect(requestVideoFrameCallback).toHaveBeenCalledTimes(2)
+    session.dispose()
+    vi.unstubAllGlobals()
+  })
+
+  it("captures the latest video frame without waiting for inference", async () => {
+    const videoCallbacks: VideoFrameRequestCallback[] = []
+    const requestVideoFrameCallback = vi.fn(
+      (callback: VideoFrameRequestCallback) => {
+        videoCallbacks.push(callback)
+        return videoCallbacks.length
+      },
+    )
+    const video = {
+      cancelVideoFrameCallback: vi.fn(),
+      readyState: HTMLMediaElement.HAVE_CURRENT_DATA,
+      requestVideoFrameCallback,
+    } as unknown as HTMLVideoElement
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(() =>
+        Promise.resolve({ close: vi.fn() } as unknown as ImageBitmap),
+      ),
+    )
+    let rejectFirst: (error: Error) => void = () => undefined
+    const firstDetection = new Promise<never>((_resolve, reject) => {
+      rejectFirst = reject
+    })
+    const detect = vi
+      .fn<HandTrackerPort["detect"]>()
+      .mockReturnValueOnce(firstDetection)
+      .mockResolvedValueOnce({
+        ...deterministicTrackingResult,
+        frameId: 2,
+        timestampMs: 32,
+      })
+    const tracker: HandTrackerPort = {
+      detect,
+      dispose: vi.fn(),
+      initialize: vi.fn(() => Promise.resolve()),
+    }
+    const onError = vi.fn()
+    const session = new HandTrackingSession(video, tracker, {
+      onError,
+      onResult: vi.fn(),
+    })
+    await session.start(options)
+
+    videoCallbacks[0]?.(0, { mediaTime: 0.016 } as VideoFrameCallbackMetadata)
+    await vi.waitFor(() =>
+      expect(requestVideoFrameCallback).toHaveBeenCalledTimes(2),
+    )
+    videoCallbacks[1]?.(0, { mediaTime: 0.032 } as VideoFrameCallbackMetadata)
+    await vi.waitFor(() => expect(detect).toHaveBeenCalledTimes(2))
+
+    rejectFirst(new DroppedFrameError())
+    await Promise.resolve()
+    expect(onError).not.toHaveBeenCalled()
     session.dispose()
     vi.unstubAllGlobals()
   })

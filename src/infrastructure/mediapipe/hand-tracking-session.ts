@@ -4,6 +4,7 @@ import type {
   HandTrackerPort,
   HandTrackingResult,
 } from "@/infrastructure/mediapipe/hand-tracker-port"
+import { DroppedFrameError } from "@/infrastructure/mediapipe/worker-hand-tracker"
 
 export type TrackingQuality = "reliable" | "uncertain" | "lost"
 
@@ -63,7 +64,11 @@ export class HandTrackingSession {
   }
 
   private scheduleFrame(): void {
-    if (this.disposed) {
+    if (
+      this.disposed ||
+      this.videoFrameCallbackId !== null ||
+      this.animationFrameId !== null
+    ) {
       return
     }
 
@@ -99,18 +104,25 @@ export class HandTrackingSession {
       }
 
       this.frameId += 1
-      const result = await this.tracker.detect(frame, this.frameId, timestampMs)
+      const detection = this.tracker.detect(frame, this.frameId, timestampMs)
+      this.scheduleFrame()
+      const result = await detection
       if (!this.disposed) {
         this.callbacks.onResult(result, classifyTrackingQuality(result))
       }
     } catch (error) {
-      if (!this.disposed) {
+      if (!this.disposed && !(error instanceof DroppedFrameError)) {
         this.callbacks.onError(
           error instanceof Error ? error : new Error("Hand tracking failed"),
         )
       }
     } finally {
-      this.scheduleFrame()
+      if (
+        this.videoFrameCallbackId === null &&
+        this.animationFrameId === null
+      ) {
+        this.scheduleFrame()
+      }
     }
   }
 }

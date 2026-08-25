@@ -136,6 +136,11 @@ export function createVisionWorkerRuntime(
           if (queuedFrame) {
             queuedFrame.frame.close()
             droppedFrames += 1
+            scope.postMessage({
+              version: VISION_PROTOCOL_VERSION,
+              type: "DROPPED",
+              frameId: queuedFrame.frameId,
+            })
           }
           queuedFrame = message
         } else {

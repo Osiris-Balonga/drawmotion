@@ -46,6 +46,12 @@ export type VisionMetricsResponse = {
   metrics: HandTrackerMetrics
 }
 
+export type VisionDroppedResponse = {
+  version: typeof VISION_PROTOCOL_VERSION
+  type: "DROPPED"
+  frameId: number
+}
+
 export type VisionErrorResponse = {
   version: typeof VISION_PROTOCOL_VERSION
   type: "ERROR"
@@ -65,6 +71,7 @@ export type VisionWorkerResponse =
   | VisionInitResponse
   | VisionResultResponse
   | VisionMetricsResponse
+  | VisionDroppedResponse
   | VisionErrorResponse
   | VisionDisposeResponse
 
@@ -81,6 +88,7 @@ export function isVisionWorkerResponse(
     (candidate.type === "INIT" ||
       candidate.type === "RESULT" ||
       candidate.type === "METRICS" ||
+      candidate.type === "DROPPED" ||
       candidate.type === "ERROR" ||
       candidate.type === "DISPOSE")
   )

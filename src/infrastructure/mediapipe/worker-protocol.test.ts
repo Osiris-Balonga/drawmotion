@@ -37,6 +37,9 @@ describe("vision worker protocol", () => {
     expect(isVisionWorkerResponse({ version: 2, type: "RESULT" })).toBe(false)
     expect(isVisionWorkerResponse({ version: 1, type: "UNKNOWN" })).toBe(false)
     expect(isVisionWorkerResponse({ version: 1, type: "METRICS" })).toBe(true)
+    expect(
+      isVisionWorkerResponse({ version: 1, type: "DROPPED", frameId: 4 }),
+    ).toBe(true)
   })
 
   it("provides deterministic 21-point landmark fixtures", () => {
