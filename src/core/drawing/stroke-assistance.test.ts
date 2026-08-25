@@ -33,6 +33,35 @@ function noisyEllipse(radiusX: number, radiusY: number) {
   })
 }
 
+function noisyRectangle() {
+  const corners = [
+    { x: 0.2, y: 0.2 },
+    { x: 0.75, y: 0.2 },
+    { x: 0.75, y: 0.7 },
+    { x: 0.2, y: 0.7 },
+    { x: 0.2, y: 0.2 },
+  ]
+  return corners
+    .flatMap((corner, index) => {
+      const next = corners[index + 1]
+      if (!next) return []
+      return Array.from({ length: 16 }, (_, sample) => {
+        const progress = sample / 16
+        return {
+          x:
+            corner.x +
+            (next.x - corner.x) * progress +
+            Math.sin((index * 16 + sample) * 1.8) * 0.001,
+          y:
+            corner.y +
+            (next.y - corner.y) * progress +
+            Math.cos((index * 16 + sample) * 1.4) * 0.001,
+        }
+      })
+    })
+    .concat(corners[0]!)
+}
+
 describe("assistStroke", () => {
   it("keeps free drawing free while regularizing its samples", () => {
     const original = stroke([
@@ -73,6 +102,13 @@ describe("assistStroke", () => {
     expect(circle.correction?.primitive).toBe("circle")
     expect(circle.stroke.points).toHaveLength(65)
     expect(ellipse.correction?.primitive).toBe("ellipse")
+  })
+
+  it("recognizes a closed rectangle without confusing it with an ellipse", () => {
+    const result = assistStroke(stroke(noisyRectangle()), bounds, "shapes")
+
+    expect(result.correction?.primitive).toBe("rectangle")
+    expect(result.stroke.points).toHaveLength(5)
   })
 
   it("does not force an ambiguous organic stroke into a primitive", () => {
