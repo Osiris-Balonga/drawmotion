@@ -1,60 +1,85 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  createOnboardingState,
   initialOnboardingState,
-  observeOnboardingGesture,
+  observeOnboardingEvent,
   ONBOARDING_STABLE_FRAMES,
   previousOnboardingStep,
+  type OnboardingEvent,
   type OnboardingState,
 } from "./onboarding-machine"
 
 function observeRepeatedly(
   state: OnboardingState,
-  gesture: Parameters<typeof observeOnboardingGesture>[1],
+  event: OnboardingEvent,
   count = ONBOARDING_STABLE_FRAMES,
 ) {
   for (let index = 0; index < count; index += 1) {
-    state = observeOnboardingGesture(state, gesture)
+    state = observeOnboardingEvent(state, event)
   }
   return state
 }
 
 describe("onboarding progression", () => {
-  it("validates stable placement, pinch, then open hand", () => {
-    const placed = observeRepeatedly(initialOnboardingState, "open-hand")
-    const pinched = observeRepeatedly(placed, "pinch")
-    const completed = observeRepeatedly(pinched, "open-hand")
+  it("validates three deliberate cursor targets before drawing", () => {
+    let state = initialOnboardingState
 
-    expect(placed.step).toBe(1)
-    expect(pinched.step).toBe(2)
-    expect(completed.step).toBe(3)
+    for (let target = 0; target < 3; target += 1) {
+      state = observeRepeatedly(state, {
+        type: "CURSOR_TARGET_OBSERVED",
+        inside: true,
+      })
+    }
+
+    expect(state).toEqual(createOnboardingState("draw"))
   })
 
-  it("resets stability when the expected gesture is interrupted", () => {
+  it("resets cursor stability outside the active target", () => {
     let state = observeRepeatedly(
-      { step: 1, stableFrames: 0 },
-      "pinch",
+      initialOnboardingState,
+      { type: "CURSOR_TARGET_OBSERVED", inside: true },
       ONBOARDING_STABLE_FRAMES - 1,
     )
-    state = observeOnboardingGesture(state, "open-hand")
-
-    expect(state).toEqual({ step: 1, stableFrames: 0 })
-  })
-
-  it("does not churn identity for an already invalid or completed state", () => {
-    expect(observeOnboardingGesture(initialOnboardingState, "uncertain")).toBe(
-      initialOnboardingState,
-    )
-    const complete = { step: 3, stableFrames: 0 } as const
-    expect(observeOnboardingGesture(complete, "pinch")).toBe(complete)
-  })
-
-  it("supports returning to the previous step", () => {
-    expect(previousOnboardingStep({ step: 2, stableFrames: 6 })).toEqual({
-      step: 1,
-      stableFrames: 0,
+    state = observeOnboardingEvent(state, {
+      type: "CURSOR_TARGET_OBSERVED",
+      inside: false,
     })
-    expect(previousOnboardingStep(initialOnboardingState)).toEqual(
+
+    expect(state).toEqual(initialOnboardingState)
+  })
+
+  it("requires a real stroke, both style choices, a shape and an undo", () => {
+    let state = createOnboardingState("draw")
+    state = observeOnboardingEvent(state, { type: "STROKE_COMPLETED" })
+    expect(state.step).toBe("style")
+
+    state = observeOnboardingEvent(state, { type: "COLOR_CHANGED" })
+    expect(state.step).toBe("style")
+    expect(state.colorChanged).toBe(true)
+
+    state = observeOnboardingEvent(state, { type: "THICKNESS_CHANGED" })
+    expect(state.step).toBe("shapes")
+
+    state = observeOnboardingEvent(state, {
+      type: "ASSISTED_SHAPE_CREATED",
+    })
+    expect(state.step).toBe("correct")
+
+    state = observeOnboardingEvent(state, { type: "UNDO_USED" })
+    expect(state.step).toBe("complete")
+  })
+
+  it("ignores unrelated events and supports returning to the previous mission", () => {
+    expect(
+      observeOnboardingEvent(initialOnboardingState, {
+        type: "STROKE_COMPLETED",
+      }),
+    ).toBe(initialOnboardingState)
+    expect(previousOnboardingStep(createOnboardingState("shapes"))).toEqual(
+      createOnboardingState("style"),
+    )
+    expect(previousOnboardingStep(initialOnboardingState)).toBe(
       initialOnboardingState,
     )
   })

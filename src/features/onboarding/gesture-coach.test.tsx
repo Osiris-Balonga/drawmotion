@@ -2,39 +2,52 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
+import { createOnboardingState } from "./onboarding-machine"
 import { GestureCoach } from "./gesture-coach"
 
 describe("GestureCoach", () => {
   it.each([
-    [0, "Placez votre main dans le cadre"],
-    [1, "Pincez pour commencer un trait"],
-    [2, "Ouvrez la main pour faire une pause"],
+    ["cursor", "Le point violet est votre curseur"],
+    ["draw", "Pincez pour poser le stylo"],
+    ["style", "Donnez un style au prochain trait"],
+    ["shapes", "Transformez un geste en forme nette"],
+    ["correct", "Corrigez sans recommencer"],
   ] as const)(
-    "announces step %s without motion-dependent content",
+    "announces the %s mission without motion-dependent content",
     (step, title) => {
-      render(<GestureCoach step={step} onBack={vi.fn()} onRestart={vi.fn()} />)
+      const state = createOnboardingState(step)
+      render(<GestureCoach state={state} onBack={vi.fn()} onSkip={vi.fn()} />)
 
       expect(screen.getByRole("heading", { name: title })).toBeInTheDocument()
+      const mission = ["cursor", "draw", "style", "shapes", "correct"].indexOf(
+        step,
+      )
       expect(
         screen.getByRole("progressbar", {
-          name: `Progression du tutoriel : étape ${step + 1} sur 3`,
+          name: `Progression du tutoriel : mission ${mission + 1} sur 5`,
         }),
       ).toBeInTheDocument()
     },
   )
 
-  it("offers keyboard-operable back and restart fallbacks", async () => {
+  it("offers keyboard-operable back and skip fallbacks", async () => {
     const user = userEvent.setup()
     const onBack = vi.fn()
-    const onRestart = vi.fn()
-    render(<GestureCoach step={1} onBack={onBack} onRestart={onRestart} />)
+    const onSkip = vi.fn()
+    render(
+      <GestureCoach
+        state={createOnboardingState("draw")}
+        onBack={onBack}
+        onSkip={onSkip}
+      />,
+    )
 
     screen.getByRole("button", { name: "Retour" }).focus()
     await user.keyboard("{Enter}")
-    screen.getByRole("button", { name: "Recommencer" }).focus()
+    screen.getByRole("button", { name: "Passer le tutoriel" }).focus()
     await user.keyboard("{Enter}")
 
     expect(onBack).toHaveBeenCalledOnce()
-    expect(onRestart).toHaveBeenCalledOnce()
+    expect(onSkip).toHaveBeenCalledOnce()
   })
 })

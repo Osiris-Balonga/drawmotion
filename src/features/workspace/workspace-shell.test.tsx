@@ -37,6 +37,7 @@ describe("WorkspaceShell", () => {
 
   it("permet de sélectionner un outil au clavier", async () => {
     const user = userEvent.setup()
+    saveOnboardingCompletion()
     renderWorkspace()
 
     const pen = screen.getByRole("button", { name: "Stylo" })
@@ -53,6 +54,7 @@ describe("WorkspaceShell", () => {
 
   it("sélectionne les outils par raccourci sauf pendant une saisie", async () => {
     const user = userEvent.setup()
+    saveOnboardingCompletion()
     renderWorkspace()
 
     await user.keyboard("e")
@@ -77,22 +79,45 @@ describe("WorkspaceShell", () => {
     input.remove()
   })
 
-  it("présente la calibration réelle avant le dessin", () => {
+  it("présente une première mission qui explique le curseur", () => {
     renderWorkspace()
 
     expect(
       screen.getByRole("progressbar", {
-        name: "Progression du tutoriel : étape 1 sur 3",
+        name: "Progression du tutoriel : mission 1 sur 5",
       }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "Placez votre main dans le cadre",
+        name: "Le point violet est votre curseur",
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole("button", { name: "Recommencer" }),
+      screen.getByRole("button", { name: "Passer le tutoriel" }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Pointeur" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+  })
+
+  it("permet de passer puis de rejouer le tutoriel", async () => {
+    const user = userEvent.setup()
+    renderWorkspace()
+
+    await user.click(screen.getByRole("button", { name: "Passer le tutoriel" }))
+    expect(
+      screen.getByRole("button", { name: "Revoir le tutoriel" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Revoir le tutoriel" }))
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Le point violet est votre curseur",
+      }),
     ).toBeInTheDocument()
   })
 
