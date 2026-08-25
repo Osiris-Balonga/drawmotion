@@ -13,10 +13,30 @@ import {
   useCameraLifecycle,
   type CameraAdapterFactory,
 } from "@/features/camera/use-camera-lifecycle"
+import {
+  useHandTracking,
+  type HandTrackerFactory,
+} from "@/features/camera/use-hand-tracking"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
+  trackerFactory?: HandTrackerFactory
 }
+
+const trackingContent = {
+  idle: { label: "Suivi en pause", className: "" },
+  initializing: { label: "Analyse de la main…", className: "" },
+  reliable: { label: "Suivi fiable", className: "camera-preview__status" },
+  uncertain: {
+    label: "Suivi hésitant",
+    className: "camera-preview__tracking--uncertain",
+  },
+  lost: { label: "Main non détectée", className: "" },
+  error: {
+    label: "Suivi indisponible",
+    className: "camera-preview__tracking--error",
+  },
+} as const
 
 const errorContent = {
   denied: {
@@ -42,7 +62,10 @@ const errorContent = {
   },
 } as const
 
-export function CameraPreview({ adapterFactory }: CameraPreviewProps) {
+export function CameraPreview({
+  adapterFactory,
+  trackerFactory,
+}: CameraPreviewProps) {
   const {
     devices,
     selectedDeviceId,
@@ -52,6 +75,12 @@ export function CameraPreview({ adapterFactory }: CameraPreviewProps) {
     stop,
     videoRef,
   } = useCameraLifecycle(adapterFactory)
+  const {
+    canvasRef,
+    metrics,
+    state: trackingState,
+  } = useHandTracking(state === "ready", videoRef, trackerFactory)
+  const trackingStatus = trackingContent[trackingState]
   const error =
     state === "denied" ||
     state === "missing" ||
@@ -70,6 +99,12 @@ export function CameraPreview({ adapterFactory }: CameraPreviewProps) {
           autoPlay
           muted
           playsInline
+          hidden={state !== "ready"}
+        />
+        <canvas
+          ref={canvasRef}
+          className="camera-preview__landmarks"
+          aria-label="Repères de la main détectée"
           hidden={state !== "ready"}
         />
 
@@ -115,6 +150,17 @@ export function CameraPreview({ adapterFactory }: CameraPreviewProps) {
               <span aria-hidden="true" className="camera-preview__status-dot" />
               Caméra active
             </Badge>
+            <Badge variant="secondary" className={trackingStatus.className}>
+              <span aria-hidden="true" className="camera-preview__status-dot" />
+              {trackingStatus.label}
+            </Badge>
+            {import.meta.env.DEV && metrics ? (
+              <span className="camera-preview__metrics">
+                {Math.round(metrics.inferenceMs)} ms · {metrics.droppedFrames}{" "}
+                frame{metrics.droppedFrames === 1 ? "" : "s"} ignorée
+                {metrics.droppedFrames === 1 ? "" : "s"}
+              </span>
+            ) : null}
             {devices.length > 1 ? (
               <label className="camera-preview__device-field">
                 <span>Caméra utilisée</span>
