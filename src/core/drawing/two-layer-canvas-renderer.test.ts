@@ -20,6 +20,7 @@ function createContext() {
     quadraticCurveTo: vi.fn(),
     restore: vi.fn(),
     save: vi.fn(),
+    setLineDash: vi.fn(),
     setTransform: vi.fn(),
     stroke: vi.fn(),
     strokeStyle: "",
@@ -174,6 +175,23 @@ describe("TwoLayerCanvasRenderer", () => {
     expect(curve?.[3]).toBeCloseTo(50)
   })
 
+  it("renders continuous, dashed, and dotted stroke patterns", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setDocument({
+      strokes: [
+        { ...stroke, id: "solid", pattern: "solid" },
+        { ...stroke, id: "dashed", pattern: "dashed" },
+        { ...stroke, id: "dotted", pattern: "dotted" },
+      ],
+    })
+    harness.flush()
+
+    expect(harness.persistentContext.setLineDash).toHaveBeenCalledWith([])
+    expect(harness.persistentContext.setLineDash).toHaveBeenCalledWith([6, 4])
+    expect(harness.persistentContext.setLineDash).toHaveBeenCalledWith([0, 4])
+  })
+
   it("renders eraser strokes and ignores empty stroke geometry", () => {
     const harness = createHarness(1)
     harness.renderer.resize(100, 100)
@@ -226,6 +244,12 @@ describe("CanvasDrawingController", () => {
     const harness = createHarness(1)
     const controller = new CanvasDrawingController(harness.renderer)
     controller.setBounds({ left: 100, top: 50, width: 400, height: 200 })
+    controller.setStyle({
+      tool: "pen",
+      color: "#7c3aed",
+      width: 0.01,
+      pattern: "dashed",
+    })
 
     controller.handle({
       version: 1,
@@ -246,6 +270,7 @@ describe("CanvasDrawingController", () => {
     })
 
     const points = controller.document.strokes[0]?.points
+    expect(controller.document.strokes[0]?.pattern).toBe("dashed")
     expect(points?.[0]).toEqual({ x: 0.25, y: 0.25 })
     expect(points?.at(-1)).toEqual({ x: 0.5, y: 0.5 })
     expect(points?.length).toBeGreaterThan(2)
@@ -303,7 +328,12 @@ describe("CanvasDrawingController", () => {
     const harness = createHarness(1)
     const controller = new CanvasDrawingController(harness.renderer)
     controller.setBounds({ left: 10, top: 20, width: 100, height: 50 })
-    controller.setStyle({ tool: "eraser", color: "#ffffff", width: 0.04 })
+    controller.setStyle({
+      tool: "eraser",
+      color: "#ffffff",
+      width: 0.04,
+      pattern: "dotted",
+    })
     controller.handle({
       version: 1,
       type: "POINTER_MOVE",
@@ -327,6 +357,7 @@ describe("CanvasDrawingController", () => {
       tool: "eraser",
       color: "#ffffff",
       width: 0.04,
+      pattern: "solid",
       points: [{ x: 0, y: 1 }],
     })
   })

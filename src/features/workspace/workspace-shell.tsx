@@ -10,6 +10,7 @@ import type {
   StrokeAssistanceFeedback,
 } from "@/core/drawing/canvas-drawing-controller"
 import type { AssistedPrimitive } from "@/core/drawing/drawing-model"
+import type { StrokePattern } from "@/core/drawing/drawing-model"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import {
@@ -107,6 +108,7 @@ export function WorkspaceShell() {
   )
   const [color, setColor] = useState<DrawingColor>(drawingColors[0].value)
   const [thickness, setThickness] = useState(8)
+  const [strokePattern, setStrokePattern] = useState<StrokePattern>("solid")
   const [assistanceMode, setAssistanceMode] =
     useState<StrokeAssistanceMode>("stabilized")
   const [lastAssistance, setLastAssistance] =
@@ -136,8 +138,9 @@ export function WorkspaceShell() {
       tool: activeTool === "eraser" ? "eraser" : "pen",
       color,
       width: thickness / 1000,
+      pattern: activeTool === "eraser" ? "solid" : strokePattern,
     }),
-    [activeTool, color, thickness],
+    [activeTool, color, strokePattern, thickness],
   )
 
   const restartOnboarding = useCallback(() => {
@@ -437,11 +440,14 @@ export function WorkspaceShell() {
           activeTool={activeTool}
           color={color}
           thickness={thickness}
+          strokePattern={strokePattern}
           assistanceMode={assistanceMode}
           onToolChange={setActiveTool}
           onColorChange={changeColor}
           onThicknessChange={changeThickness}
+          onStrokePatternChange={setStrokePattern}
           onAssistanceModeChange={changeAssistanceMode}
+          onReplayOnboarding={restartOnboarding}
         />
 
         <section
@@ -471,6 +477,7 @@ export function WorkspaceShell() {
           ) : null}
           {onboardingState.step !== "complete" ? (
             <GestureCoach
+              key={onboardingState.step}
               state={onboardingState}
               onBack={goBackOnboarding}
               onSkip={skipOnboarding}
@@ -488,15 +495,6 @@ export function WorkspaceShell() {
                 Garder mon tracé
               </Button>
             </div>
-          ) : null}
-          {onboardingState.step === "complete" ? (
-            <Button
-              className="gesture-review-action h-10 active:scale-[0.96]"
-              variant="secondary"
-              onClick={restartOnboarding}
-            >
-              Revoir le tutoriel
-            </Button>
           ) : null}
         </section>
       </main>

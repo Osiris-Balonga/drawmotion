@@ -2,6 +2,7 @@ import { useState } from "react"
 
 import {
   Activity,
+  BookOpen,
   Check,
   ChevronDown,
   Circle,
@@ -24,6 +25,7 @@ import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
+import type { StrokePattern } from "@/core/drawing/drawing-model"
 import {
   drawingColors,
   type DrawingColor,
@@ -35,11 +37,14 @@ type ToolRailProps = {
   activeTool: DrawingTool
   color: DrawingColor
   thickness: number
+  strokePattern: StrokePattern
   assistanceMode: StrokeAssistanceMode
   onToolChange: (tool: DrawingTool) => void
   onColorChange: (color: DrawingColor) => void
   onThicknessChange: (thickness: number) => void
+  onStrokePatternChange: (pattern: StrokePattern) => void
   onAssistanceModeChange: (mode: StrokeAssistanceMode) => void
+  onReplayOnboarding: () => void
 }
 
 const assistanceModes = [
@@ -63,15 +68,24 @@ const assistanceModes = [
   },
 ] as const
 
+const strokePatterns = [
+  { value: "solid", label: "Continu" },
+  { value: "dashed", label: "Tirets" },
+  { value: "dotted", label: "Pointillé" },
+] as const
+
 export function ToolRail({
   activeTool,
   color,
   thickness,
+  strokePattern,
   assistanceMode,
   onToolChange,
   onColorChange,
   onThicknessChange,
+  onStrokePatternChange,
   onAssistanceModeChange,
+  onReplayOnboarding,
 }: ToolRailProps) {
   const [collapsed, setCollapsed] = useState(false)
 
@@ -134,7 +148,7 @@ export function ToolRail({
             </ToolButton>
           }
         />
-        <PopoverContent side="top" align="center" className="w-64 gap-4 p-4">
+        <PopoverContent side="top" align="center" className="w-72 gap-4 p-4">
           <PopoverHeader>
             <PopoverTitle>Épaisseur du trait</PopoverTitle>
             <PopoverDescription>
@@ -173,81 +187,134 @@ export function ToolRail({
               </Button>
             ))}
           </div>
+          <div className="stroke-pattern-field">
+            <span className="text-muted-foreground text-xs font-medium">
+              Style du trait
+            </span>
+            <ToggleGroup
+              value={[strokePattern]}
+              onValueChange={(nextValue) => {
+                const nextPattern = nextValue[0]
+                if (nextPattern) {
+                  onStrokePatternChange(nextPattern as StrokePattern)
+                }
+              }}
+              variant="outline"
+              size="sm"
+              spacing={1}
+              aria-label="Style du trait"
+              className="w-full"
+            >
+              {strokePatterns.map((pattern) => (
+                <ToggleGroupItem
+                  key={pattern.value}
+                  value={pattern.value}
+                  aria-label={pattern.label}
+                  data-gesture-control=""
+                  className="stroke-pattern-option flex-1"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="stroke-pattern-option__preview"
+                    data-pattern={pattern.value}
+                  />
+                  {pattern.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
         </PopoverContent>
       </Popover>
 
-      <div className="command-dock__extended">
-        <Separator orientation="vertical" className="command-dock__separator" />
-        <ToggleGroup
-          value={[assistanceMode]}
-          onValueChange={(nextValue) => {
-            const nextMode = nextValue[0]
-            if (nextMode) {
-              onAssistanceModeChange(nextMode as StrokeAssistanceMode)
-            }
-          }}
-          variant="default"
-          size="sm"
-          spacing={1}
-          aria-label="Mode de précision"
-          className="command-dock__precision"
-        >
-          {assistanceModes.map(({ value, label, description, Icon }) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              aria-label={`${label} — ${description}`}
-              title={description}
-              data-gesture-control=""
-              data-onboarding-target={value === "shapes" ? "shapes" : undefined}
-              className="command-dock__precision-option"
-            >
-              <Icon aria-hidden="true" />
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-
-        <Separator orientation="vertical" className="command-dock__separator" />
-      </div>
-
       <div
-        className="command-dock__colors command-dock__extended"
-        aria-label="Couleurs du trait"
+        className="command-dock__extended"
+        aria-hidden={collapsed || undefined}
       >
-        {drawingColors.map((drawingColor) => (
-          <ToolButton
-            key={drawingColor.value}
-            label={drawingColor.name}
-            tooltipSide="top"
-            variant="ghost"
-            aria-pressed={color === drawingColor.value}
-            className="command-dock__color"
-            data-onboarding-target={
-              drawingColor.value === "#238554" ? "color" : undefined
-            }
-            onClick={() => {
-              onColorChange(drawingColor.value)
-              onToolChange("pen")
+        <div className="command-dock__extended-inner">
+          <Separator
+            orientation="vertical"
+            className="command-dock__separator"
+          />
+          <ToggleGroup
+            value={[assistanceMode]}
+            onValueChange={(nextValue) => {
+              const nextMode = nextValue[0]
+              if (nextMode) {
+                onAssistanceModeChange(nextMode as StrokeAssistanceMode)
+              }
             }}
+            variant="default"
+            size="sm"
+            spacing={1}
+            aria-label="Mode de précision"
+            className="command-dock__precision"
           >
-            <span className="command-dock__color-swatch">
-              <Circle
-                aria-hidden="true"
-                className={`${drawingColor.className} fill-current stroke-current`}
-              />
-              {color === drawingColor.value ? (
-                <Check
-                  aria-hidden="true"
-                  className="command-dock__color-check"
-                />
-              ) : null}
-            </span>
-          </ToolButton>
-        ))}
+            {assistanceModes.map(({ value, label, description, Icon }) => (
+              <ToggleGroupItem
+                key={value}
+                value={value}
+                aria-label={`${label} — ${description}`}
+                title={description}
+                data-gesture-control=""
+                data-onboarding-target={
+                  value === "shapes" ? "shapes" : undefined
+                }
+                className="command-dock__precision-option"
+              >
+                <Icon aria-hidden="true" />
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+
+          <Separator
+            orientation="vertical"
+            className="command-dock__separator"
+          />
+          <div className="command-dock__colors" aria-label="Couleurs du trait">
+            {drawingColors.map((drawingColor) => (
+              <ToolButton
+                key={drawingColor.value}
+                label={drawingColor.name}
+                tooltipSide="top"
+                variant="ghost"
+                aria-pressed={color === drawingColor.value}
+                className="command-dock__color"
+                data-onboarding-target={
+                  drawingColor.value === "#238554" ? "color" : undefined
+                }
+                onClick={() => {
+                  onColorChange(drawingColor.value)
+                  onToolChange("pen")
+                }}
+              >
+                <span className="command-dock__color-swatch">
+                  <Circle
+                    aria-hidden="true"
+                    className={`${drawingColor.className} fill-current stroke-current`}
+                  />
+                  {color === drawingColor.value ? (
+                    <Check
+                      aria-hidden="true"
+                      className="command-dock__color-check"
+                    />
+                  ) : null}
+                </span>
+              </ToolButton>
+            ))}
+          </div>
+        </div>
       </div>
 
       <Separator orientation="vertical" className="command-dock__separator" />
+      <ToolButton
+        label="Revoir le tutoriel"
+        tooltipSide="top"
+        variant="ghost"
+        onClick={onReplayOnboarding}
+      >
+        <BookOpen aria-hidden="true" />
+      </ToolButton>
       <ToolButton
         label={collapsed ? "Déployer la palette" : "Réduire la palette"}
         tooltipSide="top"

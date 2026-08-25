@@ -115,6 +115,14 @@ export class TwoLayerCanvasRenderer {
     context.lineWidth = stroke.width * Math.min(this.#width, this.#height)
     context.lineCap = "round"
     context.lineJoin = "round"
+    const dashUnit = Math.max(2, context.lineWidth)
+    context.setLineDash(
+      stroke.pattern === "dashed"
+        ? [dashUnit * 3, dashUnit * 2]
+        : stroke.pattern === "dotted"
+          ? [0, dashUnit * 2]
+          : [],
+    )
 
     if (rest.length === 0) {
       context.beginPath()

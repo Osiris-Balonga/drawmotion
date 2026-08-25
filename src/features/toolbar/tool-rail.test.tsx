@@ -10,11 +10,14 @@ function renderToolRail() {
     activeTool: "pen" as const,
     color: "#17171c" as const,
     thickness: 8,
+    strokePattern: "solid" as const,
     assistanceMode: "stabilized" as const,
     onToolChange: vi.fn(),
     onColorChange: vi.fn(),
     onThicknessChange: vi.fn(),
+    onStrokePatternChange: vi.fn(),
     onAssistanceModeChange: vi.fn(),
+    onReplayOnboarding: vi.fn(),
   }
   render(
     <AppProviders>
@@ -68,5 +71,35 @@ describe("ToolRail", () => {
     expect(preset).toHaveAttribute("data-gesture-control")
     await user.click(preset)
     expect(props.onThicknessChange).toHaveBeenCalledWith(12)
+
+    await user.click(screen.getByRole("button", { name: "Pointillé" }))
+    expect(props.onStrokePatternChange).toHaveBeenCalledWith("dotted")
+  })
+
+  it("keeps tutorial replay inside the unified dock", async () => {
+    const user = userEvent.setup()
+    const props = renderToolRail()
+
+    await user.click(screen.getByRole("button", { name: "Revoir le tutoriel" }))
+
+    expect(props.onReplayOnboarding).toHaveBeenCalledOnce()
+  })
+
+  it("collapses the optional controls without removing them", async () => {
+    const user = userEvent.setup()
+    renderToolRail()
+
+    await user.click(screen.getByRole("button", { name: "Réduire la palette" }))
+
+    expect(
+      screen.getByRole("complementary", { name: "Outils de dessin" }),
+    ).toHaveAttribute("data-collapsed", "true")
+    expect(document.querySelector(".command-dock__extended")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    )
+    expect(
+      screen.getByRole("button", { name: "Déployer la palette" }),
+    ).toBeInTheDocument()
   })
 })

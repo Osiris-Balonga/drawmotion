@@ -90,12 +90,33 @@
   border-radius: var(--radius-xl);
   box-shadow: 0 0.75rem 2rem oklch(0.06 0.01 286 / 24%);
   transform: translateX(-50%);
+  transition: box-shadow var(--duration-state) var(--ease-out-quart);
 }
 
 .command-dock__group,
-.command-dock__extended,
 .command-dock__colors {
   display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.command-dock__extended {
+  max-width: 32rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    max-width 320ms var(--ease-out-quart),
+    opacity 220ms var(--ease-out-quart),
+    transform 260ms var(--ease-out-quart),
+    visibility 0s;
+}
+
+.command-dock__extended-inner {
+  display: flex;
+  width: max-content;
   align-items: center;
   gap: var(--space-xs);
 }
@@ -120,6 +141,31 @@
   max-width: 1.375rem;
   background: currentColor;
   border-radius: 999px;
+}
+
+.stroke-pattern-field {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.stroke-pattern-option {
+  min-width: 4.5rem;
+}
+
+.stroke-pattern-option__preview {
+  display: block;
+  width: 1.25rem;
+  height: 0;
+  color: currentColor;
+  border-top: 0.125rem solid currentColor;
+}
+
+.stroke-pattern-option__preview[data-pattern="dashed"] {
+  border-top-style: dashed;
+}
+
+.stroke-pattern-option__preview[data-pattern="dotted"] {
+  border-top-style: dotted;
 }
 
 .command-dock__precision-option[data-pressed] {
@@ -161,11 +207,20 @@
 }
 
 .command-dock__collapse-icon {
-  transition: transform var(--duration-state) var(--ease-out-quart);
+  transition: transform 280ms var(--ease-out-quart);
 }
 
 .tool-rail[data-collapsed] .command-dock__extended {
-  display: none;
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(0.5rem);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    max-width 280ms cubic-bezier(0.4, 0, 1, 1),
+    opacity 200ms cubic-bezier(0.4, 0, 1, 1),
+    transform 240ms cubic-bezier(0.4, 0, 1, 1),
+    visibility 0s 280ms;
 }
 
 .tool-rail[data-collapsed] .command-dock__collapse-icon {
@@ -179,7 +234,7 @@
   z-index: var(--z-floating-controls);
   display: grid;
   width: 18rem;
-  justify-items: center;
+  justify-items: end;
   gap: var(--space-sm);
 }
 
@@ -213,7 +268,7 @@ button.camera-preview__viewport:not(:disabled):hover {
 }
 
 button.camera-preview__viewport:not(:disabled):active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 button.camera-preview__viewport:focus-visible {
@@ -376,6 +431,20 @@ button.camera-preview__viewport:disabled {
   background: var(--shell-raised);
   border-radius: var(--radius-xl);
   box-shadow: 0 1rem 2rem oklch(0.06 0.01 286 / 24%);
+  animation: gesture-coach-enter 240ms var(--ease-out-quart);
+}
+
+@keyframes gesture-coach-enter {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(0.75rem) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
 }
 
 .gesture-coach__actions {
@@ -529,17 +598,6 @@ button.camera-preview__viewport:disabled {
   height: 1.5rem;
 }
 
-.gesture-review-action {
-  position: absolute;
-  right: var(--space-xl);
-  bottom: 6.5rem;
-  z-index: var(--z-floating-controls);
-  box-shadow: 0 0.25rem 0.75rem oklch(0.06 0.01 286 / 18%);
-  transition-property: transform;
-  transition-duration: var(--duration-fast);
-  transition-timing-function: var(--ease-out-quart);
-}
-
 .shape-assistance-feedback {
   position: absolute;
   top: 5.75rem;
@@ -558,6 +616,20 @@ button.camera-preview__viewport:disabled {
   border-radius: var(--radius-xl);
   box-shadow: 0 0.25rem 0.5rem oklch(0.06 0.01 286 / 20%);
   transform: translateX(-50%);
+  animation: shape-feedback-enter 220ms var(--ease-out-quart);
+}
+
+@keyframes shape-feedback-enter {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateX(-50%) translateY(-0.5rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 .skip-link {
