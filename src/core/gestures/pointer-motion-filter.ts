@@ -9,7 +9,7 @@ export type PointerMotionFilterOptions = {
   timeConstantMs?: number
 }
 
-const DEFAULT_TIME_CONSTANT_MS = 45
+const DEFAULT_TIME_CONSTANT_MS = 70
 
 export class PointerMotionFilter {
   readonly #timeConstantMs: number

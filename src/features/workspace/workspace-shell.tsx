@@ -7,6 +7,7 @@ import {
   type GestureMachineState,
 } from "@/core/gestures/gesture-state-machine"
 import { PointerMotionFilter } from "@/core/gestures/pointer-motion-filter"
+import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
@@ -40,19 +41,20 @@ export function WorkspaceShell() {
   const handleGestureFrame = useCallback(
     (result: HandTrackingResult, gesture: GestureKind) => {
       const bounds = stageRef.current?.getBoundingClientRect()
-      const indexTip = result.hands[0]?.landmarks[8]
+      const hand = result.hands[0] ?? null
+      const gesturePointer = selectGesturePointer(hand, gesture)
       if (!bounds) return
-      const mapped = indexTip
-        ? mapMirroredCameraPointToCanvas(indexTip, bounds)
-        : null
       const filtered = pointerFilterRef.current.update(
-        mapped,
+        gesturePointer,
         result.timestampMs,
         gesture !== "uncertain" && gesture !== "tracking-lost",
       )
+      const mapped = filtered.point
+        ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
+        : null
       const transition = transitionGestureState(gestureStateRef.current, {
         gesture,
-        point: filtered.reliable ? filtered.point : null,
+        point: filtered.reliable ? mapped : null,
         timestampMs: result.timestampMs,
       })
       gestureStateRef.current = transition.state
