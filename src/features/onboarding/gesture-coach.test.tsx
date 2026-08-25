@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { createOnboardingState } from "./onboarding-machine"
-import { GestureCoach } from "./gesture-coach"
+import { GestureCoach, OnboardingPractice } from "./gesture-coach"
 
 describe("GestureCoach", () => {
   it.each([
@@ -49,5 +49,31 @@ describe("GestureCoach", () => {
 
     expect(onBack).toHaveBeenCalledOnce()
     expect(onSkip).toHaveBeenCalledOnce()
+  })
+
+  it("shows completed and active cursor targets", () => {
+    const state = {
+      ...createOnboardingState("cursor"),
+      cursorTarget: 1,
+    }
+    const { container } = render(<OnboardingPractice state={state} />)
+
+    expect(container.querySelector('[data-complete="true"]')).toHaveTextContent(
+      "✓",
+    )
+    expect(container.querySelector('[data-active="true"]')).toHaveTextContent(
+      "2",
+    )
+  })
+
+  it("shows the drawing route only during the drawing mission", () => {
+    const { rerender } = render(
+      <OnboardingPractice state={createOnboardingState("draw")} />,
+    )
+    expect(screen.getByText("Départ")).toBeInTheDocument()
+    expect(screen.getByText("Arrivée")).toBeInTheDocument()
+
+    rerender(<OnboardingPractice state={createOnboardingState("style")} />)
+    expect(screen.queryByText("Départ")).not.toBeInTheDocument()
   })
 })
