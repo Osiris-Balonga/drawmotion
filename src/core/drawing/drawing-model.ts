@@ -6,12 +6,21 @@ export type NormalizedPoint = {
 
 export type StrokeTool = "pen" | "eraser"
 
+export type AssistedPrimitive = "line" | "circle" | "ellipse" | "rectangle"
+
+export type StrokeAssistance = {
+  primitive: AssistedPrimitive
+  confidence: number
+  originalPoints: readonly NormalizedPoint[]
+}
+
 export type Stroke = {
   id: string
   tool: StrokeTool
   color: string
   width: number
   points: readonly NormalizedPoint[]
+  assistance?: StrokeAssistance
 }
 
 export type DrawingDocument = {
