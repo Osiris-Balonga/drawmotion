@@ -1,67 +1,97 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
 import { CanvasDrawingController } from "@/core/drawing/canvas-drawing-controller"
+import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
+import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import { TwoLayerCanvasRenderer } from "@/core/drawing/two-layer-canvas-renderer"
 
 import type { DrawingIntention } from "@/core/gestures/drawing-intentions"
 
 export type DrawingCanvasHandle = {
   handleIntentions(intentions: readonly DrawingIntention[]): void
+  revertAssistance(strokeId: string): boolean
 }
 
-export const DrawingCanvas = forwardRef<DrawingCanvasHandle>(
-  function DrawingCanvas(_props, ref) {
-    const rootRef = useRef<HTMLDivElement>(null)
-    const persistentRef = useRef<HTMLCanvasElement>(null)
-    const interactionRef = useRef<HTMLCanvasElement>(null)
-    const controllerRef = useRef<CanvasDrawingController | null>(null)
+type DrawingCanvasProps = {
+  assistanceMode: StrokeAssistanceMode
+  onAssistance: (feedback: StrokeAssistanceFeedback) => void
+}
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        handleIntentions(intentions) {
-          for (const intention of intentions)
-            controllerRef.current?.handle(intention)
-        },
-      }),
-      [],
+export const DrawingCanvas = forwardRef<
+  DrawingCanvasHandle,
+  DrawingCanvasProps
+>(function DrawingCanvas(
+  { assistanceMode, onAssistance }: DrawingCanvasProps,
+  ref,
+) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const persistentRef = useRef<HTMLCanvasElement>(null)
+  const interactionRef = useRef<HTMLCanvasElement>(null)
+  const controllerRef = useRef<CanvasDrawingController | null>(null)
+  const onAssistanceRef = useRef(onAssistance)
+  const assistanceModeRef = useRef(assistanceMode)
+
+  useEffect(() => {
+    onAssistanceRef.current = onAssistance
+  }, [onAssistance])
+
+  useEffect(() => {
+    assistanceModeRef.current = assistanceMode
+    controllerRef.current?.setAssistanceMode(assistanceMode)
+  }, [assistanceMode])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      handleIntentions(intentions) {
+        for (const intention of intentions)
+          controllerRef.current?.handle(intention)
+      },
+      revertAssistance(strokeId) {
+        return controllerRef.current?.revertAssistance(strokeId) ?? false
+      },
+    }),
+    [],
+  )
+
+  useEffect(() => {
+    const root = rootRef.current
+    const persistent = persistentRef.current
+    const interaction = interactionRef.current
+    if (!root || !persistent || !interaction || !globalThis.ResizeObserver) {
+      return
+    }
+
+    const renderer = new TwoLayerCanvasRenderer(persistent, interaction)
+    const controller = new CanvasDrawingController(renderer)
+    controller.setAssistanceMode(assistanceModeRef.current)
+    controller.setAssistanceListener((feedback) =>
+      onAssistanceRef.current(feedback),
     )
-
-    useEffect(() => {
-      const root = rootRef.current
-      const persistent = persistentRef.current
-      const interaction = interactionRef.current
-      if (!root || !persistent || !interaction || !globalThis.ResizeObserver) {
-        return
-      }
-
-      const renderer = new TwoLayerCanvasRenderer(persistent, interaction)
-      const controller = new CanvasDrawingController(renderer)
-      controllerRef.current = controller
-      const observer = new ResizeObserver(([entry]) => {
-        if (!entry) return
-        const bounds = root.getBoundingClientRect()
-        controller.setBounds({
-          left: bounds.left,
-          top: bounds.top,
-          width: bounds.width,
-          height: bounds.height,
-        })
+    controllerRef.current = controller
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return
+      const bounds = root.getBoundingClientRect()
+      controller.setBounds({
+        left: bounds.left,
+        top: bounds.top,
+        width: bounds.width,
+        height: bounds.height,
       })
-      observer.observe(root)
+    })
+    observer.observe(root)
 
-      return () => {
-        observer.disconnect()
-        controllerRef.current = null
-        renderer.dispose()
-      }
-    }, [])
+    return () => {
+      observer.disconnect()
+      controllerRef.current = null
+      renderer.dispose()
+    }
+  }, [])
 
-    return (
-      <div ref={rootRef} className="drawing-canvas" aria-hidden="true">
-        <canvas ref={persistentRef} className="drawing-canvas__layer" />
-        <canvas ref={interactionRef} className="drawing-canvas__layer" />
-      </div>
-    )
-  },
-)
+  return (
+    <div ref={rootRef} className="drawing-canvas" aria-hidden="true">
+      <canvas ref={persistentRef} className="drawing-canvas__layer" />
+      <canvas ref={interactionRef} className="drawing-canvas__layer" />
+    </div>
+  )
+})
