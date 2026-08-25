@@ -22,6 +22,18 @@ describe("mapMirroredCameraPointToCanvas", () => {
       ),
     ).toEqual({ x: 100, y: 50 })
   })
+
+  it("maps a comfortable inner camera region across the full canvas", () => {
+    const bounds = { left: 0, top: 0, width: 1000, height: 500 }
+    const region = { left: 0.1, right: 0.9, top: 0.2, bottom: 0.8 }
+
+    expect(
+      mapMirroredCameraPointToCanvas({ x: 0.1, y: 0.2 }, bounds, region),
+    ).toEqual({ x: 1000, y: 0 })
+    expect(
+      mapMirroredCameraPointToCanvas({ x: 0.9, y: 0.8 }, bounds, region),
+    ).toEqual({ x: 0, y: 500 })
+  })
 })
 
 describe("PointerMotionFilter", () => {
