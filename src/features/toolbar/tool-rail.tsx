@@ -8,6 +8,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import {
@@ -98,6 +99,24 @@ export function ToolRail({
               }
             }}
           />
+          <div
+            className="grid grid-cols-4 gap-2"
+            aria-label="Épaisseurs rapides"
+          >
+            {[4, 8, 12, 18].map((preset) => (
+              <Button
+                key={preset}
+                type="button"
+                size="sm"
+                variant={thickness === preset ? "default" : "outline"}
+                aria-pressed={thickness === preset}
+                data-gesture-control=""
+                onClick={() => onThicknessChange(preset)}
+              >
+                {preset} px
+              </Button>
+            ))}
+          </div>
         </PopoverContent>
       </Popover>
 
