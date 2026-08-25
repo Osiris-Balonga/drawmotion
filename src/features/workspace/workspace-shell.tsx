@@ -8,10 +8,20 @@ import {
 } from "@/core/gestures/gesture-state-machine"
 import { PointerMotionFilter } from "@/core/gestures/pointer-motion-filter"
 import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
-import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
+import {
+  COMFORTABLE_CAMERA_REGION,
+  mapMirroredCameraPointToCanvas,
+} from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
+import {
+  initialOnboardingState,
+  observeOnboardingGesture,
+  previousOnboardingStep,
+  type OnboardingState,
+  type OnboardingStep,
+} from "@/features/onboarding/onboarding-machine"
 import { ToolRail, type DrawingTool } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
 import {
@@ -30,13 +40,25 @@ const toolNames: Record<DrawingTool, string> = {
 
 export function WorkspaceShell() {
   const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
-  const [coachStep, setCoachStep] = useState(0)
+  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(0)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
   const gestureStateRef = useRef<GestureMachineState>(
     initialGestureMachineState,
   )
+  const onboardingStateRef = useRef<OnboardingState>(initialOnboardingState)
+
+  const restartOnboarding = useCallback(() => {
+    onboardingStateRef.current = initialOnboardingState
+    setOnboardingStep(0)
+  }, [])
+
+  const goBackOnboarding = useCallback(() => {
+    const previous = previousOnboardingStep(onboardingStateRef.current)
+    onboardingStateRef.current = previous
+    setOnboardingStep(previous.step)
+  }, [])
 
   const handleGestureFrame = useCallback(
     (result: HandTrackingResult, gesture: GestureKind) => {
@@ -44,14 +66,27 @@ export function WorkspaceShell() {
       const hand = result.hands[0] ?? null
       const gesturePointer = selectGesturePointer(hand, gesture)
       if (!bounds) return
+      const onboarding = observeOnboardingGesture(
+        onboardingStateRef.current,
+        gesture,
+      )
+      onboardingStateRef.current = onboarding
+      if (onboarding.step !== onboardingStep) {
+        setOnboardingStep(onboarding.step)
+      }
       const filtered = pointerFilterRef.current.update(
         gesturePointer,
         result.timestampMs,
         gesture !== "uncertain" && gesture !== "tracking-lost",
       )
       const mapped = filtered.point
-        ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
+        ? mapMirroredCameraPointToCanvas(
+            filtered.point,
+            bounds,
+            COMFORTABLE_CAMERA_REGION,
+          )
         : null
+      if (onboarding.step < 3) return
       const transition = transitionGestureState(gestureStateRef.current, {
         gesture,
         point: filtered.reliable ? mapped : null,
@@ -60,7 +95,7 @@ export function WorkspaceShell() {
       gestureStateRef.current = transition.state
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [],
+    [onboardingStep],
   )
 
   return (
@@ -83,8 +118,17 @@ export function WorkspaceShell() {
           <div className="sr-only" aria-live="polite">
             {toolNames[activeTool]} sélectionné — simulation
           </div>
-          <CameraPreview onGestureFrame={handleGestureFrame} />
-          <GestureCoach step={coachStep} onStepChange={setCoachStep} />
+          <CameraPreview
+            calibrating={onboardingStep < 3}
+            onGestureFrame={handleGestureFrame}
+          />
+          {onboardingStep < 3 ? (
+            <GestureCoach
+              step={onboardingStep as 0 | 1 | 2}
+              onBack={goBackOnboarding}
+              onRestart={restartOnboarding}
+            />
+          ) : null}
         </section>
       </main>
     </div>

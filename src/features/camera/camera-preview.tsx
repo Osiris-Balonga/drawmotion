@@ -24,6 +24,7 @@ type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
   trackerFactory?: HandTrackerFactory
   onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void
+  calibrating?: boolean
 }
 
 const trackingContent = {
@@ -77,6 +78,7 @@ export function CameraPreview({
   adapterFactory,
   trackerFactory,
   onGestureFrame,
+  calibrating = false,
 }: CameraPreviewProps) {
   const {
     devices,
@@ -97,6 +99,7 @@ export function CameraPreview({
     videoRef,
     trackerFactory,
     onGestureFrame,
+    calibrating ? "contain" : "cover",
   )
   const trackingStatus = trackingContent[trackingState]
   const error =
@@ -108,11 +111,14 @@ export function CameraPreview({
       : null
 
   return (
-    <section aria-label="Aperçu caméra" className="camera-preview">
+    <section
+      aria-label="Aperçu caméra"
+      className={`camera-preview${calibrating ? "camera-preview--calibrating" : ""}`}
+    >
       <div className="camera-preview__viewport">
         <video
           ref={videoRef}
-          className="camera-preview__video"
+          className={`camera-preview__video${calibrating ? "camera-preview__video--contain" : ""}`}
           aria-label="Flux vidéo local"
           autoPlay
           muted
@@ -125,6 +131,12 @@ export function CameraPreview({
           aria-label="Repères de la main détectée"
           hidden={state !== "ready"}
         />
+        {calibrating ? (
+          <div
+            className="camera-preview__calibration-guide"
+            aria-hidden="true"
+          />
+        ) : null}
 
         {state === "requesting" ? (
           <LoaderCircle aria-hidden="true" className="camera-preview__loader" />

@@ -28,6 +28,7 @@ export class LandmarkOverlayRenderer {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly video: HTMLVideoElement,
+    private readonly fit: "cover" | "contain" = "cover",
   ) {}
 
   render(result: HandTrackingResult): void {
@@ -90,10 +91,12 @@ export class LandmarkOverlayRenderer {
   private mapMirroredPoint(x: number, y: number) {
     const sourceWidth = Math.max(1, this.video.videoWidth)
     const sourceHeight = Math.max(1, this.video.videoHeight)
-    const scale = Math.max(
+    const scales = [
       this.canvas.width / sourceWidth,
       this.canvas.height / sourceHeight,
-    )
+    ]
+    const scale =
+      this.fit === "contain" ? Math.min(...scales) : Math.max(...scales)
     const offsetX = (this.canvas.width - sourceWidth * scale) / 2
     const offsetY = (this.canvas.height - sourceHeight * scale) / 2
 

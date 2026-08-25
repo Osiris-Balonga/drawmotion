@@ -90,6 +90,28 @@
   transform: scaleX(-1);
 }
 
+.camera-preview--calibrating {
+  width: 24rem;
+}
+
+.camera-preview--calibrating .camera-preview__viewport {
+  width: 22rem;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-xl);
+}
+
+.camera-preview__video--contain {
+  object-fit: contain;
+}
+
+.camera-preview__calibration-guide {
+  position: absolute;
+  inset: 10% 12%;
+  pointer-events: none;
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-md);
+}
+
 .camera-preview__landmarks {
   position: absolute;
   inset: 0;

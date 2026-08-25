@@ -6,28 +6,29 @@ import { Progress } from "@/components/ui/progress"
 
 const steps = [
   {
-    title: "Pincez pour commencer un trait",
-    description: "Rapprochez doucement le pouce et l’index.",
-    Icon: ScanLine,
-  },
-  {
-    title: "Déplacez la main pour dessiner",
-    description: "Gardez le pincement et guidez le curseur sur la toile.",
+    title: "Placez votre main dans le cadre",
+    description: "Déplacez-la dans la zone violette sans toucher les bords.",
     Icon: Hand,
   },
   {
+    title: "Pincez pour commencer un trait",
+    description: "Joignez franchement le pouce et l’index.",
+    Icon: ScanLine,
+  },
+  {
     title: "Ouvrez la main pour faire une pause",
-    description: "Le trait s’arrête dès que vos doigts se séparent.",
+    description: "Écartez les doigts pour terminer immédiatement le trait.",
     Icon: Pause,
   },
 ] as const
 
 type GestureCoachProps = {
-  step: number
-  onStepChange: (step: number) => void
+  step: 0 | 1 | 2
+  onBack: () => void
+  onRestart: () => void
 }
 
-export function GestureCoach({ step, onStepChange }: GestureCoachProps) {
+export function GestureCoach({ step, onBack, onRestart }: GestureCoachProps) {
   const current = steps[step] ?? steps[0]
   const progress = ((step + 1) / steps.length) * 100
 
@@ -53,13 +54,16 @@ export function GestureCoach({ step, onStepChange }: GestureCoachProps) {
           className="mt-3 h-1.5"
         />
       </div>
-      <Button
-        className="h-11"
-        variant="secondary"
-        onClick={() => onStepChange((step + 1) % steps.length)}
-      >
-        {step === steps.length - 1 ? "Recommencer" : "Étape suivante"}
-      </Button>
+      <div className="flex gap-2">
+        {step > 0 ? (
+          <Button className="h-11" variant="ghost" onClick={onBack}>
+            Retour
+          </Button>
+        ) : null}
+        <Button className="h-11" variant="secondary" onClick={onRestart}>
+          Recommencer
+        </Button>
+      </div>
     </section>
   )
 }

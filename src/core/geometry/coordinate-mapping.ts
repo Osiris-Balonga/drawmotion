@@ -12,6 +12,27 @@ export type CanvasPoint = {
   y: number
 }
 
+export type CameraMappingRegion = {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+export const COMFORTABLE_CAMERA_REGION: CameraMappingRegion = {
+  left: 0.12,
+  right: 0.88,
+  top: 0.1,
+  bottom: 0.9,
+}
+
+const FULL_CAMERA_REGION: CameraMappingRegion = {
+  left: 0,
+  right: 1,
+  top: 0,
+  bottom: 1,
+}
+
 function clampUnit(value: number) {
   return Math.min(1, Math.max(0, value))
 }
@@ -19,9 +40,16 @@ function clampUnit(value: number) {
 export function mapMirroredCameraPointToCanvas(
   point: Pick<NormalizedLandmark, "x" | "y">,
   bounds: CanvasBounds,
+  region: CameraMappingRegion = FULL_CAMERA_REGION,
 ): CanvasPoint {
+  const normalizedX = clampUnit(
+    (point.x - region.left) / (region.right - region.left),
+  )
+  const normalizedY = clampUnit(
+    (point.y - region.top) / (region.bottom - region.top),
+  )
   return {
-    x: bounds.left + (1 - clampUnit(point.x)) * bounds.width,
-    y: bounds.top + clampUnit(point.y) * bounds.height,
+    x: bounds.left + (1 - normalizedX) * bounds.width,
+    y: bounds.top + normalizedY * bounds.height,
   }
 }
