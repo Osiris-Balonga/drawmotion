@@ -3,6 +3,10 @@ export const GESTURE_THRESHOLDS = {
   pinchEnterRatio: 0.18,
   /** Larger release boundary that prevents chatter around pinch entry. */
   pinchExitRatio: 0.24,
+  /** Drawing release boundary, widened to tolerate hand rotation mid-stroke. */
+  drawingPinchExitRatio: 0.34,
+  /** Time reserved for a pinched hand to recover before ending the stroke. */
+  drawingReleaseGraceMs: 150,
   /** Fingertip must exceed its PIP-to-wrist distance by this factor. */
   fingerExtensionRatio: 1.12,
   /** Index through little finger count needed for an open hand. */

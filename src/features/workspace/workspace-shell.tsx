@@ -8,6 +8,7 @@ import {
 } from "@/core/gestures/gesture-state-machine"
 import { PointerMotionFilter } from "@/core/gestures/pointer-motion-filter"
 import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
+import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
@@ -77,7 +78,7 @@ export function WorkspaceShell() {
       result: HandTrackingResult,
       gesture: GestureKind,
       quality: TrackingQuality,
-      pinchActive: boolean,
+      pinchPhase: PinchPhase,
     ) => {
       const bounds = stageRef.current?.getBoundingClientRect()
       const hand = result.hands[0] ?? null
@@ -101,20 +102,22 @@ export function WorkspaceShell() {
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
       if (onboarding.step < 3) return
-      const drawingGesture: GestureKind = pinchActive
-        ? "pinch"
-        : quality === "lost"
+      const drawingGesture: GestureKind =
+        quality === "lost"
           ? "tracking-lost"
           : quality === "uncertain"
             ? "uncertain"
-            : gesture === "fist"
-              ? "fist"
-              : "open-hand"
+            : pinchPhase !== "released"
+              ? "pinch"
+              : gesture === "fist"
+                ? "fist"
+                : "open-hand"
       const transition = transitionGestureState(gestureStateRef.current, {
         gesture: drawingGesture,
         point: filtered.reliable ? mapped : null,
         timestampMs: result.timestampMs,
         continuous: !filtered.discontinuity,
+        pinchPhase,
       })
       gestureStateRef.current = transition.state
       drawingRef.current?.handleIntentions(transition.intentions)

@@ -4,6 +4,7 @@ import { DRAWING_INTENTION_VERSION } from "./drawing-intentions"
 import {
   initialGestureMachineState,
   transitionGestureState,
+  type GestureMachineState,
 } from "./gesture-state-machine"
 
 describe("transitionGestureState", () => {
@@ -60,6 +61,111 @@ describe("transitionGestureState", () => {
       "PAUSE",
     ])
     expect(transition.state.mode).toBe("paused")
+  })
+
+  it("buffers a provisional release and commits it when pinch recovers", () => {
+    const started = transitionGestureState(initialGestureMachineState, {
+      gesture: "pinch",
+      pinchPhase: "active",
+      point: { x: 10, y: 20 },
+      timestampMs: 0,
+    })
+    const firstPending = transitionGestureState(started.state, {
+      gesture: "pinch",
+      pinchPhase: "pending-release",
+      point: { x: 20, y: 30 },
+      timestampMs: 50,
+    })
+    const secondPending = transitionGestureState(firstPending.state, {
+      gesture: "pinch",
+      pinchPhase: "pending-release",
+      point: { x: 30, y: 40 },
+      timestampMs: 100,
+    })
+    const recovered = transitionGestureState(secondPending.state, {
+      gesture: "pinch",
+      pinchPhase: "active",
+      point: { x: 40, y: 50 },
+      timestampMs: 120,
+    })
+
+    expect(firstPending.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+    ])
+    expect(secondPending.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+    ])
+    expect(recovered.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+      "DRAW_MOVE",
+      "DRAW_MOVE",
+      "DRAW_MOVE",
+    ])
+    expect(
+      recovered.intentions
+        .filter(({ type }) => type === "DRAW_MOVE")
+        .map((intention) => ("point" in intention ? intention.point : null)),
+    ).toEqual([
+      { x: 20, y: 30 },
+      { x: 30, y: 40 },
+      { x: 40, y: 50 },
+    ])
+    expect(recovered.state.pendingReleasePoints).toBeUndefined()
+  })
+
+  it("discards provisional points when release is confirmed", () => {
+    const drawing = {
+      mode: "drawing" as const,
+      lastPoint: { x: 10, y: 20 },
+      interruption: "release" as const,
+      interruptionFrames: 0,
+      pendingReleasePoints: [{ point: { x: 80, y: 90 }, timestampMs: 100 }],
+    }
+    const released = transitionGestureState(drawing, {
+      gesture: "open-hand",
+      pinchPhase: "released",
+      point: { x: 100, y: 110 },
+      timestampMs: 180,
+    })
+
+    expect(released.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+      "DRAW_END",
+      "PAUSE",
+    ])
+    expect(released.intentions).toContainEqual({
+      version: DRAWING_INTENTION_VERSION,
+      type: "DRAW_END",
+      point: { x: 10, y: 20 },
+      timestampMs: 180,
+    })
+    expect(released.state.pendingReleasePoints).toBeUndefined()
+  })
+
+  it("still ends a pending release when tracking is lost", () => {
+    let state: GestureMachineState = {
+      mode: "drawing" as const,
+      lastPoint: { x: 10, y: 20 },
+      interruption: "release" as const,
+      interruptionFrames: 0,
+      pendingReleasePoints: [{ point: { x: 20, y: 30 }, timestampMs: 100 }],
+    }
+    const intentionTypes: string[] = []
+
+    for (const timestampMs of [116, 132, 148]) {
+      const transition = transitionGestureState(state, {
+        gesture: "tracking-lost",
+        pinchPhase: "pending-release",
+        point: null,
+        timestampMs,
+      })
+      state = transition.state
+      intentionTypes.push(...transition.intentions.map(({ type }) => type))
+    }
+
+    expect(intentionTypes).toEqual(["DRAW_END", "TRACKING_LOST"])
+    expect(state).toMatchObject({ mode: "lost", lastPoint: { x: 10, y: 20 } })
+    expect(state.pendingReleasePoints).toBeUndefined()
   })
 
   it("ends a stroke once and never extrapolates on tracking loss", () => {

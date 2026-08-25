@@ -4,7 +4,7 @@ import {
   classifyGesture,
   type GestureKind,
 } from "@/core/gestures/gesture-classifier"
-import { PinchDetector } from "@/core/gestures/pinch-detector"
+import { PinchDetector, type PinchPhase } from "@/core/gestures/pinch-detector"
 import type {
   HandTrackerMetrics,
   HandTrackerPort,
@@ -28,7 +28,7 @@ export type GestureFrameListener = (
   result: HandTrackingResult,
   gesture: GestureKind,
   quality: TrackingQuality,
-  pinchActive: boolean,
+  pinchPhase: PinchPhase,
 ) => void
 
 function createTracker(onMetrics: (metrics: HandTrackerMetrics) => void) {
@@ -44,6 +44,7 @@ export function useHandTracking(
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<HandTrackingState>("idle")
   const [gesture, setGesture] = useState<GestureKind>("tracking-lost")
+  const [pinchPhase, setPinchPhase] = useState<PinchPhase>("released")
   const [metrics, setMetrics] = useState<HandTrackerMetrics | null>(null)
   const onGestureFrameRef = useRef(onGestureFrame)
 
@@ -65,6 +66,7 @@ export function useHandTracking(
 
     let active = true
     let previousGesture: GestureKind = "tracking-lost"
+    let previousPinchPhase: PinchPhase = "released"
     let ambiguousFrames = 0
     const pinchDetector = new PinchDetector()
     const renderer = new LandmarkOverlayRenderer(canvas, video)
@@ -91,7 +93,12 @@ export function useHandTracking(
           const pinch = pinchDetector.update(
             result.hands[0] ?? null,
             quality === "reliable",
+            result.timestampMs,
           )
+          if (pinch.phase !== previousPinchPhase) {
+            previousPinchPhase = pinch.phase
+            setPinchPhase(pinch.phase)
+          }
           if (
             classification.kind === "uncertain" ||
             classification.kind === "tracking-lost"
@@ -106,10 +113,16 @@ export function useHandTracking(
             result,
             classification.kind,
             quality,
-            pinch.active,
+            pinch.phase,
           )
+          const displayedGesture: GestureKind =
+            quality === "lost"
+              ? "tracking-lost"
+              : pinch.phase !== "released"
+                ? "pinch"
+                : classification.kind
           setGesture((current) =>
-            current === classification.kind ? current : classification.kind,
+            current === displayedGesture ? current : displayedGesture,
           )
           setState((current) => (current === quality ? current : quality))
         }
@@ -123,8 +136,10 @@ export function useHandTracking(
 
     queueMicrotask(() => {
       if (active) {
+        previousPinchPhase = "released"
         setState("initializing")
         setGesture("tracking-lost")
+        setPinchPhase("released")
         setMetrics(null)
       }
     })
@@ -158,6 +173,7 @@ export function useHandTracking(
     canvasRef,
     gesture: enabled ? gesture : "tracking-lost",
     metrics: enabled ? metrics : null,
+    pinchPhase: enabled ? pinchPhase : "released",
     state: enabled ? state : "idle",
   }
 }
