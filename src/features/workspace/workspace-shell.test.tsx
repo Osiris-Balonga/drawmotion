@@ -52,33 +52,22 @@ describe("WorkspaceShell", () => {
     ).toBeInTheDocument()
   })
 
-  it("rend les trois étapes du tutoriel simulé accessibles", async () => {
-    const user = userEvent.setup()
+  it("présente la calibration réelle avant le dessin", () => {
     renderWorkspace()
 
-    const nextStep = screen.getByRole("button", { name: "Étape suivante" })
     expect(
       screen.getByRole("progressbar", {
         name: "Progression du tutoriel : étape 1 sur 3",
       }),
     ).toBeInTheDocument()
-
-    await user.click(nextStep)
     expect(
       screen.getByRole("heading", {
         level: 2,
-        name: "Déplacez la main pour dessiner",
+        name: "Placez votre main dans le cadre",
       }),
     ).toBeInTheDocument()
-
-    await user.click(nextStep)
     expect(
       screen.getByRole("button", { name: "Recommencer" }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("progressbar", {
-        name: "Progression du tutoriel : étape 3 sur 3",
-      }),
     ).toBeInTheDocument()
   })
 
