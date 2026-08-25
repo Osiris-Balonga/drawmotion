@@ -17,6 +17,7 @@ function createContext() {
     lineTo: vi.fn(),
     lineWidth: 1,
     moveTo: vi.fn(),
+    quadraticCurveTo: vi.fn(),
     restore: vi.fn(),
     save: vi.fn(),
     setTransform: vi.fn(),
@@ -127,6 +128,30 @@ describe("TwoLayerCanvasRenderer", () => {
       0,
       Math.PI * 2,
     )
+  })
+
+  it("smooths sampled paths with quadratic midpoints", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setDocument({
+      strokes: [
+        {
+          ...stroke,
+          points: [
+            { x: 0.1, y: 0.2 },
+            { x: 0.4, y: 0.6 },
+            { x: 0.8, y: 0.4 },
+          ],
+        },
+      ],
+    })
+    harness.flush()
+
+    const curve = harness.persistentContext.quadraticCurveTo.mock.calls[0]
+    expect(curve?.[0]).toBeCloseTo(80)
+    expect(curve?.[1]).toBeCloseTo(60)
+    expect(curve?.[2]).toBeCloseTo(120)
+    expect(curve?.[3]).toBeCloseTo(50)
   })
 
   it("renders eraser strokes and ignores empty stroke geometry", () => {

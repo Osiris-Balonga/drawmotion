@@ -106,8 +106,18 @@ export class TwoLayerCanvasRenderer {
     context.lineJoin = "round"
     context.beginPath()
     context.moveTo(first.x * this.#width, first.y * this.#height)
-    for (const point of rest) {
-      context.lineTo(point.x * this.#width, point.y * this.#height)
+    for (const [index, point] of rest.entries()) {
+      const next = rest[index + 1]
+      if (!next) {
+        context.lineTo(point.x * this.#width, point.y * this.#height)
+        continue
+      }
+      context.quadraticCurveTo(
+        point.x * this.#width,
+        point.y * this.#height,
+        ((point.x + next.x) / 2) * this.#width,
+        ((point.y + next.y) / 2) * this.#height,
+      )
     }
     context.stroke()
     context.restore()
@@ -132,10 +142,20 @@ export class TwoLayerCanvasRenderer {
           first.x * this.#width,
           first.y * this.#height,
         )
-        for (const point of rest) {
-          this.#interactionContext.lineTo(
+        for (const [index, point] of rest.entries()) {
+          const next = rest[index + 1]
+          if (!next) {
+            this.#interactionContext.lineTo(
+              point.x * this.#width,
+              point.y * this.#height,
+            )
+            continue
+          }
+          this.#interactionContext.quadraticCurveTo(
             point.x * this.#width,
             point.y * this.#height,
+            ((point.x + next.x) / 2) * this.#width,
+            ((point.y + next.y) / 2) * this.#height,
           )
         }
         this.#interactionContext.stroke()
