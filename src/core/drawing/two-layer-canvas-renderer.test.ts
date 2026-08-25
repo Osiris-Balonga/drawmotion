@@ -1,0 +1,258 @@
+import { describe, expect, it, vi } from "vitest"
+
+import { CanvasDrawingController } from "./canvas-drawing-controller"
+import type { Stroke } from "./drawing-model"
+import { TwoLayerCanvasRenderer } from "./two-layer-canvas-renderer"
+
+function createContext() {
+  return {
+    arc: vi.fn(),
+    beginPath: vi.fn(),
+    clearRect: vi.fn(),
+    fill: vi.fn(),
+    fillStyle: "",
+    globalCompositeOperation: "source-over",
+    lineCap: "butt",
+    lineJoin: "miter",
+    lineTo: vi.fn(),
+    lineWidth: 1,
+    moveTo: vi.fn(),
+    restore: vi.fn(),
+    save: vi.fn(),
+    setTransform: vi.fn(),
+    stroke: vi.fn(),
+    strokeStyle: "",
+  }
+}
+
+function createHarness(devicePixelRatio = 2) {
+  const persistentContext = createContext()
+  const interactionContext = createContext()
+  const persistentCanvas = {
+    getContext: () => persistentContext,
+    height: 0,
+    style: { height: "", width: "" },
+    width: 0,
+  } as unknown as HTMLCanvasElement
+  const interactionCanvas = {
+    getContext: () => interactionContext,
+    height: 0,
+    style: { height: "", width: "" },
+    width: 0,
+  } as unknown as HTMLCanvasElement
+  let scheduled: FrameRequestCallback | null = null
+  const cancelFrame = vi.fn()
+  const renderer = new TwoLayerCanvasRenderer(
+    persistentCanvas,
+    interactionCanvas,
+    {
+      devicePixelRatio: () => devicePixelRatio,
+      requestFrame: (callback) => {
+        scheduled = callback
+        return 1
+      },
+      cancelFrame,
+    },
+  )
+  const flush = () => {
+    const callback = scheduled
+    scheduled = null
+    if (callback) callback(0)
+  }
+  return {
+    cancelFrame,
+    flush,
+    interactionCanvas,
+    interactionContext,
+    persistentCanvas,
+    persistentContext,
+    renderer,
+  }
+}
+
+const stroke: Stroke = {
+  id: "stroke-1",
+  tool: "pen",
+  color: "#111111",
+  width: 0.01,
+  points: [
+    { x: 0.25, y: 0.5 },
+    { x: 0.75, y: 0.5 },
+  ],
+}
+
+describe("TwoLayerCanvasRenderer", () => {
+  it("sizes both layers for high-DPI output", () => {
+    const harness = createHarness(2)
+    harness.renderer.resize(300, 200)
+
+    expect(harness.persistentCanvas.width).toBe(600)
+    expect(harness.persistentCanvas.height).toBe(400)
+    expect(harness.interactionCanvas.width).toBe(600)
+    expect(harness.persistentContext.setTransform).toHaveBeenCalledWith(
+      2,
+      0,
+      0,
+      2,
+      0,
+      0,
+    )
+  })
+
+  it("replays normalized strokes after a resize", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setDocument({ strokes: [stroke] })
+    harness.flush()
+    expect(harness.persistentContext.moveTo).toHaveBeenLastCalledWith(50, 50)
+
+    harness.renderer.resize(400, 200)
+    harness.flush()
+    expect(harness.persistentContext.moveTo).toHaveBeenLastCalledWith(100, 100)
+    expect(harness.persistentContext.lineTo).toHaveBeenLastCalledWith(300, 100)
+  })
+
+  it("coalesces pointer and preview updates into one animation frame", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setPreviewStroke(stroke)
+    harness.renderer.setPointer({ x: 30, y: 40 })
+    harness.flush()
+
+    expect(harness.interactionContext.stroke).toHaveBeenCalledOnce()
+    expect(harness.interactionContext.arc).toHaveBeenCalledWith(
+      30,
+      40,
+      6,
+      0,
+      Math.PI * 2,
+    )
+  })
+
+  it("renders eraser strokes and ignores empty stroke geometry", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(100, 100)
+    harness.renderer.setDocument({
+      strokes: [
+        { ...stroke, tool: "eraser" },
+        { ...stroke, id: "empty", points: [] },
+      ],
+    })
+    harness.flush()
+
+    expect(harness.persistentContext.globalCompositeOperation).toBe(
+      "destination-out",
+    )
+    expect(harness.persistentContext.stroke).toHaveBeenCalledOnce()
+  })
+
+  it("clears the interaction layer when pointer and preview are absent", () => {
+    const harness = createHarness(0.5)
+    harness.renderer.resize(-10, -20)
+    harness.renderer.setPointer(null)
+    harness.renderer.setPreviewStroke(null)
+    harness.flush()
+
+    expect(harness.persistentCanvas.width).toBe(0)
+    expect(harness.interactionContext.arc).not.toHaveBeenCalled()
+  })
+
+  it("cancels a scheduled frame when disposed", () => {
+    const harness = createHarness()
+    harness.renderer.resize(100, 100)
+    harness.renderer.dispose()
+    harness.renderer.dispose()
+
+    expect(harness.cancelFrame).toHaveBeenCalledOnce()
+  })
+
+  it("rejects environments without two Canvas 2D contexts", () => {
+    const unavailable = {
+      getContext: () => null,
+    } as unknown as HTMLCanvasElement
+    expect(() => new TwoLayerCanvasRenderer(unavailable, unavailable)).toThrow(
+      "Canvas 2D support",
+    )
+  })
+})
+
+describe("CanvasDrawingController", () => {
+  it("commits and replays a stroke when tracking is lost", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    controller.setBounds({ left: 100, top: 50, width: 400, height: 200 })
+
+    controller.handle({
+      version: 1,
+      type: "DRAW_START",
+      point: { x: 200, y: 100 },
+      timestampMs: 0,
+    })
+    controller.handle({
+      version: 1,
+      type: "DRAW_MOVE",
+      point: { x: 300, y: 150 },
+      timestampMs: 16,
+    })
+    controller.handle({
+      version: 1,
+      type: "TRACKING_LOST",
+      timestampMs: 32,
+    })
+
+    expect(controller.document.strokes[0]?.points).toEqual([
+      { x: 0.25, y: 0.25 },
+      { x: 0.5, y: 0.5 },
+    ])
+    controller.undo()
+    expect(controller.document.strokes).toEqual([])
+    controller.redo()
+    expect(controller.document.strokes).toHaveLength(1)
+  })
+
+  it("applies style, clamps points, and finishes explicitly", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    controller.setBounds({ left: 10, top: 20, width: 100, height: 50 })
+    controller.setStyle({ tool: "eraser", color: "#ffffff", width: 0.04 })
+    controller.handle({
+      version: 1,
+      type: "POINTER_MOVE",
+      point: { x: 60, y: 45 },
+      timestampMs: 0,
+    })
+    controller.handle({
+      version: 1,
+      type: "DRAW_START",
+      point: { x: -100, y: 500 },
+      timestampMs: 1,
+    })
+    controller.handle({
+      version: 1,
+      type: "DRAW_END",
+      point: { x: 0, y: 0 },
+      timestampMs: 2,
+    })
+
+    expect(controller.document.strokes[0]).toMatchObject({
+      tool: "eraser",
+      color: "#ffffff",
+      width: 0.04,
+      points: [{ x: 0, y: 1 }],
+    })
+  })
+
+  it("safely ignores move and pause signals without an active stroke", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    controller.handle({
+      version: 1,
+      type: "DRAW_MOVE",
+      point: { x: 1, y: 1 },
+      timestampMs: 0,
+    })
+    controller.handle({ version: 1, type: "PAUSE", timestampMs: 1 })
+
+    expect(controller.document.strokes).toEqual([])
+  })
+})
