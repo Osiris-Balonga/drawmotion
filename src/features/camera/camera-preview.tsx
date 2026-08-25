@@ -187,11 +187,13 @@ export function CameraPreview({
                 aria-label="Geste détecté"
               >
                 Geste ·{" "}
-                {pinchPhase === "active"
-                  ? "Pincement actif"
-                  : pinchPhase === "pending-release"
-                    ? "Relâchement à confirmer"
-                    : gestureLabels[gesture]}
+                {pinchPhase === "pending-entry"
+                  ? "Pincement à confirmer"
+                  : pinchPhase === "active"
+                    ? "Pincement actif"
+                    : pinchPhase === "pending-release"
+                      ? "Relâchement à confirmer"
+                      : gestureLabels[gesture]}
               </Badge>
             ) : null}
             {import.meta.env.DEV && metrics ? (

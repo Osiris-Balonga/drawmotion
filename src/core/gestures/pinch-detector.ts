@@ -34,7 +34,8 @@ export type PinchSignal = {
   ratio: number | null
 }
 
-export type PinchPhase = "released" | "active" | "pending-release"
+export type PinchPhase =
+  "released" | "pending-entry" | "active" | "pending-release"
 
 /** Keeps pinch activation independent from pointer position and tracking UI. */
 export class PinchDetector {
@@ -50,15 +51,20 @@ export class PinchDetector {
     const ratio = reliable ? measurePinchRatio(hand) : null
     if (ratio === null) {
       this.#candidateFrames = 0
+      if (this.#phase === "pending-entry") {
+        this.#phase = "released"
+      }
       return { phase: this.#phase, ratio }
     }
 
-    if (this.#phase === "released") {
+    if (this.#phase === "released" || this.#phase === "pending-entry") {
       const entering = ratio <= GESTURE_THRESHOLDS.pinchEnterRatio
       this.#candidateFrames = entering ? this.#candidateFrames + 1 : 0
       if (this.#candidateFrames >= CONFIRMATION_FRAMES) {
         this.#phase = "active"
         this.#candidateFrames = 0
+      } else {
+        this.#phase = entering ? "pending-entry" : "released"
       }
       return { phase: this.#phase, ratio }
     }
