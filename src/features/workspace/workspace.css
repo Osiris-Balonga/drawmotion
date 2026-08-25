@@ -59,6 +59,15 @@
   background: var(--border);
 }
 
+.drawing-thickness-preview {
+  display: block;
+  height: 0.125rem;
+  min-width: 0.25rem;
+  max-width: 1.375rem;
+  background: currentColor;
+  border-radius: 999px;
+}
+
 .camera-preview {
   position: absolute;
   top: var(--space-xl);

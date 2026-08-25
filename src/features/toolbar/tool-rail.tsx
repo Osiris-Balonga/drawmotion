@@ -1,27 +1,43 @@
-import { Circle, Eraser, Minus, MousePointer2, PenLine } from "lucide-react"
+import { Circle, Eraser, MousePointer2, PenLine } from "lucide-react"
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
+import {
+  drawingColors,
+  type DrawingColor,
+  type DrawingTool,
+} from "@/features/toolbar/drawing-tools"
 import { ToolButton } from "@/features/toolbar/tool-button"
-
-export type DrawingTool = "pointer" | "pen" | "eraser"
 
 type ToolRailProps = {
   activeTool: DrawingTool
+  color: DrawingColor
+  thickness: number
   onToolChange: (tool: DrawingTool) => void
+  onColorChange: (color: DrawingColor) => void
+  onThicknessChange: (thickness: number) => void
 }
 
-const colors = [
-  { name: "Encre", className: "text-canvas-foreground" },
-  { name: "Violet", className: "text-primary" },
-  { name: "Vert", className: "text-success" },
-  { name: "Orange", className: "text-warning" },
-]
-
-export function ToolRail({ activeTool, onToolChange }: ToolRailProps) {
+export function ToolRail({
+  activeTool,
+  color,
+  thickness,
+  onToolChange,
+  onColorChange,
+  onThicknessChange,
+}: ToolRailProps) {
   return (
-    <aside aria-label="Outils de dessin simulés" className="tool-rail">
+    <aside aria-label="Outils de dessin" className="tool-rail">
       <ToolButton
-        label="Pointeur simulé"
+        label="Pointeur"
         variant={activeTool === "pointer" ? "default" : "ghost"}
         aria-pressed={activeTool === "pointer"}
         onClick={() => onToolChange("pointer")}
@@ -29,7 +45,7 @@ export function ToolRail({ activeTool, onToolChange }: ToolRailProps) {
         <MousePointer2 aria-hidden="true" />
       </ToolButton>
       <ToolButton
-        label="Stylo simulé"
+        label="Stylo"
         shortcut="P"
         variant={activeTool === "pen" ? "default" : "ghost"}
         aria-pressed={activeTool === "pen"}
@@ -38,7 +54,7 @@ export function ToolRail({ activeTool, onToolChange }: ToolRailProps) {
         <PenLine aria-hidden="true" />
       </ToolButton>
       <ToolButton
-        label="Gomme simulée"
+        label="Gomme"
         shortcut="E"
         variant={activeTool === "eraser" ? "default" : "ghost"}
         aria-pressed={activeTool === "eraser"}
@@ -49,29 +65,60 @@ export function ToolRail({ activeTool, onToolChange }: ToolRailProps) {
 
       <Separator className="my-1 w-8" />
 
-      <ToolButton
-        label="Épaisseur — bientôt disponible"
-        variant="ghost"
-        disabled
-      >
-        <Minus aria-hidden="true" className="stroke-[3]" />
-      </ToolButton>
+      <Popover>
+        <PopoverTrigger
+          render={
+            <ToolButton label={`Épaisseur ${thickness} pixels`} variant="ghost">
+              <span
+                aria-hidden="true"
+                className="drawing-thickness-preview"
+                style={{ width: Math.min(22, thickness) }}
+              />
+            </ToolButton>
+          }
+        />
+        <PopoverContent side="right" align="center" className="w-64 gap-4 p-4">
+          <PopoverHeader>
+            <PopoverTitle>Épaisseur du trait</PopoverTitle>
+            <PopoverDescription>
+              {thickness} pixels à la résolution de référence
+            </PopoverDescription>
+          </PopoverHeader>
+          <Slider
+            aria-label="Épaisseur du trait"
+            min={2}
+            max={24}
+            step={2}
+            value={[thickness]}
+            onValueChange={(value) => {
+              const nextThickness = typeof value === "number" ? value : value[0]
+
+              if (nextThickness !== undefined) {
+                onThicknessChange(nextThickness)
+              }
+            }}
+          />
+        </PopoverContent>
+      </Popover>
 
       <div
         className="mt-auto flex flex-col gap-2"
-        aria-label="Couleurs simulées"
+        aria-label="Couleurs du trait"
       >
-        {colors.map((color, index) => (
+        {drawingColors.map((drawingColor) => (
           <ToolButton
-            key={color.name}
-            label={`${color.name} — sélection simulée`}
+            key={drawingColor.value}
+            label={drawingColor.name}
             variant="ghost"
-            aria-pressed={index === 0}
-            disabled={index !== 0}
+            aria-pressed={color === drawingColor.value}
+            onClick={() => {
+              onColorChange(drawingColor.value)
+              onToolChange("pen")
+            }}
           >
             <Circle
               aria-hidden="true"
-              className={`${color.className} fill-current stroke-current`}
+              className={`${drawingColor.className} fill-current stroke-current`}
             />
           </ToolButton>
         ))}
