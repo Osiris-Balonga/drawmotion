@@ -10,23 +10,22 @@ const INDEX_TIP = 8
 const MIDDLE_MCP = 9
 const CONFIRMATION_FRAMES = 2
 
-function distance(a: NormalizedLandmark, b: NormalizedLandmark) {
-  return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z)
+function projectedDistance(a: NormalizedLandmark, b: NormalizedLandmark) {
+  return Math.hypot(a.x - b.x, a.y - b.y)
 }
 
 export function measurePinchRatio(hand: TrackedHand | null) {
   if (!hand) return null
-  const landmarks =
-    hand.worldLandmarks.length >= 21 ? hand.worldLandmarks : hand.landmarks
+  const landmarks = hand.landmarks
   const wrist = landmarks[WRIST]
   const thumbTip = landmarks[THUMB_TIP]
   const indexTip = landmarks[INDEX_TIP]
   const middleMcp = landmarks[MIDDLE_MCP]
   if (!wrist || !thumbTip || !indexTip || !middleMcp) return null
 
-  const palmSize = distance(wrist, middleMcp)
+  const palmSize = projectedDistance(wrist, middleMcp)
   if (palmSize <= Number.EPSILON) return null
-  return distance(thumbTip, indexTip) / palmSize
+  return projectedDistance(thumbTip, indexTip) / palmSize
 }
 
 export type PinchSignal = {
