@@ -19,6 +19,7 @@ import {
 } from "@/features/camera/use-hand-tracking"
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
+import { cn } from "@/lib/utils"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
@@ -113,7 +114,10 @@ export function CameraPreview({
   return (
     <section
       aria-label="Aperçu caméra"
-      className={`camera-preview${calibrating ? "camera-preview--calibrating" : ""}`}
+      className={cn(
+        "camera-preview",
+        calibrating && "camera-preview--calibrating",
+      )}
     >
       <div className="camera-preview__viewport">
         <video
