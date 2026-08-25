@@ -131,10 +131,6 @@
   position: relative;
 }
 
-.command-dock__color[aria-pressed="true"] {
-  background: var(--secondary);
-}
-
 .command-dock__color-swatch {
   position: relative;
   display: grid;
@@ -198,6 +194,35 @@
   background: var(--shell-sunken);
   border: 2px solid var(--primary);
   border-radius: 50%;
+}
+
+button.camera-preview__viewport {
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
+}
+
+button.camera-preview__viewport:not(:disabled):hover {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 0.25rem oklch(0.72 0.16 293 / 18%);
+}
+
+button.camera-preview__viewport:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+button.camera-preview__viewport:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+button.camera-preview__viewport:disabled {
+  cursor: default;
 }
 
 .camera-preview__video {
