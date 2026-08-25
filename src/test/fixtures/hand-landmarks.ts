@@ -15,7 +15,7 @@ export const openHandLandmarks: NormalizedLandmark[] = Array.from(
 
 export const trackedRightHand: TrackedHand = {
   handedness: "Right",
-  confidence: 0.98,
+  handednessConfidence: 0.98,
   landmarks: openHandLandmarks,
   worldLandmarks: openHandLandmarks.map((landmark) => ({
     x: (landmark.x - 0.5) * 0.15,

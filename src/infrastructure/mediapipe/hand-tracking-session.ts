@@ -16,11 +16,17 @@ type SessionCallbacks = {
 export function classifyTrackingQuality(
   result: HandTrackingResult,
 ): TrackingQuality {
-  const confidence = result.hands[0]?.confidence
-  if (confidence === undefined) {
+  const hand = result.hands[0]
+  if (!hand) {
     return "lost"
   }
-  return confidence >= 0.75 ? "reliable" : "uncertain"
+  const hasCompleteFiniteGeometry =
+    hand.landmarks.length >= 21 &&
+    hand.landmarks.every(
+      ({ x, y, z }) =>
+        Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z),
+    )
+  return hasCompleteFiniteGeometry ? "reliable" : "uncertain"
 }
 
 export class HandTrackingSession {

@@ -70,11 +70,11 @@ export const uncertainGestureLandmarks = pose({
 
 export function handFromGestureFixture(
   landmarks: NormalizedLandmark[],
-  confidence = 0.98,
+  handednessConfidence = 0.98,
 ): TrackedHand {
   return {
     handedness: "Right",
-    confidence,
+    handednessConfidence,
     landmarks,
     worldLandmarks: landmarks,
   }

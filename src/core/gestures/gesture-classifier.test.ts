@@ -30,10 +30,10 @@ describe("classifyGesture", () => {
     )
   })
 
-  it("rejects a low-confidence hand", () => {
+  it("does not confuse handedness confidence with tracking quality", () => {
     expect(
-      classifyGesture(handFromGestureFixture(pinchGestureLandmarks, 0.64)).kind,
-    ).toBe("uncertain")
+      classifyGesture(handFromGestureFixture(pinchGestureLandmarks, 0.1)).kind,
+    ).toBe("pinch")
   })
 
   it("uses separate pinch entry and exit thresholds", () => {
