@@ -93,17 +93,38 @@ export class TwoLayerCanvasRenderer {
     }
   }
 
-  #renderStroke(stroke: Stroke) {
+  #renderStroke(
+    context: CanvasRenderingContext2D,
+    stroke: Stroke,
+    applyEraserComposite: boolean,
+  ) {
     const [first, ...rest] = stroke.points
     if (!first) return
-    const context = this.#persistentContext
     context.save()
     context.globalCompositeOperation =
-      stroke.tool === "eraser" ? "destination-out" : "source-over"
+      applyEraserComposite && stroke.tool === "eraser"
+        ? "destination-out"
+        : "source-over"
     context.strokeStyle = stroke.color
     context.lineWidth = stroke.width * Math.min(this.#width, this.#height)
     context.lineCap = "round"
     context.lineJoin = "round"
+
+    if (rest.length === 0) {
+      context.beginPath()
+      context.arc(
+        first.x * this.#width,
+        first.y * this.#height,
+        context.lineWidth / 2,
+        0,
+        Math.PI * 2,
+      )
+      context.fillStyle = stroke.color
+      context.fill()
+      context.restore()
+      return
+    }
+
     context.beginPath()
     context.moveTo(first.x * this.#width, first.y * this.#height)
     for (const [index, point] of rest.entries()) {
@@ -125,42 +146,13 @@ export class TwoLayerCanvasRenderer {
 
   #render() {
     this.#persistentContext.clearRect(0, 0, this.#width, this.#height)
-    for (const stroke of this.#document.strokes) this.#renderStroke(stroke)
+    for (const stroke of this.#document.strokes) {
+      this.#renderStroke(this.#persistentContext, stroke, true)
+    }
 
     this.#interactionContext.clearRect(0, 0, this.#width, this.#height)
     if (this.#previewStroke) {
-      const [first, ...rest] = this.#previewStroke.points
-      if (first) {
-        this.#interactionContext.save()
-        this.#interactionContext.strokeStyle = this.#previewStroke.color
-        this.#interactionContext.lineWidth =
-          this.#previewStroke.width * Math.min(this.#width, this.#height)
-        this.#interactionContext.lineCap = "round"
-        this.#interactionContext.lineJoin = "round"
-        this.#interactionContext.beginPath()
-        this.#interactionContext.moveTo(
-          first.x * this.#width,
-          first.y * this.#height,
-        )
-        for (const [index, point] of rest.entries()) {
-          const next = rest[index + 1]
-          if (!next) {
-            this.#interactionContext.lineTo(
-              point.x * this.#width,
-              point.y * this.#height,
-            )
-            continue
-          }
-          this.#interactionContext.quadraticCurveTo(
-            point.x * this.#width,
-            point.y * this.#height,
-            ((point.x + next.x) / 2) * this.#width,
-            ((point.y + next.y) / 2) * this.#height,
-          )
-        }
-        this.#interactionContext.stroke()
-        this.#interactionContext.restore()
-      }
+      this.#renderStroke(this.#interactionContext, this.#previewStroke, false)
     }
     if (!this.#pointer) return
     this.#interactionContext.beginPath()

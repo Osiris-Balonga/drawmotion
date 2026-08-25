@@ -130,6 +130,26 @@ describe("TwoLayerCanvasRenderer", () => {
     )
   })
 
+  it("renders ink on the first drawing point without waiting for movement", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setPreviewStroke({
+      ...stroke,
+      points: [{ x: 0.25, y: 0.5 }],
+    })
+    harness.flush()
+
+    expect(harness.interactionContext.arc).toHaveBeenCalledWith(
+      50,
+      50,
+      0.5,
+      0,
+      Math.PI * 2,
+    )
+    expect(harness.interactionContext.fill).toHaveBeenCalledOnce()
+    expect(harness.interactionContext.stroke).not.toHaveBeenCalled()
+  })
+
   it("smooths sampled paths with quadratic midpoints", () => {
     const harness = createHarness(1)
     harness.renderer.resize(200, 100)

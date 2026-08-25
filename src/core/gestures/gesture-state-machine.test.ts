@@ -63,6 +63,63 @@ describe("transitionGestureState", () => {
     expect(transition.state.mode).toBe("paused")
   })
 
+  it("restores the first point collected while pinch entry is confirmed", () => {
+    const pending = transitionGestureState(initialGestureMachineState, {
+      gesture: "pinch",
+      pinchPhase: "pending-entry",
+      point: { x: 10, y: 20 },
+      timestampMs: 100,
+    })
+    const started = transitionGestureState(pending.state, {
+      gesture: "pinch",
+      pinchPhase: "active",
+      point: { x: 30, y: 40 },
+      timestampMs: 200,
+    })
+
+    expect(pending.intentions.map(({ type }) => type)).toEqual(["POINTER_MOVE"])
+    expect(started.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+      "DRAW_START",
+      "DRAW_MOVE",
+    ])
+    expect(started.intentions).toContainEqual({
+      version: DRAWING_INTENTION_VERSION,
+      type: "DRAW_START",
+      point: { x: 10, y: 20 },
+      timestampMs: 100,
+    })
+    expect(started.state).toMatchObject({
+      mode: "drawing",
+      lastPoint: { x: 30, y: 40 },
+    })
+    expect(started.state.pendingEntryPoints).toBeUndefined()
+  })
+
+  it("discards an entry candidate that is not confirmed", () => {
+    const pending = transitionGestureState(initialGestureMachineState, {
+      gesture: "pinch",
+      pinchPhase: "pending-entry",
+      point: { x: 10, y: 20 },
+      timestampMs: 100,
+    })
+    const released = transitionGestureState(pending.state, {
+      gesture: "open-hand",
+      pinchPhase: "released",
+      point: { x: 20, y: 30 },
+      timestampMs: 116,
+    })
+
+    expect(released.intentions.map(({ type }) => type)).toEqual([
+      "POINTER_MOVE",
+      "PAUSE",
+    ])
+    expect(released.intentions.map(({ type }) => type)).not.toContain(
+      "DRAW_START",
+    )
+    expect(released.state.pendingEntryPoints).toBeUndefined()
+  })
+
   it("buffers a provisional release and commits it when pinch recovers", () => {
     const started = transitionGestureState(initialGestureMachineState, {
       gesture: "pinch",

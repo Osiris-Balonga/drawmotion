@@ -212,7 +212,7 @@ describe("gesture jitter and accidental activation resistance", () => {
       1,
     )
     expect(intentionTypes.filter((type) => type === "DRAW_MOVE")).toHaveLength(
-      6,
+      7,
     )
     expect(intentionTypes).not.toContain("DRAW_END")
     expect(state).toMatchObject({

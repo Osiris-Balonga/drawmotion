@@ -16,13 +16,16 @@ export type GestureMachineState = {
   lastPoint: CanvasPoint | null
   interruption: GestureInterruption
   interruptionFrames: number
+  pendingEntryPoints?: PendingGesturePoint[]
   pendingReleasePoints?: PendingReleasePoint[]
 }
 
-type PendingReleasePoint = {
+type PendingGesturePoint = {
   point: CanvasPoint
   timestampMs: number
 }
+
+type PendingReleasePoint = PendingGesturePoint
 
 export type GestureFrame = {
   gesture: GestureKind
@@ -120,6 +123,23 @@ export function transitionGestureState(
     )
   }
 
+  if (frame.pinchPhase === "pending-entry" && visiblePoint) {
+    return {
+      state: {
+        ...state,
+        pendingEntryPoints: [
+          ...(state.pendingEntryPoints ?? []),
+          { point: visiblePoint, timestampMs: frame.timestampMs },
+        ],
+      },
+      intentions,
+    }
+  }
+
+  if (frame.pinchPhase === "pending-entry") {
+    return { state, intentions }
+  }
+
   if (
     frame.pinchPhase === "pending-release" &&
     frame.gesture === "pinch" &&
@@ -160,14 +180,29 @@ export function transitionGestureState(
 
   if (frame.gesture === "pinch" && visiblePoint) {
     const drawType = state.mode === "drawing" ? "DRAW_MOVE" : "DRAW_START"
-    if (drawType === "DRAW_MOVE") {
+    if (drawType === "DRAW_START" && state.pendingEntryPoints?.length) {
+      const first = state.pendingEntryPoints[0]!
+      intentions.push(
+        pointIntention("DRAW_START", first.point, first.timestampMs),
+      )
+      for (const buffered of state.pendingEntryPoints.slice(1)) {
+        intentions.push(
+          pointIntention("DRAW_MOVE", buffered.point, buffered.timestampMs),
+        )
+      }
+      intentions.push(
+        pointIntention("DRAW_MOVE", visiblePoint, frame.timestampMs),
+      )
+    } else if (drawType === "DRAW_MOVE") {
       for (const buffered of state.pendingReleasePoints ?? []) {
         intentions.push(
           pointIntention("DRAW_MOVE", buffered.point, buffered.timestampMs),
         )
       }
+      intentions.push(pointIntention(drawType, visiblePoint, frame.timestampMs))
+    } else {
+      intentions.push(pointIntention(drawType, visiblePoint, frame.timestampMs))
     }
-    intentions.push(pointIntention(drawType, visiblePoint, frame.timestampMs))
     return {
       state: clearInterruption({ mode: "drawing", lastPoint: visiblePoint }),
       intentions,

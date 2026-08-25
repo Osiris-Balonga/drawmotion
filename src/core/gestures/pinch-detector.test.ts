@@ -14,7 +14,7 @@ describe("PinchDetector", () => {
     const rotatedPinch = handFromGestureFixture(withPinchRatio(0.3))
     const released = handFromGestureFixture(withPinchRatio(0.4))
 
-    expect(detector.update(pinched, true, 0).phase).toBe("released")
+    expect(detector.update(pinched, true, 0).phase).toBe("pending-entry")
     expect(detector.update(pinched, true, 16).phase).toBe("active")
     expect(detector.update(rotatedPinch, true, 32).phase).toBe("active")
     expect(detector.update(released, true, 48).phase).toBe("pending-release")
@@ -38,12 +38,21 @@ describe("PinchDetector", () => {
     const detector = new PinchDetector()
     const pinched = handFromGestureFixture(withPinchRatio(0.15))
 
-    expect(detector.update(pinched, true, 0).phase).toBe("released")
+    expect(detector.update(pinched, true, 0).phase).toBe("pending-entry")
     expect(detector.update(pinched, false, 16)).toEqual({
       phase: "released",
       ratio: null,
     })
-    expect(detector.update(pinched, true, 32).phase).toBe("released")
+    expect(detector.update(pinched, true, 32).phase).toBe("pending-entry")
+  })
+
+  it("cancels an unconfirmed entry without activating drawing", () => {
+    const detector = new PinchDetector()
+    const pinched = handFromGestureFixture(withPinchRatio(0.15))
+    const open = handFromGestureFixture(withPinchRatio(0.3))
+
+    expect(detector.update(pinched, true, 0).phase).toBe("pending-entry")
+    expect(detector.update(open, true, 16).phase).toBe("released")
   })
 
   it("prefers three-dimensional world landmarks for the pinch distance", () => {
