@@ -153,6 +153,13 @@
   background: var(--destructive);
 }
 
+.camera-preview__gesture {
+  color: var(--foreground);
+  background: var(--shell-raised);
+  border-color: transparent;
+  box-shadow: 0 0.125rem 0.25rem oklch(0.06 0.01 286 / 18%);
+}
+
 .camera-preview__metrics {
   color: var(--muted-foreground);
   font-family: var(--font-mono);

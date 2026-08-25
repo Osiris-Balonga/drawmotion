@@ -164,7 +164,11 @@ export function CameraPreview({
               {trackingStatus.label}
             </Badge>
             {import.meta.env.DEV ? (
-              <Badge variant="outline" aria-label="Geste détecté">
+              <Badge
+                variant="outline"
+                className="camera-preview__gesture"
+                aria-label="Geste détecté"
+              >
                 Geste · {gestureLabels[gesture]}
               </Badge>
             ) : null}
