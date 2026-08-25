@@ -108,6 +108,106 @@ function signedArea(points: readonly Point2D[]) {
   }, 0)
 }
 
+function rectangleCandidate(
+  points: readonly Point2D[],
+): PrimitiveCandidate | null {
+  const first = points[0]
+  const last = points.at(-1)
+  if (!first || !last || points.length < 12) return null
+  const diagonal = boundsDiagonal(points)
+  if (
+    diagonal < MIN_PRIMITIVE_SIZE_PX ||
+    distance(first, last) / diagonal > 0.14
+  ) {
+    return null
+  }
+
+  const center = points.reduce(
+    (sum, point) => ({ x: sum.x + point.x, y: sum.y + point.y }),
+    { x: 0, y: 0 },
+  )
+  center.x /= points.length
+  center.y /= points.length
+  const covariance = points.reduce(
+    (sum, point) => {
+      const x = point.x - center.x
+      const y = point.y - center.y
+      return { xx: sum.xx + x * x, xy: sum.xy + x * y, yy: sum.yy + y * y }
+    },
+    { xx: 0, xy: 0, yy: 0 },
+  )
+  const rotation =
+    0.5 * Math.atan2(2 * covariance.xy, covariance.xx - covariance.yy)
+  const cosRotation = Math.cos(rotation)
+  const sinRotation = Math.sin(rotation)
+  const localPoints = points.map((point) => ({
+    x: (point.x - center.x) * cosRotation + (point.y - center.y) * sinRotation,
+    y: -(point.x - center.x) * sinRotation + (point.y - center.y) * cosRotation,
+  }))
+  const minX = Math.min(...localPoints.map((point) => point.x))
+  const maxX = Math.max(...localPoints.map((point) => point.x))
+  const minY = Math.min(...localPoints.map((point) => point.y))
+  const maxY = Math.max(...localPoints.map((point) => point.y))
+  const width = maxX - minX
+  const height = maxY - minY
+  if (Math.min(width, height) < MIN_PRIMITIVE_SIZE_PX / 2) return null
+
+  const edgeCounts = [0, 0, 0, 0]
+  const meanEdgeError =
+    localPoints.reduce((sum, point) => {
+      const distances = [
+        Math.abs(point.x - minX),
+        Math.abs(point.x - maxX),
+        Math.abs(point.y - minY),
+        Math.abs(point.y - maxY),
+      ]
+      const edgeDistance = Math.min(...distances)
+      const edgeIndex = distances.indexOf(edgeDistance)
+      edgeCounts[edgeIndex] = (edgeCounts[edgeIndex] ?? 0) + 1
+      return sum + edgeDistance
+    }, 0) / points.length
+  const normalizedError = meanEdgeError / Math.hypot(width, height)
+  const perimeterError = Math.abs(
+    pathLength(points) / (2 * (width + height)) - 1,
+  )
+  const visitsEveryEdge = edgeCounts.every(
+    (count) => count / points.length >= 0.08,
+  )
+  if (normalizedError > 0.028 || perimeterError > 0.22 || !visitsEveryEdge) {
+    return null
+  }
+
+  const toWorld = (point: Point2D) => ({
+    x: center.x + point.x * cosRotation - point.y * sinRotation,
+    y: center.y + point.x * sinRotation + point.y * cosRotation,
+  })
+  const corners = [
+    { x: minX, y: minY },
+    { x: maxX, y: minY },
+    { x: maxX, y: maxY },
+    { x: minX, y: maxY },
+  ].map(toWorld)
+  if (signedArea(points) < 0) corners.reverse()
+  const startIndex = corners.reduce(
+    (bestIndex, corner, index) =>
+      distance(corner, first) < distance(corners[bestIndex]!, first)
+        ? index
+        : bestIndex,
+    0,
+  )
+  const orderedCorners = Array.from(
+    { length: 4 },
+    (_, index) => corners[(startIndex + index) % corners.length]!,
+  )
+  orderedCorners.push({ ...orderedCorners[0]! })
+
+  return {
+    primitive: "rectangle",
+    confidence: clampUnit(1 - normalizedError / 0.25 - perimeterError / 0.8),
+    points: orderedCorners,
+  }
+}
+
 function sampleEllipse(
   center: Point2D,
   radiusX: number,
@@ -241,6 +341,7 @@ export function assistStroke(
 
   const candidates = [
     lineCandidate(centerline),
+    rectangleCandidate(centerline),
     closedPrimitiveCandidate(centerline),
   ].filter((candidate): candidate is PrimitiveCandidate => candidate !== null)
   const candidate = candidates.sort((a, b) => b.confidence - a.confidence)[0]
