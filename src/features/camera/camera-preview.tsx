@@ -93,6 +93,7 @@ export function CameraPreview({
     gesture,
     metrics,
     pinchPhase,
+    pinchRatio,
     state: trackingState,
   } = useHandTracking(
     state === "ready",
@@ -201,6 +202,7 @@ export function CameraPreview({
                 {Math.round(metrics.inferenceMs)} ms · {metrics.droppedFrames}{" "}
                 frame{metrics.droppedFrames === 1 ? "" : "s"} ignorée
                 {metrics.droppedFrames === 1 ? "" : "s"}
+                {pinchRatio === null ? "" : ` · pince ${pinchRatio.toFixed(2)}`}
               </span>
             ) : null}
             {devices.length > 1 ? (

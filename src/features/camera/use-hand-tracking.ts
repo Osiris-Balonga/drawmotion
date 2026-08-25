@@ -45,6 +45,7 @@ export function useHandTracking(
   const [state, setState] = useState<HandTrackingState>("idle")
   const [gesture, setGesture] = useState<GestureKind>("tracking-lost")
   const [pinchPhase, setPinchPhase] = useState<PinchPhase>("released")
+  const [pinchRatio, setPinchRatio] = useState<number | null>(null)
   const [metrics, setMetrics] = useState<HandTrackerMetrics | null>(null)
   const onGestureFrameRef = useRef(onGestureFrame)
 
@@ -67,6 +68,7 @@ export function useHandTracking(
     let active = true
     let previousGesture: GestureKind = "tracking-lost"
     let previousPinchPhase: PinchPhase = "released"
+    let lastPinchDiagnosticAtMs = Number.NEGATIVE_INFINITY
     let ambiguousFrames = 0
     const pinchDetector = new PinchDetector()
     const renderer = new LandmarkOverlayRenderer(canvas, video)
@@ -98,6 +100,13 @@ export function useHandTracking(
           if (pinch.phase !== previousPinchPhase) {
             previousPinchPhase = pinch.phase
             setPinchPhase(pinch.phase)
+          }
+          if (
+            import.meta.env.DEV &&
+            result.timestampMs - lastPinchDiagnosticAtMs >= 250
+          ) {
+            lastPinchDiagnosticAtMs = result.timestampMs
+            setPinchRatio(pinch.ratio)
           }
           if (
             classification.kind === "uncertain" ||
@@ -140,6 +149,7 @@ export function useHandTracking(
         setState("initializing")
         setGesture("tracking-lost")
         setPinchPhase("released")
+        setPinchRatio(null)
         setMetrics(null)
       }
     })
@@ -174,6 +184,7 @@ export function useHandTracking(
     gesture: enabled ? gesture : "tracking-lost",
     metrics: enabled ? metrics : null,
     pinchPhase: enabled ? pinchPhase : "released",
+    pinchRatio: enabled ? pinchRatio : null,
     state: enabled ? state : "idle",
   }
 }

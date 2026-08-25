@@ -55,10 +55,19 @@ describe("PinchDetector", () => {
     expect(detector.update(open, true, 16).phase).toBe("released")
   })
 
-  it("prefers three-dimensional world landmarks for the pinch distance", () => {
-    const hand = handFromGestureFixture(withPinchRatio(0.15))
+  it("uses the visible projection when world depth conflicts with a pinch", () => {
+    const hand = handFromGestureFixture(withPinchRatio(0.1))
     hand.worldLandmarks = withPinchRatio(0.3)
 
-    expect(measurePinchRatio(hand)).toBeCloseTo(0.3)
+    expect(measurePinchRatio(hand)).toBeCloseTo(0.1)
+  })
+
+  it("activates from two projected pinch frames despite conflicting depth", () => {
+    const detector = new PinchDetector()
+    const hand = handFromGestureFixture(withPinchRatio(0.1))
+    hand.worldLandmarks = withPinchRatio(0.4)
+
+    expect(detector.update(hand, true, 0).phase).toBe("pending-entry")
+    expect(detector.update(hand, true, 16).phase).toBe("active")
   })
 })
