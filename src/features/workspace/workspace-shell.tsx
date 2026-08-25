@@ -31,6 +31,7 @@ import {
   type DrawingCanvasHandle,
 } from "@/features/workspace/drawing-canvas"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
+import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 import { Button } from "@/components/ui/button"
 
 import "./workspace.css"
@@ -72,7 +73,11 @@ export function WorkspaceShell() {
   }, [])
 
   const handleGestureFrame = useCallback(
-    (result: HandTrackingResult, gesture: GestureKind) => {
+    (
+      result: HandTrackingResult,
+      gesture: GestureKind,
+      quality: TrackingQuality,
+    ) => {
       const bounds = stageRef.current?.getBoundingClientRect()
       const hand = result.hands[0] ?? null
       const gesturePointer = selectGesturePointer(hand)
@@ -89,7 +94,7 @@ export function WorkspaceShell() {
       const filtered = pointerFilterRef.current.update(
         gesturePointer,
         result.timestampMs,
-        gesture !== "uncertain" && gesture !== "tracking-lost",
+        quality === "reliable",
       )
       const mapped = filtered.point
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
@@ -99,6 +104,7 @@ export function WorkspaceShell() {
         gesture,
         point: filtered.reliable ? mapped : null,
         timestampMs: result.timestampMs,
+        continuous: !filtered.discontinuity,
       })
       gestureStateRef.current = transition.state
       drawingRef.current?.handleIntentions(transition.intentions)

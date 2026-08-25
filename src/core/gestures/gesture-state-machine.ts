@@ -20,6 +20,7 @@ export type GestureFrame = {
   gesture: GestureKind
   point: CanvasPoint | null
   timestampMs: number
+  continuous?: boolean
 }
 
 export type GestureTransition = {
@@ -89,6 +90,16 @@ export function transitionGestureState(
   frame: GestureFrame,
 ): GestureTransition {
   const intentions: DrawingIntention[] = []
+  if (frame.continuous === false) {
+    stopDrawing(state, intentions, frame.timestampMs)
+    if (state.mode !== "lost") {
+      intentions.push(signalIntention("TRACKING_LOST", frame.timestampMs))
+    }
+    return {
+      state: clearInterruption({ mode: "lost", lastPoint: state.lastPoint }),
+      intentions,
+    }
+  }
   const visiblePoint =
     frame.gesture === "tracking-lost" || frame.gesture === "uncertain"
       ? null
