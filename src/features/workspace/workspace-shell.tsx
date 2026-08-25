@@ -22,7 +22,10 @@ import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
 import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
-import { CameraPreview } from "@/features/camera/camera-preview"
+import {
+  CameraPreview,
+  type CameraPreviewHandle,
+} from "@/features/camera/camera-preview"
 import { createPngFilename, downloadPng } from "@/features/export/png-download"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
 import {
@@ -104,6 +107,7 @@ export function WorkspaceShell() {
   )
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
+  const cameraRef = useRef<CameraPreviewHandle>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
   const gestureStateRef = useRef<GestureMachineState>(
     initialGestureMachineState,
@@ -260,12 +264,10 @@ export function WorkspaceShell() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (isEditableTarget(event.target) || !(event.ctrlKey || event.metaKey)) {
-        return
-      }
-
+      if (isEditableTarget(event.target)) return
       const key = event.key.toLowerCase()
-      if (key === "z") {
+      const withCommand = event.ctrlKey || event.metaKey
+      if (withCommand && key === "z") {
         const canApply = event.shiftKey
           ? historyAvailability.canRedo
           : historyAvailability.canUndo
@@ -273,9 +275,23 @@ export function WorkspaceShell() {
         event.preventDefault()
         if (event.shiftKey) redo()
         else undo()
-      } else if (key === "y" && historyAvailability.canRedo) {
+      } else if (withCommand && key === "y" && historyAvailability.canRedo) {
         event.preventDefault()
         redo()
+      } else if (!withCommand && !event.altKey && key === "p") {
+        event.preventDefault()
+        setActiveTool("pen")
+      } else if (!withCommand && !event.altKey && key === "e") {
+        event.preventDefault()
+        setActiveTool("eraser")
+      } else if (
+        !withCommand &&
+        !event.altKey &&
+        event.code === "Space" &&
+        !(event.target instanceof HTMLButtonElement)
+      ) {
+        event.preventDefault()
+        cameraRef.current?.togglePause()
       }
     }
 
@@ -323,6 +339,7 @@ export function WorkspaceShell() {
             {toolNames[activeTool]} sélectionné, {thickness} pixels
           </div>
           <CameraPreview
+            ref={cameraRef}
             calibrating={onboardingStep < 3}
             onGestureFrame={handleGestureFrame}
           />

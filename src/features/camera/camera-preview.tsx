@@ -1,3 +1,5 @@
+import { forwardRef, useImperativeHandle } from "react"
+
 import {
   Camera,
   CameraOff,
@@ -24,6 +26,10 @@ type CameraPreviewProps = {
   trackerFactory?: HandTrackerFactory
   onGestureFrame?: GestureFrameListener
   calibrating?: boolean
+}
+
+export type CameraPreviewHandle = {
+  togglePause(): void
 }
 
 const trackingContent = {
@@ -73,12 +79,18 @@ const errorContent = {
   },
 } as const
 
-export function CameraPreview({
-  adapterFactory,
-  trackerFactory,
-  onGestureFrame,
-  calibrating = false,
-}: CameraPreviewProps) {
+export const CameraPreview = forwardRef<
+  CameraPreviewHandle,
+  CameraPreviewProps
+>(function CameraPreview(
+  {
+    adapterFactory,
+    trackerFactory,
+    onGestureFrame,
+    calibrating = false,
+  }: CameraPreviewProps,
+  ref,
+) {
   const {
     devices,
     selectedDeviceId,
@@ -109,6 +121,13 @@ export function CameraPreview({
     state === "failed"
       ? errorContent[state]
       : null
+
+  useImperativeHandle(ref, () => ({
+    togglePause() {
+      if (state === "ready") stop()
+      else if (state === "stopped") void start()
+    },
+  }))
 
   return (
     <section aria-label="Aperçu caméra" className="camera-preview">
@@ -160,7 +179,11 @@ export function CameraPreview({
                 La vidéo reste sur cet appareil et n’est jamais enregistrée.
               </p>
             </div>
-            <Button className="h-11 w-full" onClick={() => void start()}>
+            <Button
+              className="h-11 w-full"
+              data-gesture-control=""
+              onClick={() => void start()}
+            >
               <Video aria-hidden="true" data-icon="inline-start" />
               Activer ma caméra
             </Button>
@@ -220,7 +243,12 @@ export function CameraPreview({
                 </select>
               </label>
             ) : null}
-            <Button variant="ghost" size="sm" onClick={stop}>
+            <Button
+              variant="ghost"
+              size="sm"
+              data-gesture-control=""
+              onClick={stop}
+            >
               Mettre la caméra en pause
             </Button>
           </>
@@ -229,7 +257,11 @@ export function CameraPreview({
         {state === "stopped" ? (
           <>
             <Badge variant="secondary">Caméra en pause</Badge>
-            <Button className="h-11" onClick={() => void start()}>
+            <Button
+              className="h-11"
+              data-gesture-control=""
+              onClick={() => void start()}
+            >
               Reprendre la caméra
             </Button>
           </>
@@ -244,7 +276,11 @@ export function CameraPreview({
                 <p>{error.description}</p>
               </div>
             </div>
-            <Button className="h-11 w-full" onClick={() => void start()}>
+            <Button
+              className="h-11 w-full"
+              data-gesture-control=""
+              onClick={() => void start()}
+            >
               {error.action}
             </Button>
           </div>
@@ -252,4 +288,4 @@ export function CameraPreview({
       </div>
     </section>
   )
-}
+})

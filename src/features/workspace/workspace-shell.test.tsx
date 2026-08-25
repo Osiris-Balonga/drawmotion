@@ -51,6 +51,32 @@ describe("WorkspaceShell", () => {
     expect(screen.getByText("Gomme sélectionné, 8 pixels")).toBeInTheDocument()
   })
 
+  it("sélectionne les outils par raccourci sauf pendant une saisie", async () => {
+    const user = userEvent.setup()
+    renderWorkspace()
+
+    await user.keyboard("e")
+    expect(screen.getByRole("button", { name: "Gomme" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    await user.keyboard("p")
+    expect(screen.getByRole("button", { name: "Stylo" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+
+    const input = document.createElement("input")
+    document.body.append(input)
+    input.focus()
+    await user.keyboard("e")
+    expect(screen.getByRole("button", { name: "Stylo" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    input.remove()
+  })
+
   it("présente la calibration réelle avant le dessin", () => {
     renderWorkspace()
 
