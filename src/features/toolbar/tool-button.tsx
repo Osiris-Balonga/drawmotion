@@ -11,12 +11,14 @@ import { cn } from "@/lib/utils"
 type ToolButtonProps = ComponentProps<typeof Button> & {
   label: string
   shortcut?: string
+  tooltipSide?: "top" | "right" | "bottom" | "left"
   children: ReactNode
 }
 
 export function ToolButton({
   label,
   shortcut,
+  tooltipSide = "right",
   children,
   className,
   ...props
@@ -36,7 +38,7 @@ export function ToolButton({
       >
         {children}
       </TooltipTrigger>
-      <TooltipContent side="right">
+      <TooltipContent side={tooltipSide}>
         <span>{label}</span>
         {shortcut ? (
           <kbd className="bg-background/15 rounded-sm px-1.5 py-0.5 font-mono text-xs">
