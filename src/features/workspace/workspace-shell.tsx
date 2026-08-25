@@ -54,7 +54,6 @@ export function WorkspaceShell() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(
     initialState.step,
   )
-  const [showRecoveryGuidance, setShowRecoveryGuidance] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
@@ -62,13 +61,11 @@ export function WorkspaceShell() {
     initialGestureMachineState,
   )
   const onboardingStateRef = useRef<OnboardingState>(initialState)
-  const hesitationFramesRef = useRef(0)
 
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
     resetOnboardingCompletion()
     setOnboardingStep(0)
-    setShowRecoveryGuidance(false)
   }, [])
 
   const goBackOnboarding = useCallback(() => {
@@ -92,17 +89,6 @@ export function WorkspaceShell() {
         setOnboardingStep(onboarding.step)
         if (onboarding.step === 3) saveOnboardingCompletion()
       }
-      if (onboarding.step === 3) {
-        if (gesture === "uncertain" || gesture === "tracking-lost") {
-          hesitationFramesRef.current += 1
-          if (hesitationFramesRef.current === 30) {
-            setShowRecoveryGuidance(true)
-          }
-        } else {
-          hesitationFramesRef.current = 0
-          if (showRecoveryGuidance) setShowRecoveryGuidance(false)
-        }
-      }
       const filtered = pointerFilterRef.current.update(
         gesturePointer,
         result.timestampMs,
@@ -124,7 +110,7 @@ export function WorkspaceShell() {
       gestureStateRef.current = transition.state
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [onboardingStep, showRecoveryGuidance],
+    [onboardingStep],
   )
 
   return (
@@ -148,17 +134,17 @@ export function WorkspaceShell() {
             {toolNames[activeTool]} sélectionné — simulation
           </div>
           <CameraPreview
-            calibrating={onboardingStep < 3 || showRecoveryGuidance}
+            calibrating={onboardingStep < 3}
             onGestureFrame={handleGestureFrame}
           />
-          {onboardingStep < 3 || showRecoveryGuidance ? (
+          {onboardingStep < 3 ? (
             <GestureCoach
-              step={showRecoveryGuidance ? 0 : (onboardingStep as 0 | 1 | 2)}
+              step={onboardingStep as 0 | 1 | 2}
               onBack={goBackOnboarding}
               onRestart={restartOnboarding}
             />
           ) : null}
-          {onboardingStep === 3 && !showRecoveryGuidance ? (
+          {onboardingStep === 3 ? (
             <Button
               className="gesture-review-action h-10 active:scale-[0.96]"
               variant="secondary"

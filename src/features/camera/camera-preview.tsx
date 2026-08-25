@@ -19,7 +19,6 @@ import {
 } from "@/features/camera/use-hand-tracking"
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
-import { cn } from "@/lib/utils"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
@@ -100,7 +99,6 @@ export function CameraPreview({
     videoRef,
     trackerFactory,
     onGestureFrame,
-    calibrating ? "contain" : "cover",
   )
   const trackingStatus = trackingContent[trackingState]
   const error =
@@ -112,17 +110,11 @@ export function CameraPreview({
       : null
 
   return (
-    <section
-      aria-label="Aperçu caméra"
-      className={cn(
-        "camera-preview",
-        calibrating && "camera-preview--calibrating",
-      )}
-    >
+    <section aria-label="Aperçu caméra" className="camera-preview">
       <div className="camera-preview__viewport">
         <video
           ref={videoRef}
-          className={`camera-preview__video${calibrating ? "camera-preview__video--contain" : ""}`}
+          className="camera-preview__video"
           aria-label="Flux vidéo local"
           autoPlay
           muted
