@@ -8,10 +8,7 @@ import {
 } from "@/core/gestures/gesture-state-machine"
 import { PointerMotionFilter } from "@/core/gestures/pointer-motion-filter"
 import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
-import {
-  COMFORTABLE_CAMERA_REGION,
-  mapMirroredCameraPointToCanvas,
-} from "@/core/geometry/coordinate-mapping"
+import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
@@ -78,7 +75,7 @@ export function WorkspaceShell() {
     (result: HandTrackingResult, gesture: GestureKind) => {
       const bounds = stageRef.current?.getBoundingClientRect()
       const hand = result.hands[0] ?? null
-      const gesturePointer = selectGesturePointer(hand, gesture)
+      const gesturePointer = selectGesturePointer(hand)
       if (!bounds) return
       const onboarding = observeOnboardingGesture(
         onboardingStateRef.current,
@@ -95,11 +92,7 @@ export function WorkspaceShell() {
         gesture !== "uncertain" && gesture !== "tracking-lost",
       )
       const mapped = filtered.point
-        ? mapMirroredCameraPointToCanvas(
-            filtered.point,
-            bounds,
-            COMFORTABLE_CAMERA_REGION,
-          )
+        ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
       if (onboarding.step < 3) return
       const transition = transitionGestureState(gestureStateRef.current, {
