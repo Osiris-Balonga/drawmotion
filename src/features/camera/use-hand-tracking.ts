@@ -32,7 +32,6 @@ export function useHandTracking(
   videoRef: RefObject<HTMLVideoElement | null>,
   trackerFactory: HandTrackerFactory = createTracker,
   onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void,
-  previewFit: "cover" | "contain" = "cover",
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<HandTrackingState>("idle")
@@ -59,7 +58,7 @@ export function useHandTracking(
     let active = true
     let previousGesture: GestureKind = "tracking-lost"
     let ambiguousFrames = 0
-    const renderer = new LandmarkOverlayRenderer(canvas, video, previewFit)
+    const renderer = new LandmarkOverlayRenderer(canvas, video)
     let tracker: HandTrackerPort
     try {
       tracker = trackerFactory((nextMetrics) => {
@@ -134,7 +133,7 @@ export function useHandTracking(
       session.dispose()
       renderer.clear()
     }
-  }, [enabled, previewFit, trackerFactory, videoRef])
+  }, [enabled, trackerFactory, videoRef])
 
   return {
     canvasRef,
