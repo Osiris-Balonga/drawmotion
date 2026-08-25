@@ -31,18 +31,18 @@ function classifySequence(ratios: number[], initial: GestureKind) {
 describe("gesture jitter and accidental activation resistance", () => {
   it("does not chatter while a pinched hand jitters inside the dead band", () => {
     expect(
-      classifySequence([0.29, 0.31, 0.38, 0.34, 0.41, 0.32], "open-hand"),
+      classifySequence([0.17, 0.19, 0.21, 0.2, 0.23, 0.19], "open-hand"),
     ).toEqual(["pinch", "pinch", "pinch", "pinch", "pinch", "pinch"])
   })
 
   it("does not enter pinch while an open hand jitters above entry", () => {
     expect(
-      classifySequence([0.31, 0.38, 0.33, 0.41, 0.305], "open-hand"),
+      classifySequence([0.19, 0.22, 0.2, 0.23, 0.185], "open-hand"),
     ).toEqual(["open-hand", "open-hand", "open-hand", "open-hand", "open-hand"])
   })
 
   it("requires crossing the exit boundary before releasing pinch", () => {
-    expect(classifySequence([0.41, 0.419, 0.43], "pinch")).toEqual([
+    expect(classifySequence([0.23, 0.239, 0.25], "pinch")).toEqual([
       "pinch",
       "pinch",
       "open-hand",

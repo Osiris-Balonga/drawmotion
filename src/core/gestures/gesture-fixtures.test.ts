@@ -40,11 +40,11 @@ describe("gesture classification fixtures", () => {
   })
 
   it("keeps the pinch fixture clearly below the open-hand ratio", () => {
-    expect(pinchRatio(pinchGestureLandmarks)).toBeLessThan(0.3)
+    expect(pinchRatio(pinchGestureLandmarks)).toBeLessThan(0.18)
     expect(pinchRatio(openHandGestureLandmarks)).toBeGreaterThan(0.5)
   })
 
-  it.each([0.29, 0.3, 0.42, 0.43])(
+  it.each([0.17, 0.18, 0.24, 0.25])(
     "creates exact non-regression poses around ratio %s",
     (ratio) => {
       expect(pinchRatio(withPinchRatio(ratio))).toBeCloseTo(ratio, 8)

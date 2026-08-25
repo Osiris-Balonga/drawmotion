@@ -37,17 +37,17 @@ describe("classifyGesture", () => {
   })
 
   it("uses separate pinch entry and exit thresholds", () => {
-    const inDeadBand = handFromGestureFixture(withPinchRatio(0.36))
+    const inDeadBand = handFromGestureFixture(withPinchRatio(0.21))
 
     expect(classifyGesture(inDeadBand, "open-hand").kind).toBe("open-hand")
     expect(classifyGesture(inDeadBand, "pinch").kind).toBe("pinch")
   })
 
   it.each([
-    [0.3, "open-hand", "pinch"],
-    [0.301, "open-hand", "open-hand"],
-    [0.42, "pinch", "pinch"],
-    [0.421, "pinch", "open-hand"],
+    [0.18, "open-hand", "pinch"],
+    [0.181, "open-hand", "open-hand"],
+    [0.24, "pinch", "pinch"],
+    [0.241, "pinch", "open-hand"],
   ] as const)(
     "keeps ratio %s stable from %s",
     (ratio, previousKind, expected) => {
