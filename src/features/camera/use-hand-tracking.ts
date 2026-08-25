@@ -7,6 +7,7 @@ import {
 import type {
   HandTrackerMetrics,
   HandTrackerPort,
+  HandTrackingResult,
 } from "@/infrastructure/mediapipe/hand-tracker-port"
 import {
   HandTrackingSession,
@@ -30,11 +31,17 @@ export function useHandTracking(
   enabled: boolean,
   videoRef: RefObject<HTMLVideoElement | null>,
   trackerFactory: HandTrackerFactory = createTracker,
+  onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void,
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<HandTrackingState>("idle")
   const [gesture, setGesture] = useState<GestureKind>("tracking-lost")
   const [metrics, setMetrics] = useState<HandTrackerMetrics | null>(null)
+  const onGestureFrameRef = useRef(onGestureFrame)
+
+  useEffect(() => {
+    onGestureFrameRef.current = onGestureFrame
+  }, [onGestureFrame])
 
   useEffect(() => {
     if (!enabled) {
@@ -72,6 +79,7 @@ export function useHandTracking(
             previousGesture,
           )
           previousGesture = classification.kind
+          onGestureFrameRef.current?.(result, classification.kind)
           setGesture((current) =>
             current === classification.kind ? current : classification.kind,
           )
