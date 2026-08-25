@@ -42,8 +42,10 @@ export class TwoLayerCanvasRenderer {
     this.#interactionContext = interactionContext
     this.#devicePixelRatio =
       options.devicePixelRatio ?? (() => devicePixelRatio)
-    this.#requestFrame = options.requestFrame ?? requestAnimationFrame
-    this.#cancelFrame = options.cancelFrame ?? cancelAnimationFrame
+    this.#requestFrame =
+      options.requestFrame ?? ((callback) => requestAnimationFrame(callback))
+    this.#cancelFrame =
+      options.cancelFrame ?? ((handle) => cancelAnimationFrame(handle))
   }
 
   resize(width: number, height: number) {
