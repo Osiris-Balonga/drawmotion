@@ -15,15 +15,14 @@ import {
 } from "@/features/camera/use-camera-lifecycle"
 import {
   useHandTracking,
+  type GestureFrameListener,
   type HandTrackerFactory,
 } from "@/features/camera/use-hand-tracking"
-import type { GestureKind } from "@/core/gestures/gesture-classifier"
-import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
   trackerFactory?: HandTrackerFactory
-  onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void
+  onGestureFrame?: GestureFrameListener
   calibrating?: boolean
 }
 

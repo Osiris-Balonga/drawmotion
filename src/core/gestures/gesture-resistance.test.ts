@@ -175,8 +175,40 @@ describe("gesture jitter and accidental activation resistance", () => {
   })
 
   it("rejects an invalid pointer smoothing time constant", () => {
-    expect(() => new PointerMotionFilter({ timeConstantMs: 0 })).toThrow(
+    expect(() => new PointerMotionFilter({ minCutoffHz: 0 })).toThrow(
       "greater than zero",
+    )
+  })
+
+  it("never bridges a bottom-to-top jump after tracking ambiguity", () => {
+    const filter = new PointerMotionFilter()
+    let state = transitionGestureState(initialGestureMachineState, {
+      gesture: "pinch",
+      point: { x: 0.5, y: 0.85 },
+      timestampMs: 0,
+    }).state
+    state = transitionGestureState(state, {
+      gesture: "uncertain",
+      point: null,
+      timestampMs: 16,
+    }).state
+
+    filter.update({ x: 0.5, y: 0.85 }, 0)
+    filter.update(null, 16)
+    const jump = filter.update({ x: 0.5, y: 0.1 }, 32)
+    const transition = transitionGestureState(state, {
+      gesture: "pinch",
+      point: jump.reliable ? jump.point : null,
+      timestampMs: 32,
+      continuous: !jump.discontinuity,
+    })
+
+    expect(transition.intentions.map(({ type }) => type)).toEqual([
+      "DRAW_END",
+      "TRACKING_LOST",
+    ])
+    expect(transition.intentions.map(({ type }) => type)).not.toContain(
+      "DRAW_MOVE",
     )
   })
 })

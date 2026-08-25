@@ -23,6 +23,12 @@ export type HandTrackerFactory = (
   onMetrics: (metrics: HandTrackerMetrics) => void,
 ) => HandTrackerPort
 
+export type GestureFrameListener = (
+  result: HandTrackingResult,
+  gesture: GestureKind,
+  quality: TrackingQuality,
+) => void
+
 function createTracker(onMetrics: (metrics: HandTrackerMetrics) => void) {
   return new WorkerHandTracker(undefined, onMetrics)
 }
@@ -31,7 +37,7 @@ export function useHandTracking(
   enabled: boolean,
   videoRef: RefObject<HTMLVideoElement | null>,
   trackerFactory: HandTrackerFactory = createTracker,
-  onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void,
+  onGestureFrame?: GestureFrameListener,
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<HandTrackingState>("idle")
@@ -89,7 +95,7 @@ export function useHandTracking(
             ambiguousFrames = 0
             previousGesture = classification.kind
           }
-          onGestureFrameRef.current?.(result, classification.kind)
+          onGestureFrameRef.current?.(result, classification.kind, quality)
           setGesture((current) =>
             current === classification.kind ? current : classification.kind,
           )

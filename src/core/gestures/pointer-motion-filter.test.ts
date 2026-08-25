@@ -37,14 +37,19 @@ describe("mapMirroredCameraPointToCanvas", () => {
 })
 
 describe("PointerMotionFilter", () => {
-  it("smooths pointer movement over elapsed time", () => {
-    const filter = new PointerMotionFilter({ timeConstantMs: 100 })
+  it("smooths ordinary pointer movement without adding fixed latency", () => {
+    const filter = new PointerMotionFilter()
 
-    expect(filter.update({ x: 0, y: 0 }, 0).point).toEqual({ x: 0, y: 0 })
-    const moved = filter.update({ x: 100, y: 50 }, 100).point
+    expect(filter.update({ x: 0.4, y: 0.4 }, 0).point).toEqual({
+      x: 0.4,
+      y: 0.4,
+    })
+    const moved = filter.update({ x: 0.5, y: 0.45 }, 100).point
 
-    expect(moved?.x).toBeCloseTo(63.21, 2)
-    expect(moved?.y).toBeCloseTo(31.61, 2)
+    expect(moved?.x).toBeGreaterThan(0.4)
+    expect(moved?.x).toBeLessThan(0.5)
+    expect(moved?.y).toBeGreaterThan(0.4)
+    expect(moved?.y).toBeLessThan(0.45)
   })
 
   it("locks the last reliable position without extrapolating on loss", () => {
@@ -55,21 +60,43 @@ describe("PointerMotionFilter", () => {
     expect(filter.update(null, 90)).toEqual({
       point: lastReliable.point,
       reliable: false,
+      discontinuity: false,
     })
     expect(filter.update(null, 10_000)).toEqual({
       point: lastReliable.point,
       reliable: false,
+      discontinuity: false,
     })
   })
 
-  it("restarts from the next reliable point after tracking loss", () => {
+  it("keeps a nearby reacquisition continuous after tracking loss", () => {
     const filter = new PointerMotionFilter()
-    filter.update({ x: 10, y: 10 }, 0)
+    filter.update({ x: 0.4, y: 0.4 }, 0)
     filter.update(null, 16)
 
-    expect(filter.update({ x: 90, y: 80 }, 32)).toEqual({
-      point: { x: 90, y: 80 },
+    const reacquired = filter.update({ x: 0.43, y: 0.42 }, 32)
+    expect(reacquired.reliable).toBe(true)
+    expect(reacquired.discontinuity).toBe(false)
+  })
+
+  it("rejects and confirms a distant reacquisition without bridging it", () => {
+    const filter = new PointerMotionFilter()
+    filter.update({ x: 0.5, y: 0.85 }, 0)
+    filter.update(null, 16)
+
+    expect(filter.update({ x: 0.5, y: 0.1 }, 32)).toEqual({
+      point: { x: 0.5, y: 0.85 },
+      reliable: false,
+      discontinuity: true,
+    })
+    expect(filter.update({ x: 0.51, y: 0.11 }, 48)).toEqual({
+      point: { x: 0.51, y: 0.11 },
       reliable: true,
+      discontinuity: true,
+    })
+    expect(filter.update({ x: 0.52, y: 0.12 }, 64)).toMatchObject({
+      reliable: true,
+      discontinuity: false,
     })
   })
 
@@ -78,6 +105,10 @@ describe("PointerMotionFilter", () => {
     filter.update({ x: 10, y: 10 }, 0)
     filter.reset()
 
-    expect(filter.update(null, 16)).toEqual({ point: null, reliable: false })
+    expect(filter.update(null, 16)).toEqual({
+      point: null,
+      reliable: false,
+      discontinuity: false,
+    })
   })
 })
