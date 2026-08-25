@@ -1,58 +1,102 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
   loadOnboardingCompletion,
+  loadOnboardingProgress,
   resetOnboardingCompletion,
   saveOnboardingCompletion,
+  saveOnboardingProgress,
 } from "./onboarding-persistence"
 
-describe("onboarding completion persistence", () => {
-  it("stores only a versioned completion flag", () => {
-    const storage = new Map<string, string>()
-    const adapter = {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => storage.set(key, value),
-      removeItem: (key: string) => storage.delete(key),
-    } as unknown as Storage
+function createStorage() {
+  const values = new Map<string, string>()
+  return {
+    values,
+    adapter: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    } as unknown as Storage,
+  }
+}
+
+describe("onboarding progress persistence", () => {
+  it("stores resumable, versioned progress", () => {
+    const { adapter, values } = createStorage()
+
+    saveOnboardingProgress(
+      { status: "in_progress", currentStep: "style" },
+      adapter,
+    )
+
+    expect(loadOnboardingProgress(adapter)).toEqual({
+      status: "in_progress",
+      currentStep: "style",
+    })
+    expect([...values.values()][0]).toBe(
+      JSON.stringify({
+        version: 2,
+        status: "in_progress",
+        currentStep: "style",
+      }),
+    )
+  })
+
+  it("stores completion and can reset it", () => {
+    const { adapter } = createStorage()
 
     saveOnboardingCompletion(adapter)
     expect(loadOnboardingCompletion(adapter)).toBe(true)
-    expect([...storage.values()][0]).toBe(
-      JSON.stringify({ version: 1, completed: true }),
-    )
+    expect(loadOnboardingProgress(adapter)).toEqual({
+      status: "completed",
+      currentStep: "complete",
+    })
+
     resetOnboardingCompletion(adapter)
     expect(loadOnboardingCompletion(adapter)).toBe(false)
   })
 
-  it("rejects missing, malformed, or outdated values", () => {
-    const getItem = vi
-      .fn<Storage["getItem"]>()
-      .mockReturnValueOnce(null)
-      .mockReturnValueOnce("not-json")
-      .mockReturnValueOnce(JSON.stringify({ version: 0, completed: true }))
-    const storage = { getItem } as unknown as Storage
+  it("treats missing, malformed and outdated values as a first visit", () => {
+    const values = [
+      null,
+      "not-json",
+      JSON.stringify({ version: 1, completed: true }),
+    ]
+    const storage = {
+      getItem: () => values.shift() ?? null,
+    } as unknown as Storage
 
-    expect(loadOnboardingCompletion(storage)).toBe(false)
-    expect(loadOnboardingCompletion(storage)).toBe(false)
-    expect(loadOnboardingCompletion(storage)).toBe(false)
+    for (let index = 0; index < 3; index += 1) {
+      expect(loadOnboardingProgress(storage)).toEqual({
+        status: "new",
+        currentStep: "cursor",
+      })
+    }
   })
 
   it("does not fail when browser storage is unavailable", () => {
-    const failure = new Error("blocked")
     const storage = {
       getItem: () => {
-        throw failure
+        throw new Error("blocked")
       },
       removeItem: () => {
-        throw failure
+        throw new Error("blocked")
       },
       setItem: () => {
-        throw failure
+        throw new Error("blocked")
       },
     } as unknown as Storage
 
-    expect(loadOnboardingCompletion(storage)).toBe(false)
-    expect(() => saveOnboardingCompletion(storage)).not.toThrow()
+    expect(loadOnboardingProgress(storage)).toEqual({
+      status: "new",
+      currentStep: "cursor",
+    })
+    expect(() =>
+      saveOnboardingProgress(
+        { status: "in_progress", currentStep: "draw" },
+        storage,
+      ),
+    ).not.toThrow()
     expect(() => resetOnboardingCompletion(storage)).not.toThrow()
   })
 })
