@@ -19,13 +19,6 @@ export type CameraMappingRegion = {
   bottom: number
 }
 
-export const COMFORTABLE_CAMERA_REGION: CameraMappingRegion = {
-  left: 0.12,
-  right: 0.88,
-  top: 0.1,
-  bottom: 0.9,
-}
-
 const FULL_CAMERA_REGION: CameraMappingRegion = {
   left: 0,
   right: 1,
