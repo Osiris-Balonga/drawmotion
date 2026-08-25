@@ -1,13 +1,6 @@
 import { forwardRef, useImperativeHandle } from "react"
 
-import {
-  Camera,
-  CameraOff,
-  CircleAlert,
-  LoaderCircle,
-  ShieldCheck,
-  Video,
-} from "lucide-react"
+import { Camera, CameraOff, CircleAlert, LoaderCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -121,6 +114,7 @@ export const CameraPreview = forwardRef<
     state === "failed"
       ? errorContent[state]
       : null
+  const canActivateFromPreview = state === "idle" || state === "stopped"
 
   useImperativeHandle(ref, () => ({
     togglePause() {
@@ -131,7 +125,20 @@ export const CameraPreview = forwardRef<
 
   return (
     <section aria-label="Aperçu caméra" className="camera-preview">
-      <div className="camera-preview__viewport">
+      <button
+        type="button"
+        className="camera-preview__viewport"
+        aria-label={
+          state === "stopped"
+            ? "Reprendre la caméra"
+            : state === "idle"
+              ? "Activer ma caméra"
+              : "Aperçu caméra actif"
+        }
+        disabled={!canActivateFromPreview}
+        data-gesture-control={canActivateFromPreview ? "" : undefined}
+        onClick={() => void start()}
+      >
         <video
           ref={videoRef}
           className="camera-preview__video"
@@ -168,28 +175,9 @@ export const CameraPreview = forwardRef<
         {error ? (
           <CameraOff aria-hidden="true" className="text-warning size-12" />
         ) : null}
-      </div>
+      </button>
 
       <div className="camera-preview__controls" aria-live="polite">
-        {state === "idle" ? (
-          <>
-            <div className="camera-preview__message">
-              <ShieldCheck aria-hidden="true" />
-              <p>
-                La vidéo reste sur cet appareil et n’est jamais enregistrée.
-              </p>
-            </div>
-            <Button
-              className="h-11 w-full"
-              data-gesture-control=""
-              onClick={() => void start()}
-            >
-              <Video aria-hidden="true" data-icon="inline-start" />
-              Activer ma caméra
-            </Button>
-          </>
-        ) : null}
-
         {state === "requesting" ? (
           <Badge variant="secondary">Activation de la caméra…</Badge>
         ) : null}
@@ -255,16 +243,7 @@ export const CameraPreview = forwardRef<
         ) : null}
 
         {state === "stopped" ? (
-          <>
-            <Badge variant="secondary">Caméra en pause</Badge>
-            <Button
-              className="h-11"
-              data-gesture-control=""
-              onClick={() => void start()}
-            >
-              Reprendre la caméra
-            </Button>
-          </>
+          <Badge variant="secondary">Caméra en pause</Badge>
         ) : null}
 
         {error ? (

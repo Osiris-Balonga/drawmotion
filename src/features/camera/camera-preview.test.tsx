@@ -48,14 +48,12 @@ describe("CameraPreview", () => {
     ).toBeInTheDocument()
   })
 
-  it("explains local processing before requesting permission", () => {
+  it("keeps permission behind the circular camera control", () => {
     const { adapter } = createAdapter()
 
     render(<CameraPreview adapterFactory={() => adapter} />)
 
-    expect(
-      screen.getByText(/La vidéo reste sur cet appareil/),
-    ).toBeInTheDocument()
+    expect(screen.queryByText(/La vidéo reste sur cet appareil/)).toBeNull()
     expect(
       screen.getByRole("button", { name: "Activer ma caméra" }),
     ).toBeInTheDocument()
@@ -80,6 +78,9 @@ describe("CameraPreview", () => {
 
     expect(adapter.stop).toHaveBeenCalledOnce()
     expect(screen.getByText("Caméra en pause")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Reprendre la caméra" }),
+    ).toBeInTheDocument()
   })
 
   it.each([
