@@ -40,7 +40,9 @@ export function GestureCoach({ step, onBack, onRestart }: GestureCoachProps) {
       <div className="min-w-0 flex-1">
         <div className="mb-2 flex items-center gap-2">
           <Badge variant="outline">Étape {step + 1} sur 3</Badge>
-          <span className="text-muted-foreground text-xs">Tutoriel simulé</span>
+          <span className="text-muted-foreground text-xs">
+            Validation en direct
+          </span>
         </div>
         <h2 id="gesture-title" className="text-base font-semibold">
           {current.title}
