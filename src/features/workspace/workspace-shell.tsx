@@ -22,6 +22,11 @@ import {
   type OnboardingState,
   type OnboardingStep,
 } from "@/features/onboarding/onboarding-machine"
+import {
+  loadOnboardingCompletion,
+  resetOnboardingCompletion,
+  saveOnboardingCompletion,
+} from "@/features/onboarding/onboarding-persistence"
 import { ToolRail, type DrawingTool } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
 import {
@@ -40,8 +45,15 @@ const toolNames: Record<DrawingTool, string> = {
 }
 
 export function WorkspaceShell() {
+  const [initialState] = useState<OnboardingState>(() =>
+    loadOnboardingCompletion()
+      ? { step: 3, stableFrames: 0 }
+      : initialOnboardingState,
+  )
   const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
-  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(0)
+  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(
+    initialState.step,
+  )
   const [showRecoveryGuidance, setShowRecoveryGuidance] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
@@ -49,11 +61,12 @@ export function WorkspaceShell() {
   const gestureStateRef = useRef<GestureMachineState>(
     initialGestureMachineState,
   )
-  const onboardingStateRef = useRef<OnboardingState>(initialOnboardingState)
+  const onboardingStateRef = useRef<OnboardingState>(initialState)
   const hesitationFramesRef = useRef(0)
 
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
+    resetOnboardingCompletion()
     setOnboardingStep(0)
     setShowRecoveryGuidance(false)
   }, [])
@@ -77,6 +90,7 @@ export function WorkspaceShell() {
       onboardingStateRef.current = onboarding
       if (onboarding.step !== onboardingStep) {
         setOnboardingStep(onboarding.step)
+        if (onboarding.step === 3) saveOnboardingCompletion()
       }
       if (onboarding.step === 3) {
         if (gesture === "uncertain" || gesture === "tracking-lost") {
