@@ -29,6 +29,7 @@ import {
   type DrawingCanvasHandle,
 } from "@/features/workspace/drawing-canvas"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
+import { Button } from "@/components/ui/button"
 
 import "./workspace.css"
 
@@ -41,6 +42,7 @@ const toolNames: Record<DrawingTool, string> = {
 export function WorkspaceShell() {
   const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(0)
+  const [showRecoveryGuidance, setShowRecoveryGuidance] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
@@ -48,10 +50,12 @@ export function WorkspaceShell() {
     initialGestureMachineState,
   )
   const onboardingStateRef = useRef<OnboardingState>(initialOnboardingState)
+  const hesitationFramesRef = useRef(0)
 
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
     setOnboardingStep(0)
+    setShowRecoveryGuidance(false)
   }, [])
 
   const goBackOnboarding = useCallback(() => {
@@ -74,6 +78,17 @@ export function WorkspaceShell() {
       if (onboarding.step !== onboardingStep) {
         setOnboardingStep(onboarding.step)
       }
+      if (onboarding.step === 3) {
+        if (gesture === "uncertain" || gesture === "tracking-lost") {
+          hesitationFramesRef.current += 1
+          if (hesitationFramesRef.current === 30) {
+            setShowRecoveryGuidance(true)
+          }
+        } else {
+          hesitationFramesRef.current = 0
+          if (showRecoveryGuidance) setShowRecoveryGuidance(false)
+        }
+      }
       const filtered = pointerFilterRef.current.update(
         gesturePointer,
         result.timestampMs,
@@ -95,7 +110,7 @@ export function WorkspaceShell() {
       gestureStateRef.current = transition.state
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [onboardingStep],
+    [onboardingStep, showRecoveryGuidance],
   )
 
   return (
@@ -119,15 +134,24 @@ export function WorkspaceShell() {
             {toolNames[activeTool]} sélectionné — simulation
           </div>
           <CameraPreview
-            calibrating={onboardingStep < 3}
+            calibrating={onboardingStep < 3 || showRecoveryGuidance}
             onGestureFrame={handleGestureFrame}
           />
-          {onboardingStep < 3 ? (
+          {onboardingStep < 3 || showRecoveryGuidance ? (
             <GestureCoach
-              step={onboardingStep as 0 | 1 | 2}
+              step={showRecoveryGuidance ? 0 : (onboardingStep as 0 | 1 | 2)}
               onBack={goBackOnboarding}
               onRestart={restartOnboarding}
             />
+          ) : null}
+          {onboardingStep === 3 && !showRecoveryGuidance ? (
+            <Button
+              className="gesture-review-action h-10 active:scale-[0.96]"
+              variant="secondary"
+              onClick={restartOnboarding}
+            >
+              Revoir les gestes
+            </Button>
           ) : null}
         </section>
       </main>
