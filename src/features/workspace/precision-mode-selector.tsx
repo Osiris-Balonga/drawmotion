@@ -24,7 +24,7 @@ const modes = [
   {
     value: "shapes",
     label: "Formes",
-    description: "Régularise les lignes, cercles et ellipses reconnus",
+    description: "Régularise les lignes, cercles, ellipses et rectangles",
     icon: Shapes,
   },
 ] as const
