@@ -78,6 +78,14 @@
   transform: scaleX(-1);
 }
 
+.camera-preview__landmarks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .camera-preview__loader {
   width: 2rem;
   height: 2rem;
@@ -133,6 +141,22 @@
   height: 0.5rem;
   background: currentColor;
   border-radius: 50%;
+}
+
+.camera-preview__tracking--uncertain {
+  color: var(--warning-foreground);
+  background: var(--warning);
+}
+
+.camera-preview__tracking--error {
+  color: var(--destructive-foreground);
+  background: var(--destructive);
+}
+
+.camera-preview__metrics {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
 }
 
 .camera-preview__device-field {
