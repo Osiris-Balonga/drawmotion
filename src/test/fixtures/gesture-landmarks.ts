@@ -62,7 +62,7 @@ export const fistGestureLandmarks = pose({
 
 export const uncertainGestureLandmarks = pose({
   4: [0.34, 0.44],
-  8: [0.42, 0.48],
+  8: [0.42, 0.3],
   12: [0.5, 0.47],
   16: [0.58, 0.49],
   20: [0.65, 0.53],
