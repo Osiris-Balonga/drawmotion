@@ -1,32 +1,90 @@
-const STORAGE_KEY = "drawmotion:onboarding"
-const STORAGE_VERSION = 1
+import type { ActiveOnboardingStep, OnboardingStep } from "./onboarding-machine"
 
-type OnboardingPreference = {
-  version: typeof STORAGE_VERSION
-  completed: boolean
+const STORAGE_KEY = "drawmotion:onboarding"
+const STORAGE_VERSION = 2
+
+export type OnboardingStatus = "new" | "in_progress" | "completed" | "skipped"
+
+export type OnboardingProgress = {
+  status: OnboardingStatus
+  currentStep: OnboardingStep
 }
 
-export function loadOnboardingCompletion(storage: Storage = localStorage) {
+type StoredOnboardingProgress = {
+  version: typeof STORAGE_VERSION
+  status: Exclude<OnboardingStatus, "new">
+  currentStep: OnboardingStep
+}
+
+const activeSteps: readonly string[] = [
+  "cursor",
+  "draw",
+  "style",
+  "shapes",
+  "correct",
+]
+
+function isStoredProgress(
+  value: Partial<StoredOnboardingProgress>,
+): value is StoredOnboardingProgress {
+  const validStatus =
+    value.status === "in_progress" ||
+    value.status === "completed" ||
+    value.status === "skipped"
+  const validStep =
+    value.currentStep === "complete" ||
+    activeSteps.includes(value.currentStep as ActiveOnboardingStep)
+  return value.version === STORAGE_VERSION && validStatus && validStep
+}
+
+export function loadOnboardingProgress(
+  storage: Storage = localStorage,
+): OnboardingProgress {
   try {
     const value = storage.getItem(STORAGE_KEY)
-    if (!value) return false
-    const parsed = JSON.parse(value) as Partial<OnboardingPreference>
-    return parsed.version === STORAGE_VERSION && parsed.completed === true
+    if (!value) return { status: "new", currentStep: "cursor" }
+    const parsed = JSON.parse(value) as Partial<StoredOnboardingProgress>
+    if (!isStoredProgress(parsed)) {
+      return { status: "new", currentStep: "cursor" }
+    }
+    return {
+      status: parsed.status,
+      currentStep:
+        parsed.status === "completed" || parsed.status === "skipped"
+          ? "complete"
+          : parsed.currentStep,
+    }
   } catch {
-    return false
+    return { status: "new", currentStep: "cursor" }
   }
 }
 
-export function saveOnboardingCompletion(storage: Storage = localStorage) {
-  const preference: OnboardingPreference = {
+export function saveOnboardingProgress(
+  progress: OnboardingProgress,
+  storage: Storage = localStorage,
+) {
+  const preference: StoredOnboardingProgress = {
     version: STORAGE_VERSION,
-    completed: true,
+    status: progress.status === "new" ? "in_progress" : progress.status,
+    currentStep: progress.currentStep,
   }
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(preference))
   } catch {
     // Drawing remains available when private storage is unavailable.
   }
+}
+
+export function saveOnboardingCompletion(storage: Storage = localStorage) {
+  saveOnboardingProgress(
+    { status: "completed", currentStep: "complete" },
+    storage,
+  )
+}
+
+export function loadOnboardingCompletion(storage: Storage = localStorage) {
+  const progress = loadOnboardingProgress(storage)
+  return progress.status === "completed" || progress.status === "skipped"
 }
 
 export function resetOnboardingCompletion(storage: Storage = localStorage) {

@@ -337,7 +337,7 @@
 .gesture-coach {
   position: absolute;
   right: var(--space-2xl);
-  bottom: var(--space-2xl);
+  bottom: 6.75rem;
   left: var(--space-2xl);
   z-index: var(--z-floating-controls);
   display: flex;
@@ -351,6 +351,141 @@
   background: var(--shell-raised);
   border-radius: var(--radius-xl);
   box-shadow: 0 1rem 2rem oklch(0.06 0.01 286 / 24%);
+}
+
+.gesture-coach__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.onboarding-cursor-practice,
+.onboarding-draw-practice {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-floating-controls) - 1);
+  pointer-events: none;
+}
+
+.onboarding-cursor-target {
+  position: absolute;
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: oklch(0.97 0.02 293);
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition:
+    color var(--duration-state) var(--ease-out-quart),
+    background var(--duration-state) var(--ease-out-quart),
+    transform var(--duration-state) var(--ease-out-quart);
+}
+
+.onboarding-cursor-target:nth-child(1) {
+  top: 36%;
+  left: 28%;
+}
+
+.onboarding-cursor-target:nth-child(2) {
+  top: 24%;
+  left: 50%;
+}
+
+.onboarding-cursor-target:nth-child(3) {
+  top: 48%;
+  left: 68%;
+}
+
+.onboarding-cursor-target[data-active] {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  transform: translate(-50%, -50%) scale(1.08);
+  animation: onboarding-target-pulse 1.6s ease-in-out infinite;
+}
+
+.onboarding-cursor-target[data-complete] {
+  color: var(--success-foreground);
+  background: var(--success);
+  border-color: transparent;
+}
+
+.onboarding-draw-practice {
+  top: 25%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: min(38rem, 52vw);
+  height: 9rem;
+  color: var(--primary);
+  transform: translateX(-50%);
+}
+
+.onboarding-draw-practice svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.onboarding-draw-practice path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 8 12;
+  opacity: 0.55;
+}
+
+.onboarding-draw-practice__label,
+.onboarding-draw-practice__end {
+  position: absolute;
+  bottom: 0;
+  padding: 0.25rem 0.5rem;
+  color: var(--canvas-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--canvas);
+  border-radius: var(--radius-md);
+}
+
+.onboarding-draw-practice__label {
+  left: 0;
+}
+
+.onboarding-draw-practice__end {
+  right: 0;
+}
+
+.workspace-shell[data-onboarding-step="style"] [data-onboarding-target="color"],
+.workspace-shell[data-onboarding-step="style"]
+  [data-onboarding-target="thickness"],
+.workspace-shell[data-onboarding-step="shapes"]
+  [data-onboarding-target="shapes"],
+.workspace-shell[data-onboarding-step="correct"]
+  [data-onboarding-target="undo"] {
+  box-shadow:
+    0 0 0 3px var(--primary),
+    0 0 0 7px oklch(0.56 0.22 293 / 22%);
+  animation: onboarding-control-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes onboarding-target-pulse {
+  50% {
+    box-shadow: 0 0 0 0.75rem oklch(0.56 0.22 293 / 0%);
+  }
+}
+
+@keyframes onboarding-control-pulse {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--primary),
+      0 0 0 11px oklch(0.56 0.22 293 / 8%);
+  }
 }
 
 .gesture-coach__icon {
@@ -372,7 +507,7 @@
 .gesture-review-action {
   position: absolute;
   right: var(--space-xl);
-  bottom: var(--space-xl);
+  bottom: 6.5rem;
   z-index: var(--z-floating-controls);
   box-shadow: 0 0.25rem 0.75rem oklch(0.06 0.01 286 / 18%);
   transition-property: transform;
@@ -382,7 +517,8 @@
 
 .shape-assistance-feedback {
   position: absolute;
-  bottom: 6.5rem;
+  top: 5.75rem;
+  bottom: auto;
   left: 50%;
   z-index: var(--z-floating-controls);
   display: flex;
@@ -427,9 +563,13 @@
 
   .gesture-coach {
     right: var(--space-lg);
-    bottom: var(--space-lg);
+    bottom: 6rem;
     left: var(--space-lg);
     min-height: 6rem;
+  }
+
+  .gesture-coach__actions {
+    flex-direction: column;
   }
 }
 

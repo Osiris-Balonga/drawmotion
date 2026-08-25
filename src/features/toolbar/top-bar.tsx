@@ -68,6 +68,7 @@ export function TopBar({
           tooltipSide="bottom"
           variant="ghost"
           disabled={!canUndo}
+          data-onboarding-target="undo"
           onClick={onUndo}
         >
           <Undo2 aria-hidden="true" />

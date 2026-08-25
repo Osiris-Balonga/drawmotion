@@ -123,6 +123,7 @@ export function ToolRail({
               tooltipSide="top"
               variant="ghost"
               className="command-dock__thickness"
+              data-onboarding-target="thickness"
             >
               <span
                 aria-hidden="true"
@@ -198,6 +199,7 @@ export function ToolRail({
               aria-label={`${label} — ${description}`}
               title={description}
               data-gesture-control=""
+              data-onboarding-target={value === "shapes" ? "shapes" : undefined}
               className="command-dock__precision-option"
             >
               <Icon aria-hidden="true" />
@@ -221,6 +223,9 @@ export function ToolRail({
             variant="ghost"
             aria-pressed={color === drawingColor.value}
             className="command-dock__color"
+            data-onboarding-target={
+              drawingColor.value === "#238554" ? "color" : undefined
+            }
             onClick={() => {
               onColorChange(drawingColor.value)
               onToolChange("pen")
