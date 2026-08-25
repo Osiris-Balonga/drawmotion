@@ -17,10 +17,13 @@ import {
   useHandTracking,
   type HandTrackerFactory,
 } from "@/features/camera/use-hand-tracking"
+import type { GestureKind } from "@/core/gestures/gesture-classifier"
+import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
   trackerFactory?: HandTrackerFactory
+  onGestureFrame?: (result: HandTrackingResult, gesture: GestureKind) => void
 }
 
 const trackingContent = {
@@ -73,6 +76,7 @@ const errorContent = {
 export function CameraPreview({
   adapterFactory,
   trackerFactory,
+  onGestureFrame,
 }: CameraPreviewProps) {
   const {
     devices,
@@ -88,7 +92,12 @@ export function CameraPreview({
     gesture,
     metrics,
     state: trackingState,
-  } = useHandTracking(state === "ready", videoRef, trackerFactory)
+  } = useHandTracking(
+    state === "ready",
+    videoRef,
+    trackerFactory,
+    onGestureFrame,
+  )
   const trackingStatus = trackingContent[trackingState]
   const error =
     state === "denied" ||
