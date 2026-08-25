@@ -31,6 +31,12 @@ export type StrokeAssistanceFeedback = {
   confidence: number
 }
 
+export type DrawingHistoryAvailability = {
+  canUndo: boolean
+  canRedo: boolean
+  canClear: boolean
+}
+
 export class CanvasDrawingController {
   readonly #renderer: TwoLayerCanvasRenderer
   #history: DrawingHistory
@@ -40,6 +46,8 @@ export class CanvasDrawingController {
   #activeStroke: Stroke | null = null
   #nextStrokeId = 1
   #onAssistance: ((feedback: StrokeAssistanceFeedback) => void) | null = null
+  #onHistoryChange:
+    ((availability: DrawingHistoryAvailability) => void) | null = null
 
   constructor(renderer: TwoLayerCanvasRenderer, historyLimit = 50) {
     this.#renderer = renderer
@@ -48,6 +56,14 @@ export class CanvasDrawingController {
 
   get document() {
     return this.#history.present
+  }
+
+  get historyAvailability(): DrawingHistoryAvailability {
+    return {
+      canUndo: this.#history.past.length > 0,
+      canRedo: this.#history.future.length > 0,
+      canClear: this.#history.present.strokes.length > 0,
+    }
   }
 
   setBounds(bounds: CanvasBounds) {
@@ -68,6 +84,13 @@ export class CanvasDrawingController {
     listener: ((feedback: StrokeAssistanceFeedback) => void) | null,
   ) {
     this.#onAssistance = listener
+  }
+
+  setHistoryListener(
+    listener: ((availability: DrawingHistoryAvailability) => void) | null,
+  ) {
+    this.#onHistoryChange = listener
+    listener?.(this.historyAvailability)
   }
 
   handle(intention: DrawingIntention) {
@@ -109,13 +132,26 @@ export class CanvasDrawingController {
   }
 
   undo() {
+    this.#finishStroke()
     this.#history = undoDrawing(this.#history)
     this.#renderer.setDocument(this.#history.present)
+    this.#emitHistoryChange()
   }
 
   redo() {
+    this.#finishStroke()
     this.#history = redoDrawing(this.#history)
     this.#renderer.setDocument(this.#history.present)
+    this.#emitHistoryChange()
+  }
+
+  clear() {
+    this.#activeStroke = null
+    this.#renderer.setPreviewStroke(null)
+    const next = applyDrawingCommand(this.#history.present, { type: "CLEAR" })
+    this.#history = recordDrawing(this.#history, next)
+    this.#renderer.setDocument(this.#history.present)
+    this.#emitHistoryChange()
   }
 
   revertAssistance(strokeId: string) {
@@ -133,6 +169,7 @@ export class CanvasDrawingController {
     }
     this.#history = recordDrawing(this.#history, { strokes })
     this.#renderer.setDocument(this.#history.present)
+    this.#emitHistoryChange()
     return true
   }
 
@@ -151,12 +188,17 @@ export class CanvasDrawingController {
     this.#activeStroke = null
     this.#renderer.setPreviewStroke(null)
     this.#renderer.setDocument(this.#history.present)
+    this.#emitHistoryChange()
     if (assisted.correction) {
       this.#onAssistance?.({
         strokeId: assisted.stroke.id,
         ...assisted.correction,
       })
     }
+  }
+
+  #emitHistoryChange() {
+    this.#onHistoryChange?.(this.historyAvailability)
   }
 
   #toLocalPoint(point: { x: number; y: number }) {

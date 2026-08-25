@@ -29,9 +29,7 @@ describe("WorkspaceShell", () => {
     expect(
       screen.getByRole("region", { name: "Aperçu caméra" }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "Annuler — bientôt disponible" }),
-    ).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Annuler" })).toBeDisabled()
     expect(
       screen.getByRole("button", { name: "Exporter bientôt" }),
     ).toBeDisabled()

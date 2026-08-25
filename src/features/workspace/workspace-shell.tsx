@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { Undo2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import type {
+  DrawingHistoryAvailability,
   DrawingStyle,
   StrokeAssistanceFeedback,
 } from "@/core/drawing/canvas-drawing-controller"
@@ -64,6 +65,22 @@ const primitiveNames: Record<AssistedPrimitive, string> = {
   rectangle: "Rectangle",
 }
 
+const emptyHistoryAvailability: DrawingHistoryAvailability = {
+  canUndo: false,
+  canRedo: false,
+  canClear: false,
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT")
+  )
+}
+
 export function WorkspaceShell() {
   const [initialState] = useState<OnboardingState>(() =>
     loadOnboardingCompletion()
@@ -77,6 +94,9 @@ export function WorkspaceShell() {
     useState<StrokeAssistanceMode>("stabilized")
   const [lastAssistance, setLastAssistance] =
     useState<StrokeAssistanceFeedback | null>(null)
+  const [historyAvailability, setHistoryAvailability] = useState(
+    emptyHistoryAvailability,
+  )
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(
     initialState.step,
   )
@@ -216,12 +236,49 @@ export function WorkspaceShell() {
     }
   }, [lastAssistance])
 
+  const undo = useCallback(() => drawingRef.current?.undo(), [])
+  const redo = useCallback(() => drawingRef.current?.redo(), [])
+  const clear = useCallback(() => {
+    drawingRef.current?.clear()
+    setLastAssistance(null)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isEditableTarget(event.target) || !(event.ctrlKey || event.metaKey)) {
+        return
+      }
+
+      const key = event.key.toLowerCase()
+      if (key === "z") {
+        const canApply = event.shiftKey
+          ? historyAvailability.canRedo
+          : historyAvailability.canUndo
+        if (!canApply) return
+        event.preventDefault()
+        if (event.shiftKey) redo()
+        else undo()
+      } else if (key === "y" && historyAvailability.canRedo) {
+        event.preventDefault()
+        redo()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [historyAvailability, redo, undo])
+
   return (
     <div className="workspace-shell">
       <a className="skip-link" href="#drawing-canvas">
         Aller à la toile
       </a>
-      <TopBar />
+      <TopBar
+        {...historyAvailability}
+        onUndo={undo}
+        onRedo={redo}
+        onClear={clear}
+      />
       <main className="workspace-main">
         <ToolRail
           activeTool={activeTool}
@@ -244,6 +301,7 @@ export function WorkspaceShell() {
             assistanceMode={assistanceMode}
             drawingStyle={drawingStyle}
             onAssistance={setLastAssistance}
+            onHistoryChange={setHistoryAvailability}
           />
           <div className="sr-only" aria-live="polite">
             {toolNames[activeTool]} sélectionné, {thickness} pixels
