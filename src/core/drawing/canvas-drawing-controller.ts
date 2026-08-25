@@ -14,6 +14,7 @@ import {
   type AssistedPrimitive,
   type NormalizedPoint,
   type Stroke,
+  type StrokePattern,
   type StrokeTool,
 } from "./drawing-model"
 import { assistStroke, type StrokeAssistanceMode } from "./stroke-assistance"
@@ -23,6 +24,7 @@ export type DrawingStyle = {
   tool: StrokeTool
   color: string
   width: number
+  pattern?: StrokePattern
 }
 
 export type StrokeAssistanceFeedback = {
@@ -41,7 +43,12 @@ export class CanvasDrawingController {
   readonly #renderer: TwoLayerCanvasRenderer
   #history: DrawingHistory
   #bounds: CanvasBounds = { left: 0, top: 0, width: 1, height: 1 }
-  #style: DrawingStyle = { tool: "pen", color: "#111111", width: 0.008 }
+  #style: DrawingStyle = {
+    tool: "pen",
+    color: "#111111",
+    width: 0.008,
+    pattern: "solid",
+  }
   #assistanceMode: StrokeAssistanceMode = "stabilized"
   #activeStroke: Stroke | null = null
   #nextStrokeId = 1
@@ -103,6 +110,10 @@ export class CanvasDrawingController {
         this.#activeStroke = {
           id: `stroke-${this.#nextStrokeId++}`,
           ...this.#style,
+          pattern:
+            this.#style.tool === "eraser"
+              ? "solid"
+              : (this.#style.pattern ?? "solid"),
           points: [point],
         }
         this.#renderer.setPreviewStroke(this.#activeStroke)
