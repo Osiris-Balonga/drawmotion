@@ -53,6 +53,7 @@
   right: var(--space-xl);
   z-index: var(--z-floating-controls);
   display: grid;
+  width: 18rem;
   justify-items: center;
   gap: var(--space-sm);
 }
@@ -70,33 +71,99 @@
   border-radius: 50%;
 }
 
-.camera-preview__badge {
+.camera-preview__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.camera-preview__loader {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary);
+  animation: camera-spin 800ms linear infinite;
+}
+
+.camera-preview__controls {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  gap: var(--space-sm);
   color: var(--foreground);
+}
+
+.camera-preview__message,
+.camera-preview__error {
+  display: flex;
+  width: 100%;
+  gap: var(--space-sm);
+}
+
+.camera-preview__message {
+  align-items: flex-start;
+  padding: var(--space-md);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  background: var(--shell-raised);
+  border-radius: var(--radius-lg);
   box-shadow: 0 0.25rem 0.5rem oklch(0.06 0.01 286 / 20%);
 }
 
-.camera-preview__landmark {
-  position: absolute;
+.camera-preview__message > svg {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.125rem;
+  color: var(--primary);
+}
+
+.camera-preview__error {
+  flex-direction: column;
+}
+
+.camera-preview__status {
+  color: var(--success-foreground);
+  background: var(--success);
+}
+
+.camera-preview__status-dot {
   width: 0.5rem;
   height: 0.5rem;
-  background: var(--success);
-  border: 2px solid var(--shell-sunken);
+  background: currentColor;
   border-radius: 50%;
 }
 
-.camera-preview__landmark--one {
-  top: 31%;
-  left: 43%;
+.camera-preview__device-field {
+  display: grid;
+  width: 100%;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  background: var(--shell-raised);
+  border-radius: var(--radius-lg);
 }
 
-.camera-preview__landmark--two {
-  top: 47%;
-  left: 63%;
+.camera-preview__device-field select {
+  min-height: 2.75rem;
+  padding-inline: var(--space-sm);
+  color: var(--foreground);
+  background: var(--shell-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
-.camera-preview__landmark--three {
-  top: 64%;
-  left: 51%;
+.camera-preview__device-field select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@keyframes camera-spin {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 .gesture-coach {

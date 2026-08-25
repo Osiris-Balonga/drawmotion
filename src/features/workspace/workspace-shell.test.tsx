@@ -24,7 +24,7 @@ describe("WorkspaceShell", () => {
       screen.getByRole("region", { name: "Toile de dessin vide" }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole("region", { name: "Aperçu caméra simulé" }),
+      screen.getByRole("region", { name: "Aperçu caméra" }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Annuler — bientôt disponible" }),
