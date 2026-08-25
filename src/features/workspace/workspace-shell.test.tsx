@@ -95,10 +95,13 @@ describe("WorkspaceShell", () => {
       name: /Formes — Régularise les lignes/,
     })
     expect(stabilized).toHaveAttribute("aria-pressed", "true")
+    expect(stabilized).toHaveAttribute("data-pressed")
 
     await user.click(shapes)
 
     expect(shapes).toHaveAttribute("aria-pressed", "true")
+    expect(shapes).toHaveAttribute("data-pressed")
+    expect(stabilized).not.toHaveAttribute("data-pressed")
     expect(stabilized).toHaveAttribute("aria-pressed", "false")
   })
 })

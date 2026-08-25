@@ -286,7 +286,7 @@
   font-weight: 500;
 }
 
-.precision-mode__option[data-state="on"] {
+.precision-mode__option[data-pressed] {
   color: var(--primary-foreground);
   background: var(--primary);
 }
