@@ -97,6 +97,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify MediaPipe assets
+        run: pnpm verify:vision-assets
+
       - name: Build production assets
         run: pnpm build
 

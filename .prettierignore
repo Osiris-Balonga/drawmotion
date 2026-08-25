@@ -2,6 +2,6 @@ coverage/
 dist/
 node_modules/
 playwright-report/
+public/vision/wasm/
 test-results/
 pnpm-lock.yaml
-
