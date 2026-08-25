@@ -40,8 +40,8 @@ export function TopBar({
   const [clearOpen, setClearOpen] = useState(false)
 
   return (
-    <header className="border-border bg-background flex h-16 items-center border-b px-4">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+    <header className="workspace-topbar">
+      <div className="workspace-topbar__island workspace-topbar__brand">
         <span
           aria-hidden="true"
           className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-lg text-sm font-semibold"
@@ -60,11 +60,12 @@ export function TopBar({
 
       <nav
         aria-label="Historique du dessin"
-        className="flex items-center gap-1"
+        className="workspace-topbar__island workspace-topbar__history"
       >
         <ToolButton
           label="Annuler"
           shortcut="Ctrl Z"
+          tooltipSide="bottom"
           variant="ghost"
           disabled={!canUndo}
           onClick={onUndo}
@@ -74,6 +75,7 @@ export function TopBar({
         <ToolButton
           label="Rétablir"
           shortcut="Ctrl Y"
+          tooltipSide="bottom"
           variant="ghost"
           disabled={!canRedo}
           onClick={onRedo}
@@ -85,6 +87,7 @@ export function TopBar({
             render={
               <ToolButton
                 label="Effacer la toile"
+                tooltipSide="bottom"
                 variant="ghost"
                 disabled={!canClear}
               >
@@ -118,7 +121,7 @@ export function TopBar({
         </AlertDialog>
       </nav>
 
-      <div className="flex flex-1 items-center justify-end gap-3">
+      <div className="workspace-topbar__island workspace-topbar__actions">
         <Badge
           variant="outline"
           className="text-muted-foreground hidden lg:flex"

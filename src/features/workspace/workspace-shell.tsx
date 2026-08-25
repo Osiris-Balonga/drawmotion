@@ -52,7 +52,6 @@ import {
   DrawingCanvas,
   type DrawingCanvasHandle,
 } from "@/features/workspace/drawing-canvas"
-import { PrecisionModeSelector } from "@/features/workspace/precision-mode-selector"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 import "./workspace.css"
@@ -316,9 +315,11 @@ export function WorkspaceShell() {
           activeTool={activeTool}
           color={color}
           thickness={thickness}
+          assistanceMode={assistanceMode}
           onToolChange={setActiveTool}
           onColorChange={setColor}
           onThicknessChange={setThickness}
+          onAssistanceModeChange={changeAssistanceMode}
         />
 
         <section
@@ -352,10 +353,6 @@ export function WorkspaceShell() {
           ) : null}
           {onboardingStep === 3 ? (
             <>
-              <PrecisionModeSelector
-                value={assistanceMode}
-                onValueChange={changeAssistanceMode}
-              />
               {lastAssistance ? (
                 <div
                   className="shape-assistance-feedback"

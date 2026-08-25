@@ -11,15 +11,18 @@ describe("ToolRail", () => {
     const onToolChange = vi.fn()
     const onColorChange = vi.fn()
     const onThicknessChange = vi.fn()
+    const onAssistanceModeChange = vi.fn()
     render(
       <AppProviders>
         <ToolRail
           activeTool="pen"
           color="#17171c"
           thickness={8}
+          assistanceMode="stabilized"
           onToolChange={onToolChange}
           onColorChange={onColorChange}
           onThicknessChange={onThicknessChange}
+          onAssistanceModeChange={onAssistanceModeChange}
         />
       </AppProviders>,
     )
@@ -31,9 +34,18 @@ describe("ToolRail", () => {
     await user.click(screen.getByRole("button", { name: "Gomme" }))
     expect(onToolChange).toHaveBeenCalledWith("eraser")
 
+    const black = screen.getByRole("button", { name: "Encre" })
+    expect(black).toHaveAttribute("aria-pressed", "true")
+
     await user.click(screen.getByRole("button", { name: "Violet" }))
     expect(onColorChange).toHaveBeenCalledWith("#7c3aed")
     expect(onToolChange).toHaveBeenLastCalledWith("pen")
+
+    const shapes = screen.getByRole("button", {
+      name: /Formes — Régularise les lignes/,
+    })
+    await user.click(shapes)
+    expect(onAssistanceModeChange).toHaveBeenCalledWith("shapes")
 
     await user.click(screen.getByRole("button", { name: "Épaisseur 8 pixels" }))
     const slider = screen.getByRole("group", {
