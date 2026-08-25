@@ -40,6 +40,9 @@ describe("ToolRail", () => {
       name: "Épaisseur du trait",
     })
     expect(slider.querySelector('[data-slot="slider-thumb"]')).not.toBeNull()
-    expect(onThicknessChange).not.toHaveBeenCalled()
+    const preset = screen.getByRole("button", { name: "12 px" })
+    expect(preset).toHaveAttribute("data-gesture-control")
+    await user.click(preset)
+    expect(onThicknessChange).toHaveBeenCalledWith(12)
   })
 })
