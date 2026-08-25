@@ -34,7 +34,7 @@ function toTrackedHands(result: HandLandmarkerResult): TrackedHand[] {
     const handedness = result.handedness[index]?.[0]
     return {
       handedness: normalizeHandedness(handedness?.categoryName),
-      confidence: handedness?.score ?? 0,
+      handednessConfidence: handedness?.score ?? 0,
       landmarks: landmarks.map(copyLandmark),
       worldLandmarks: (result.worldLandmarks[index] ?? []).map(copyLandmark),
     }

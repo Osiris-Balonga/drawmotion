@@ -42,7 +42,9 @@ describe("vision worker protocol", () => {
   it("provides deterministic 21-point landmark fixtures", () => {
     expect(openHandLandmarks).toHaveLength(21)
     expect(openHandLandmarks[0]).toEqual({ x: 0.3, y: 0.8, z: 0 })
-    expect(deterministicTrackingResult.hands[0]?.confidence).toBe(0.98)
+    expect(deterministicTrackingResult.hands[0]?.handednessConfidence).toBe(
+      0.98,
+    )
   })
 
   it("provides a disposable fake tracker", async () => {

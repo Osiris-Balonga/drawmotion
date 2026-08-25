@@ -1,6 +1,4 @@
 export const GESTURE_THRESHOLDS = {
-  /** Minimum tracker confidence before a hand may produce a gesture. */
-  minimumHandConfidence: 0.65,
   /** Thumb-to-index distance, divided by palm size, required to enter pinch. */
   pinchEnterRatio: 0.18,
   /** Larger release boundary that prevents chatter around pinch entry. */

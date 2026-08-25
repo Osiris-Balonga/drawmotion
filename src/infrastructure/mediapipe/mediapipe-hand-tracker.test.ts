@@ -80,13 +80,13 @@ describe("MediaPipeHandTracker", () => {
       hands: [
         {
           handedness: "Left",
-          confidence: 0.96,
+          handednessConfidence: 0.96,
           landmarks: [{ x: 0.1, y: 0.2, z: -0.01, visibility: 0.9 }],
           worldLandmarks: [{ x: 0.01, y: 0.02, z: -0.03 }],
         },
         {
           handedness: "Unknown",
-          confidence: 0,
+          handednessConfidence: 0,
           landmarks: [{ x: 0.4, y: 0.5, z: -0.02 }],
           worldLandmarks: [],
         },

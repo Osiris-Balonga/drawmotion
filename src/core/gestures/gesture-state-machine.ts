@@ -7,10 +7,13 @@ import {
 } from "./drawing-intentions"
 
 export type GestureMachineMode = "idle" | "drawing" | "paused" | "lost"
+export type GestureInterruption = "release" | "tracking-gap" | null
 
 export type GestureMachineState = {
   mode: GestureMachineMode
   lastPoint: CanvasPoint | null
+  interruption: GestureInterruption
+  interruptionFrames: number
 }
 
 export type GestureFrame = {
@@ -27,7 +30,12 @@ export type GestureTransition = {
 export const initialGestureMachineState: GestureMachineState = {
   mode: "idle",
   lastPoint: null,
+  interruption: null,
+  interruptionFrames: 0,
 }
+
+const RELEASE_CONFIRMATION_FRAMES = 2
+const TRACKING_GRACE_FRAMES = 3
 
 function pointIntention(
   type: "POINTER_MOVE" | "DRAW_START" | "DRAW_MOVE" | "DRAW_END",
@@ -54,6 +62,28 @@ function stopDrawing(
   }
 }
 
+function clearInterruption(
+  state: Pick<GestureMachineState, "mode" | "lastPoint">,
+): GestureMachineState {
+  return {
+    ...state,
+    interruption: null,
+    interruptionFrames: 0,
+  }
+}
+
+function pendingInterruption(
+  state: GestureMachineState,
+  interruption: Exclude<GestureInterruption, null>,
+) {
+  const interruptionFrames =
+    state.interruption === interruption ? state.interruptionFrames + 1 : 1
+  return {
+    interruption,
+    interruptionFrames,
+  }
+}
+
 export function transitionGestureState(
   state: GestureMachineState,
   frame: GestureFrame,
@@ -74,8 +104,30 @@ export function transitionGestureState(
     const drawType = state.mode === "drawing" ? "DRAW_MOVE" : "DRAW_START"
     intentions.push(pointIntention(drawType, visiblePoint, frame.timestampMs))
     return {
-      state: { mode: "drawing", lastPoint: visiblePoint },
+      state: clearInterruption({ mode: "drawing", lastPoint: visiblePoint }),
       intentions,
+    }
+  }
+
+  if (state.mode === "drawing") {
+    const interruption =
+      frame.gesture === "open-hand"
+        ? "release"
+        : frame.gesture === "uncertain" || frame.gesture === "tracking-lost"
+          ? "tracking-gap"
+          : null
+    if (interruption) {
+      const pending = pendingInterruption(state, interruption)
+      const requiredFrames =
+        interruption === "release"
+          ? RELEASE_CONFIRMATION_FRAMES
+          : TRACKING_GRACE_FRAMES
+      if (pending.interruptionFrames < requiredFrames) {
+        return {
+          state: { ...state, ...pending },
+          intentions,
+        }
+      }
     }
   }
 
@@ -85,7 +137,7 @@ export function transitionGestureState(
       intentions.push(signalIntention("TRACKING_LOST", frame.timestampMs))
     }
     return {
-      state: { mode: "lost", lastPoint: state.lastPoint },
+      state: clearInterruption({ mode: "lost", lastPoint: state.lastPoint }),
       intentions,
     }
   }
@@ -100,19 +152,19 @@ export function transitionGestureState(
       intentions.push(signalIntention("PAUSE", frame.timestampMs))
     }
     return {
-      state: {
+      state: clearInterruption({
         mode: "paused",
         lastPoint: visiblePoint ?? state.lastPoint,
-      },
+      }),
       intentions,
     }
   }
 
   return {
-    state: {
+    state: clearInterruption({
       mode: "idle",
       lastPoint: visiblePoint ?? state.lastPoint,
-    },
+    }),
     intentions,
   }
 }

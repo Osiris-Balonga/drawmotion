@@ -10,7 +10,6 @@ export type GestureKind =
 
 export type GestureClassification = {
   kind: GestureKind
-  confidence: number
   pinchRatio: number | null
   extendedFingerCount: number
 }
@@ -70,7 +69,6 @@ export function classifyGesture(
   if (!hand || hand.landmarks.length < 21) {
     return {
       kind: "tracking-lost",
-      confidence: 0,
       pinchRatio: null,
       extendedFingerCount: 0,
     }
@@ -78,13 +76,20 @@ export function classifyGesture(
 
   const pinchRatio = measurePinchRatio(hand.landmarks)
   const extendedFingerCount = countExtendedFingers(hand.landmarks)
-  if (
-    hand.confidence < GESTURE_THRESHOLDS.minimumHandConfidence ||
-    pinchRatio === null
-  ) {
+  if (pinchRatio === null) {
     return {
       kind: "uncertain",
-      confidence: hand.confidence,
+      pinchRatio,
+      extendedFingerCount,
+    }
+  }
+
+  const isContinuingPinch =
+    previousKind === "pinch" &&
+    pinchRatio <= GESTURE_THRESHOLDS.pinchExitRatio + Number.EPSILON * 16
+  if (isContinuingPinch) {
+    return {
+      kind: "pinch",
       pinchRatio,
       extendedFingerCount,
     }
@@ -93,20 +98,14 @@ export function classifyGesture(
   if (extendedFingerCount <= GESTURE_THRESHOLDS.fistMaximumExtendedFingers) {
     return {
       kind: "fist",
-      confidence: hand.confidence,
       pinchRatio,
       extendedFingerCount,
     }
   }
 
-  const pinchBoundary =
-    previousKind === "pinch"
-      ? GESTURE_THRESHOLDS.pinchExitRatio
-      : GESTURE_THRESHOLDS.pinchEnterRatio
-  if (pinchRatio <= pinchBoundary + Number.EPSILON * 16) {
+  if (pinchRatio <= GESTURE_THRESHOLDS.pinchEnterRatio + Number.EPSILON * 16) {
     return {
       kind: "pinch",
-      confidence: hand.confidence,
       pinchRatio,
       extendedFingerCount,
     }
@@ -117,7 +116,6 @@ export function classifyGesture(
   ) {
     return {
       kind: "open-hand",
-      confidence: hand.confidence,
       pinchRatio,
       extendedFingerCount,
     }
@@ -125,7 +123,6 @@ export function classifyGesture(
 
   return {
     kind: "uncertain",
-    confidence: hand.confidence,
     pinchRatio,
     extendedFingerCount,
   }

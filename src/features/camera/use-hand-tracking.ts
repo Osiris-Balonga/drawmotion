@@ -58,6 +58,7 @@ export function useHandTracking(
 
     let active = true
     let previousGesture: GestureKind = "tracking-lost"
+    let ambiguousFrames = 0
     const renderer = new LandmarkOverlayRenderer(canvas, video, previewFit)
     let tracker: HandTrackerPort
     try {
@@ -79,7 +80,16 @@ export function useHandTracking(
             result.hands[0] ?? null,
             previousGesture,
           )
-          previousGesture = classification.kind
+          if (
+            classification.kind === "uncertain" ||
+            classification.kind === "tracking-lost"
+          ) {
+            ambiguousFrames += 1
+            if (ambiguousFrames >= 3) previousGesture = classification.kind
+          } else {
+            ambiguousFrames = 0
+            previousGesture = classification.kind
+          }
           onGestureFrameRef.current?.(result, classification.kind)
           setGesture((current) =>
             current === classification.kind ? current : classification.kind,

@@ -27,7 +27,15 @@ describe("HandTrackingSession", () => {
     expect(
       classifyTrackingQuality({
         ...deterministicTrackingResult,
-        hands: [{ ...deterministicTrackingResult.hands[0]!, confidence: 0.6 }],
+        hands: [
+          {
+            ...deterministicTrackingResult.hands[0]!,
+            landmarks: deterministicTrackingResult.hands[0]!.landmarks.slice(
+              0,
+              20,
+            ),
+          },
+        ],
       }),
     ).toBe("uncertain")
     expect(

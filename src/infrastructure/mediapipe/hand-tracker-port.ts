@@ -7,7 +7,7 @@ export type NormalizedLandmark = {
 
 export type TrackedHand = {
   handedness: "Left" | "Right" | "Unknown"
-  confidence: number
+  handednessConfidence: number
   landmarks: NormalizedLandmark[]
   worldLandmarks: NormalizedLandmark[]
 }
