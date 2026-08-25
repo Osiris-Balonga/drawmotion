@@ -1,9 +1,12 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import { Undo2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
+import type {
+  DrawingStyle,
+  StrokeAssistanceFeedback,
+} from "@/core/drawing/canvas-drawing-controller"
 import type { AssistedPrimitive } from "@/core/drawing/drawing-model"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
@@ -31,7 +34,13 @@ import {
   resetOnboardingCompletion,
   saveOnboardingCompletion,
 } from "@/features/onboarding/onboarding-persistence"
-import { ToolRail, type DrawingTool } from "@/features/toolbar/tool-rail"
+import { findGestureControlAtPoint } from "@/features/toolbar/gesture-control-hit-test"
+import {
+  drawingColors,
+  type DrawingColor,
+  type DrawingTool,
+} from "@/features/toolbar/drawing-tools"
+import { ToolRail } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
 import {
   DrawingCanvas,
@@ -62,6 +71,8 @@ export function WorkspaceShell() {
       : initialOnboardingState,
   )
   const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
+  const [color, setColor] = useState<DrawingColor>(drawingColors[0].value)
+  const [thickness, setThickness] = useState(8)
   const [assistanceMode, setAssistanceMode] =
     useState<StrokeAssistanceMode>("stabilized")
   const [lastAssistance, setLastAssistance] =
@@ -76,6 +87,17 @@ export function WorkspaceShell() {
     initialGestureMachineState,
   )
   const onboardingStateRef = useRef<OnboardingState>(initialState)
+  const previousPinchPhaseRef = useRef<PinchPhase>("released")
+  const gestureControlActiveRef = useRef(false)
+
+  const drawingStyle = useMemo<DrawingStyle>(
+    () => ({
+      tool: activeTool === "eraser" ? "eraser" : "pen",
+      color,
+      width: thickness / 1000,
+    }),
+    [activeTool, color, thickness],
+  )
 
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
@@ -118,16 +140,50 @@ export function WorkspaceShell() {
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
       if (onboarding.step < 3) return
+      const pinchBecameActive =
+        pinchPhase === "active" && previousPinchPhaseRef.current !== "active"
+      previousPinchPhaseRef.current = pinchPhase
+      if (
+        mapped &&
+        filtered.reliable &&
+        pinchBecameActive &&
+        !gestureControlActiveRef.current
+      ) {
+        const control = findGestureControlAtPoint(mapped)
+        if (control) {
+          control.click()
+          gestureControlActiveRef.current = true
+        }
+      }
+      if (gestureControlActiveRef.current) {
+        drawingRef.current?.handleIntentions([
+          ...(mapped
+            ? ([
+                {
+                  version: 1,
+                  type: "POINTER_MOVE",
+                  point: mapped,
+                  timestampMs: result.timestampMs,
+                },
+              ] as const)
+            : []),
+          { version: 1, type: "PAUSE", timestampMs: result.timestampMs },
+        ])
+        if (pinchPhase === "released") gestureControlActiveRef.current = false
+        return
+      }
       const drawingGesture: GestureKind =
         quality === "lost"
           ? "tracking-lost"
           : quality === "uncertain"
             ? "uncertain"
-            : pinchPhase !== "released"
-              ? "pinch"
-              : gesture === "fist"
-                ? "fist"
-                : "open-hand"
+            : activeTool === "pointer"
+              ? "open-hand"
+              : pinchPhase !== "released"
+                ? "pinch"
+                : gesture === "fist"
+                  ? "fist"
+                  : "open-hand"
       const transition = transitionGestureState(gestureStateRef.current, {
         gesture: drawingGesture,
         point: filtered.reliable ? mapped : null,
@@ -145,7 +201,7 @@ export function WorkspaceShell() {
       }
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [onboardingStep],
+    [activeTool, onboardingStep],
   )
 
   const changeAssistanceMode = useCallback((mode: StrokeAssistanceMode) => {
@@ -167,7 +223,14 @@ export function WorkspaceShell() {
       </a>
       <TopBar />
       <main className="workspace-main">
-        <ToolRail activeTool={activeTool} onToolChange={setActiveTool} />
+        <ToolRail
+          activeTool={activeTool}
+          color={color}
+          thickness={thickness}
+          onToolChange={setActiveTool}
+          onColorChange={setColor}
+          onThicknessChange={setThickness}
+        />
 
         <section
           ref={stageRef}
@@ -179,10 +242,11 @@ export function WorkspaceShell() {
           <DrawingCanvas
             ref={drawingRef}
             assistanceMode={assistanceMode}
+            drawingStyle={drawingStyle}
             onAssistance={setLastAssistance}
           />
           <div className="sr-only" aria-live="polite">
-            {toolNames[activeTool]} sélectionné — simulation
+            {toolNames[activeTool]} sélectionné, {thickness} pixels
           </div>
           <CameraPreview
             calibrating={onboardingStep < 3}

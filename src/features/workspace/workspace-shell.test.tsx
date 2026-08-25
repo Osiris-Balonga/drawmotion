@@ -41,8 +41,8 @@ describe("WorkspaceShell", () => {
     const user = userEvent.setup()
     renderWorkspace()
 
-    const pen = screen.getByRole("button", { name: "Stylo simulé" })
-    const eraser = screen.getByRole("button", { name: "Gomme simulée" })
+    const pen = screen.getByRole("button", { name: "Stylo" })
+    const eraser = screen.getByRole("button", { name: "Gomme" })
 
     expect(pen).toHaveAttribute("aria-pressed", "true")
     eraser.focus()
@@ -50,9 +50,7 @@ describe("WorkspaceShell", () => {
 
     expect(eraser).toHaveAttribute("aria-pressed", "true")
     expect(pen).toHaveAttribute("aria-pressed", "false")
-    expect(
-      screen.getByText("Gomme sélectionné — simulation"),
-    ).toBeInTheDocument()
+    expect(screen.getByText("Gomme sélectionné, 8 pixels")).toBeInTheDocument()
   })
 
   it("présente la calibration réelle avant le dessin", () => {

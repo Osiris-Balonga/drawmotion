@@ -1,6 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
-import { CanvasDrawingController } from "@/core/drawing/canvas-drawing-controller"
+import {
+  CanvasDrawingController,
+  type DrawingStyle,
+} from "@/core/drawing/canvas-drawing-controller"
 import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import { TwoLayerCanvasRenderer } from "@/core/drawing/two-layer-canvas-renderer"
@@ -14,6 +17,7 @@ export type DrawingCanvasHandle = {
 
 type DrawingCanvasProps = {
   assistanceMode: StrokeAssistanceMode
+  drawingStyle: DrawingStyle
   onAssistance: (feedback: StrokeAssistanceFeedback) => void
 }
 
@@ -21,7 +25,7 @@ export const DrawingCanvas = forwardRef<
   DrawingCanvasHandle,
   DrawingCanvasProps
 >(function DrawingCanvas(
-  { assistanceMode, onAssistance }: DrawingCanvasProps,
+  { assistanceMode, drawingStyle, onAssistance }: DrawingCanvasProps,
   ref,
 ) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -30,6 +34,7 @@ export const DrawingCanvas = forwardRef<
   const controllerRef = useRef<CanvasDrawingController | null>(null)
   const onAssistanceRef = useRef(onAssistance)
   const assistanceModeRef = useRef(assistanceMode)
+  const drawingStyleRef = useRef(drawingStyle)
 
   useEffect(() => {
     onAssistanceRef.current = onAssistance
@@ -39,6 +44,11 @@ export const DrawingCanvas = forwardRef<
     assistanceModeRef.current = assistanceMode
     controllerRef.current?.setAssistanceMode(assistanceMode)
   }, [assistanceMode])
+
+  useEffect(() => {
+    drawingStyleRef.current = drawingStyle
+    controllerRef.current?.setStyle(drawingStyle)
+  }, [drawingStyle])
 
   useImperativeHandle(
     ref,
@@ -65,6 +75,7 @@ export const DrawingCanvas = forwardRef<
     const renderer = new TwoLayerCanvasRenderer(persistent, interaction)
     const controller = new CanvasDrawingController(renderer)
     controller.setAssistanceMode(assistanceModeRef.current)
+    controller.setStyle(drawingStyleRef.current)
     controller.setAssistanceListener((feedback) =>
       onAssistanceRef.current(feedback),
     )
