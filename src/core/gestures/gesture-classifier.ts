@@ -4,6 +4,7 @@ import type {
 } from "@/infrastructure/mediapipe/hand-tracker-port"
 
 import { GESTURE_THRESHOLDS } from "./gesture-thresholds"
+import { measurePinchRatio } from "./pinch-detector"
 
 export type GestureKind =
   "pinch" | "open-hand" | "fist" | "uncertain" | "tracking-lost"
@@ -15,8 +16,6 @@ export type GestureClassification = {
 }
 
 const WRIST = 0
-const THUMB_TIP = 4
-const MIDDLE_MCP = 9
 const FINGER_JOINTS = [
   { pip: 6, tip: 8 },
   { pip: 10, tip: 12 },
@@ -50,18 +49,6 @@ function countExtendedFingers(landmarks: NormalizedLandmark[]) {
   }, 0)
 }
 
-function measurePinchRatio(landmarks: NormalizedLandmark[]) {
-  const wrist = landmarkAt(landmarks, WRIST)
-  const thumbTip = landmarkAt(landmarks, THUMB_TIP)
-  const indexTip = landmarkAt(landmarks, 8)
-  const middleMcp = landmarkAt(landmarks, MIDDLE_MCP)
-  if (!wrist || !thumbTip || !indexTip || !middleMcp) return null
-
-  const palmSize = distance(wrist, middleMcp)
-  if (palmSize <= Number.EPSILON) return null
-  return distance(thumbTip, indexTip) / palmSize
-}
-
 export function classifyGesture(
   hand: TrackedHand | null,
   previousKind: GestureKind = "tracking-lost",
@@ -74,7 +61,7 @@ export function classifyGesture(
     }
   }
 
-  const pinchRatio = measurePinchRatio(hand.landmarks)
+  const pinchRatio = measurePinchRatio(hand)
   const extendedFingerCount = countExtendedFingers(hand.landmarks)
   if (pinchRatio === null) {
     return {

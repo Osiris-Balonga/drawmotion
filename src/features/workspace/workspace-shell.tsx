@@ -77,6 +77,7 @@ export function WorkspaceShell() {
       result: HandTrackingResult,
       gesture: GestureKind,
       quality: TrackingQuality,
+      pinchActive: boolean,
     ) => {
       const bounds = stageRef.current?.getBoundingClientRect()
       const hand = result.hands[0] ?? null
@@ -100,8 +101,17 @@ export function WorkspaceShell() {
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
       if (onboarding.step < 3) return
+      const drawingGesture: GestureKind = pinchActive
+        ? "pinch"
+        : quality === "lost"
+          ? "tracking-lost"
+          : quality === "uncertain"
+            ? "uncertain"
+            : gesture === "fist"
+              ? "fist"
+              : "open-hand"
       const transition = transitionGestureState(gestureStateRef.current, {
-        gesture,
+        gesture: drawingGesture,
         point: filtered.reliable ? mapped : null,
         timestampMs: result.timestampMs,
         continuous: !filtered.discontinuity,
