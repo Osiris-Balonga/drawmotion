@@ -35,6 +35,17 @@ function createAdapter(overrides: Partial<CameraAdapter> = {}) {
 }
 
 describe("CameraPreview", () => {
+  it("keeps the floating preview layout while calibrating", () => {
+    const { adapter } = createAdapter()
+
+    render(<CameraPreview adapterFactory={() => adapter} calibrating />)
+
+    expect(screen.getByRole("region", { name: "Aperçu caméra" })).toHaveClass(
+      "camera-preview",
+      "camera-preview--calibrating",
+    )
+  })
+
   it("explains local processing before requesting permission", () => {
     const { adapter } = createAdapter()
 
