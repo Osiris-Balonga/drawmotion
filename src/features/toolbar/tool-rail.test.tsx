@@ -5,47 +5,59 @@ import { describe, expect, it, vi } from "vitest"
 import { AppProviders } from "@/app/providers"
 import { ToolRail } from "@/features/toolbar/tool-rail"
 
+function renderToolRail() {
+  const props = {
+    activeTool: "pen" as const,
+    color: "#17171c" as const,
+    thickness: 8,
+    assistanceMode: "stabilized" as const,
+    onToolChange: vi.fn(),
+    onColorChange: vi.fn(),
+    onThicknessChange: vi.fn(),
+    onAssistanceModeChange: vi.fn(),
+  }
+  render(
+    <AppProviders>
+      <ToolRail {...props} />
+    </AppProviders>,
+  )
+  return props
+}
+
 describe("ToolRail", () => {
-  it("exposes real pen, eraser, color and thickness controls", async () => {
+  it("exposes selected tools and colors", async () => {
     const user = userEvent.setup()
-    const onToolChange = vi.fn()
-    const onColorChange = vi.fn()
-    const onThicknessChange = vi.fn()
-    const onAssistanceModeChange = vi.fn()
-    render(
-      <AppProviders>
-        <ToolRail
-          activeTool="pen"
-          color="#17171c"
-          thickness={8}
-          assistanceMode="stabilized"
-          onToolChange={onToolChange}
-          onColorChange={onColorChange}
-          onThicknessChange={onThicknessChange}
-          onAssistanceModeChange={onAssistanceModeChange}
-        />
-      </AppProviders>,
-    )
+    const props = renderToolRail()
 
     expect(screen.getByRole("button", { name: "Stylo" })).toHaveAttribute(
       "aria-pressed",
       "true",
     )
     await user.click(screen.getByRole("button", { name: "Gomme" }))
-    expect(onToolChange).toHaveBeenCalledWith("eraser")
+    expect(props.onToolChange).toHaveBeenCalledWith("eraser")
 
     const black = screen.getByRole("button", { name: "Encre" })
     expect(black).toHaveAttribute("aria-pressed", "true")
-
     await user.click(screen.getByRole("button", { name: "Violet" }))
-    expect(onColorChange).toHaveBeenCalledWith("#7c3aed")
-    expect(onToolChange).toHaveBeenLastCalledWith("pen")
+    expect(props.onColorChange).toHaveBeenCalledWith("#7c3aed")
+    expect(props.onToolChange).toHaveBeenLastCalledWith("pen")
+  })
 
+  it("changes precision from the unified dock", async () => {
+    const user = userEvent.setup()
+    const props = renderToolRail()
     const shapes = screen.getByRole("button", {
       name: /Formes — Régularise les lignes/,
     })
+
     await user.click(shapes)
-    expect(onAssistanceModeChange).toHaveBeenCalledWith("shapes")
+
+    expect(props.onAssistanceModeChange).toHaveBeenCalledWith("shapes")
+  })
+
+  it("offers a gesture-accessible thickness popover", async () => {
+    const user = userEvent.setup()
+    const props = renderToolRail()
 
     await user.click(screen.getByRole("button", { name: "Épaisseur 8 pixels" }))
     const slider = screen.getByRole("group", {
@@ -55,6 +67,6 @@ describe("ToolRail", () => {
     const preset = screen.getByRole("button", { name: "12 px" })
     expect(preset).toHaveAttribute("data-gesture-control")
     await user.click(preset)
-    expect(onThicknessChange).toHaveBeenCalledWith(12)
+    expect(props.onThicknessChange).toHaveBeenCalledWith(12)
   })
 })

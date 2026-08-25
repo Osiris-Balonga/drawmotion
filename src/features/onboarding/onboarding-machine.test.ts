@@ -82,5 +82,16 @@ describe("onboarding progression", () => {
     expect(previousOnboardingStep(initialOnboardingState)).toBe(
       initialOnboardingState,
     )
+    const drawing = createOnboardingState("draw")
+    expect(observeOnboardingEvent(drawing, { type: "COLOR_CHANGED" })).toBe(
+      drawing,
+    )
+    const complete = createOnboardingState("complete")
+    expect(observeOnboardingEvent(complete, { type: "UNDO_USED" })).toBe(
+      complete,
+    )
+    expect(previousOnboardingStep(complete)).toEqual(
+      createOnboardingState("correct"),
+    )
   })
 })

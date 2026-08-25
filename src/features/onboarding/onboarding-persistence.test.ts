@@ -56,6 +56,25 @@ describe("onboarding progress persistence", () => {
     expect(loadOnboardingCompletion(adapter)).toBe(false)
   })
 
+  it("normalizes skipped and newly-started sessions", () => {
+    const { adapter } = createStorage()
+
+    saveOnboardingProgress(
+      { status: "skipped", currentStep: "cursor" },
+      adapter,
+    )
+    expect(loadOnboardingProgress(adapter)).toEqual({
+      status: "skipped",
+      currentStep: "complete",
+    })
+
+    saveOnboardingProgress({ status: "new", currentStep: "draw" }, adapter)
+    expect(loadOnboardingProgress(adapter)).toEqual({
+      status: "in_progress",
+      currentStep: "draw",
+    })
+  })
+
   it("treats missing, malformed and outdated values as a first visit", () => {
     const values = [
       null,
