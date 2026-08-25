@@ -31,7 +31,7 @@ describe("WorkspaceShell", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Annuler" })).toBeDisabled()
     expect(
-      screen.getByRole("button", { name: "Exporter bientôt" }),
+      screen.getByRole("button", { name: "Exporter en PNG" }),
     ).toBeDisabled()
   })
 

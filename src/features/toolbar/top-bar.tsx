@@ -25,6 +25,7 @@ type TopBarProps = {
   onUndo: () => void
   onRedo: () => void
   onClear: () => void
+  onExport: () => void
 }
 
 export function TopBar({
@@ -34,6 +35,7 @@ export function TopBar({
   onUndo,
   onRedo,
   onClear,
+  onExport,
 }: TopBarProps) {
   const [clearOpen, setClearOpen] = useState(false)
 
@@ -124,9 +126,15 @@ export function TopBar({
           Démonstration simulée
         </Badge>
         <Separator orientation="vertical" className="h-6" />
-        <Button className="h-11" variant="outline" disabled>
+        <Button
+          className="h-11"
+          variant="outline"
+          data-gesture-control=""
+          disabled={!canClear}
+          onClick={onExport}
+        >
           <Download aria-hidden="true" data-icon="inline-start" />
-          Exporter bientôt
+          Exporter en PNG
         </Button>
       </div>
     </header>

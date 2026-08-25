@@ -13,6 +13,7 @@ function renderTopBar(overrides: Partial<Parameters<typeof TopBar>[0]> = {}) {
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onClear: vi.fn(),
+    onExport: vi.fn(),
     ...overrides,
   }
   render(
