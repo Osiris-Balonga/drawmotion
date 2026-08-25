@@ -50,6 +50,7 @@ export type VisionErrorResponse = {
   version: typeof VISION_PROTOCOL_VERSION
   type: "ERROR"
   code: "INIT_FAILED" | "DETECTION_FAILED" | "PROTOCOL_ERROR"
+  frameId?: number
   message: string
   recoverable: boolean
 }
