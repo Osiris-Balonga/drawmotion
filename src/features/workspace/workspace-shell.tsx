@@ -4,6 +4,7 @@ import { CameraPreview } from "@/features/camera/camera-preview"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
 import { ToolRail, type DrawingTool } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
+import { DrawingCanvas } from "@/features/workspace/drawing-canvas"
 
 import "./workspace.css"
 
@@ -32,6 +33,7 @@ export function WorkspaceShell() {
           aria-label="Toile de dessin vide"
           className="drawing-stage"
         >
+          <DrawingCanvas />
           <div className="sr-only" aria-live="polite">
             {toolNames[activeTool]} sélectionné — simulation
           </div>

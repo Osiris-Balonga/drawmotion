@@ -21,6 +21,7 @@ export class TwoLayerCanvasRenderer {
   readonly #cancelFrame: (handle: number) => void
   #document: DrawingDocument = emptyDrawingDocument
   #pointer: CanvasPoint | null = null
+  #previewStroke: Stroke | null = null
   #width = 0
   #height = 0
   #frameHandle: number | null = null
@@ -70,6 +71,11 @@ export class TwoLayerCanvasRenderer {
     this.requestRender()
   }
 
+  setPreviewStroke(stroke: Stroke | null) {
+    this.#previewStroke = stroke
+    this.requestRender()
+  }
+
   requestRender() {
     if (this.#frameHandle !== null) return
     this.#frameHandle = this.#requestFrame(() => {
@@ -110,6 +116,30 @@ export class TwoLayerCanvasRenderer {
     for (const stroke of this.#document.strokes) this.#renderStroke(stroke)
 
     this.#interactionContext.clearRect(0, 0, this.#width, this.#height)
+    if (this.#previewStroke) {
+      const [first, ...rest] = this.#previewStroke.points
+      if (first) {
+        this.#interactionContext.save()
+        this.#interactionContext.strokeStyle = this.#previewStroke.color
+        this.#interactionContext.lineWidth =
+          this.#previewStroke.width * Math.min(this.#width, this.#height)
+        this.#interactionContext.lineCap = "round"
+        this.#interactionContext.lineJoin = "round"
+        this.#interactionContext.beginPath()
+        this.#interactionContext.moveTo(
+          first.x * this.#width,
+          first.y * this.#height,
+        )
+        for (const point of rest) {
+          this.#interactionContext.lineTo(
+            point.x * this.#width,
+            point.y * this.#height,
+          )
+        }
+        this.#interactionContext.stroke()
+        this.#interactionContext.restore()
+      }
+    }
     if (!this.#pointer) return
     this.#interactionContext.beginPath()
     this.#interactionContext.arc(
