@@ -58,4 +58,16 @@ describe("TopBar", () => {
     expect(props.onClear).toHaveBeenCalledOnce()
     expect(dialog).not.toBeInTheDocument()
   })
+
+  it("exports only when the canvas contains a drawing", async () => {
+    const user = userEvent.setup()
+    const props = renderTopBar()
+    const exportButton = screen.getByRole("button", {
+      name: "Exporter en PNG",
+    })
+
+    expect(exportButton).toHaveAttribute("data-gesture-control")
+    await user.click(exportButton)
+    expect(props.onExport).toHaveBeenCalledOnce()
+  })
 })
