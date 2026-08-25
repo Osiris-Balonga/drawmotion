@@ -27,18 +27,22 @@ import {
   type CameraPreviewHandle,
 } from "@/features/camera/camera-preview"
 import { createPngFilename, downloadPng } from "@/features/export/png-download"
-import { GestureCoach } from "@/features/onboarding/gesture-coach"
 import {
+  GestureCoach,
+  OnboardingPractice,
+} from "@/features/onboarding/gesture-coach"
+import {
+  createOnboardingState,
   initialOnboardingState,
-  observeOnboardingGesture,
+  observeOnboardingEvent,
   previousOnboardingStep,
+  type OnboardingEvent,
   type OnboardingState,
-  type OnboardingStep,
 } from "@/features/onboarding/onboarding-machine"
 import {
-  loadOnboardingCompletion,
+  loadOnboardingProgress,
   resetOnboardingCompletion,
-  saveOnboardingCompletion,
+  saveOnboardingProgress,
 } from "@/features/onboarding/onboarding-persistence"
 import { findGestureControlAtPoint } from "@/features/toolbar/gesture-control-hit-test"
 import {
@@ -75,6 +79,14 @@ const emptyHistoryAvailability: DrawingHistoryAvailability = {
   canClear: false,
 }
 
+const cursorPracticeTargets = [
+  { x: 0.28, y: 0.36 },
+  { x: 0.5, y: 0.24 },
+  { x: 0.68, y: 0.48 },
+] as const
+
+const tutorialStrokeDistance = 120
+
 function isEditableTarget(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
@@ -86,12 +98,13 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 export function WorkspaceShell() {
-  const [initialState] = useState<OnboardingState>(() =>
-    loadOnboardingCompletion()
-      ? { step: 3, stableFrames: 0 }
-      : initialOnboardingState,
+  const [initialState] = useState<OnboardingState>(() => {
+    const progress = loadOnboardingProgress()
+    return createOnboardingState(progress.currentStep)
+  })
+  const [activeTool, setActiveTool] = useState<DrawingTool>(() =>
+    initialState.step === "cursor" ? "pointer" : "pen",
   )
-  const [activeTool, setActiveTool] = useState<DrawingTool>("pen")
   const [color, setColor] = useState<DrawingColor>(drawingColors[0].value)
   const [thickness, setThickness] = useState(8)
   const [assistanceMode, setAssistanceMode] =
@@ -101,9 +114,8 @@ export function WorkspaceShell() {
   const [historyAvailability, setHistoryAvailability] = useState(
     emptyHistoryAvailability,
   )
-  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(
-    initialState.step,
-  )
+  const [onboardingState, setOnboardingState] =
+    useState<OnboardingState>(initialState)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
   const cameraRef = useRef<CameraPreviewHandle>(null)
@@ -114,6 +126,10 @@ export function WorkspaceShell() {
   const onboardingStateRef = useRef<OnboardingState>(initialState)
   const previousPinchPhaseRef = useRef<PinchPhase>("released")
   const gestureControlActiveRef = useRef(false)
+  const tutorialStrokeRef = useRef<{
+    lastPoint: { x: number; y: number } | null
+    distance: number
+  }>({ lastPoint: null, distance: 0 })
 
   const drawingStyle = useMemo<DrawingStyle>(
     () => ({
@@ -127,13 +143,53 @@ export function WorkspaceShell() {
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
     resetOnboardingCompletion()
-    setOnboardingStep(0)
+    setOnboardingState(initialOnboardingState)
+    setActiveTool("pointer")
+  }, [])
+
+  const skipOnboarding = useCallback(() => {
+    const complete = createOnboardingState("complete")
+    onboardingStateRef.current = complete
+    setOnboardingState(complete)
+    setActiveTool("pen")
+    saveOnboardingProgress({ status: "skipped", currentStep: "complete" })
   }, [])
 
   const goBackOnboarding = useCallback(() => {
     const previous = previousOnboardingStep(onboardingStateRef.current)
     onboardingStateRef.current = previous
-    setOnboardingStep(previous.step)
+    setOnboardingState(previous)
+    setActiveTool(previous.step === "cursor" ? "pointer" : "pen")
+    saveOnboardingProgress({
+      status: "in_progress",
+      currentStep: previous.step,
+    })
+  }, [])
+
+  const observeOnboarding = useCallback((event: OnboardingEvent) => {
+    const previous = onboardingStateRef.current
+    const next = observeOnboardingEvent(previous, event)
+    onboardingStateRef.current = next
+    const visibleProgressChanged =
+      next.step !== previous.step ||
+      next.cursorTarget !== previous.cursorTarget ||
+      next.colorChanged !== previous.colorChanged ||
+      next.thicknessChanged !== previous.thicknessChanged
+    if (!visibleProgressChanged) return
+
+    setOnboardingState(next)
+    if (previous.step === "cursor" && next.step === "draw") {
+      setActiveTool("pen")
+    }
+    saveOnboardingProgress({
+      status: next.step === "complete" ? "completed" : "in_progress",
+      currentStep: next.step,
+    })
+    if (next.step === "complete") {
+      toast.success("Vous êtes prêt à dessiner", {
+        description: "Le tutoriel reste accessible depuis la toile.",
+      })
+    }
   }, [])
 
   const handleGestureFrame = useCallback(
@@ -147,15 +203,6 @@ export function WorkspaceShell() {
       const hand = result.hands[0] ?? null
       const gesturePointer = selectGesturePointer(hand)
       if (!bounds) return
-      const onboarding = observeOnboardingGesture(
-        onboardingStateRef.current,
-        gesture,
-      )
-      onboardingStateRef.current = onboarding
-      if (onboarding.step !== onboardingStep) {
-        setOnboardingStep(onboarding.step)
-        if (onboarding.step === 3) saveOnboardingCompletion()
-      }
       const filtered = pointerFilterRef.current.update(
         gesturePointer,
         result.timestampMs,
@@ -164,7 +211,23 @@ export function WorkspaceShell() {
       const mapped = filtered.point
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
-      if (onboarding.step < 3) return
+      if (onboardingStateRef.current.step === "cursor") {
+        const target =
+          cursorPracticeTargets[onboardingStateRef.current.cursorTarget]
+        const targetPoint = target
+          ? {
+              x: bounds.left + target.x * bounds.width,
+              y: bounds.top + target.y * bounds.height,
+            }
+          : null
+        const inside = Boolean(
+          filtered.reliable &&
+          mapped &&
+          targetPoint &&
+          Math.hypot(mapped.x - targetPoint.x, mapped.y - targetPoint.y) < 52,
+        )
+        observeOnboarding({ type: "CURSOR_TARGET_OBSERVED", inside })
+      }
       const pinchBecameActive =
         pinchPhase === "active" && previousPinchPhaseRef.current !== "active"
       previousPinchPhaseRef.current = pinchPhase
@@ -224,15 +287,66 @@ export function WorkspaceShell() {
       ) {
         setLastAssistance(null)
       }
+      for (const intention of transition.intentions) {
+        if (intention.type === "DRAW_START") {
+          tutorialStrokeRef.current = {
+            lastPoint: intention.point,
+            distance: 0,
+          }
+        } else if (intention.type === "DRAW_MOVE") {
+          const lastPoint = tutorialStrokeRef.current.lastPoint
+          if (lastPoint) {
+            tutorialStrokeRef.current.distance += Math.hypot(
+              intention.point.x - lastPoint.x,
+              intention.point.y - lastPoint.y,
+            )
+          }
+          tutorialStrokeRef.current.lastPoint = intention.point
+        } else if (
+          intention.type === "DRAW_END" &&
+          tutorialStrokeRef.current.distance >= tutorialStrokeDistance
+        ) {
+          observeOnboarding({ type: "STROKE_COMPLETED" })
+          tutorialStrokeRef.current = { lastPoint: null, distance: 0 }
+        }
+      }
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [activeTool, onboardingStep],
+    [activeTool, observeOnboarding],
   )
 
   const changeAssistanceMode = useCallback((mode: StrokeAssistanceMode) => {
     setAssistanceMode(mode)
     setLastAssistance(null)
   }, [])
+
+  const changeColor = useCallback(
+    (nextColor: DrawingColor) => {
+      setColor(nextColor)
+      if (nextColor === "#238554") {
+        observeOnboarding({ type: "COLOR_CHANGED" })
+      }
+    },
+    [observeOnboarding],
+  )
+
+  const changeThickness = useCallback(
+    (nextThickness: number) => {
+      setThickness(nextThickness)
+      observeOnboarding({ type: "THICKNESS_CHANGED" })
+    },
+    [observeOnboarding],
+  )
+
+  const handleAssistance = useCallback(
+    (feedback: StrokeAssistanceFeedback) => {
+      setLastAssistance(feedback)
+      if (assistanceMode === "shapes") {
+        observeOnboarding({ type: "ASSISTED_SHAPE_CREATED" })
+      }
+    },
+    [assistanceMode, observeOnboarding],
+  )
 
   const revertLastAssistance = useCallback(() => {
     if (!lastAssistance) return
@@ -241,7 +355,10 @@ export function WorkspaceShell() {
     }
   }, [lastAssistance])
 
-  const undo = useCallback(() => drawingRef.current?.undo(), [])
+  const undo = useCallback(() => {
+    drawingRef.current?.undo()
+    observeOnboarding({ type: "UNDO_USED" })
+  }, [observeOnboarding])
   const redo = useCallback(() => drawingRef.current?.redo(), [])
   const clear = useCallback(() => {
     drawingRef.current?.clear()
@@ -299,7 +416,12 @@ export function WorkspaceShell() {
   }, [historyAvailability, redo, undo])
 
   return (
-    <div className="workspace-shell">
+    <div
+      className="workspace-shell"
+      data-onboarding-step={
+        onboardingState.step === "complete" ? undefined : onboardingState.step
+      }
+    >
       <a className="skip-link" href="#drawing-canvas">
         Aller à la toile
       </a>
@@ -317,8 +439,8 @@ export function WorkspaceShell() {
           thickness={thickness}
           assistanceMode={assistanceMode}
           onToolChange={setActiveTool}
-          onColorChange={setColor}
-          onThicknessChange={setThickness}
+          onColorChange={changeColor}
+          onThicknessChange={changeThickness}
           onAssistanceModeChange={changeAssistanceMode}
         />
 
@@ -333,7 +455,7 @@ export function WorkspaceShell() {
             ref={drawingRef}
             assistanceMode={assistanceMode}
             drawingStyle={drawingStyle}
-            onAssistance={setLastAssistance}
+            onAssistance={handleAssistance}
             onHistoryChange={setHistoryAvailability}
           />
           <div className="sr-only" aria-live="polite">
@@ -341,45 +463,40 @@ export function WorkspaceShell() {
           </div>
           <CameraPreview
             ref={cameraRef}
-            calibrating={onboardingStep < 3}
+            calibrating={onboardingState.step === "cursor"}
             onGestureFrame={handleGestureFrame}
           />
-          {onboardingStep < 3 ? (
+          {onboardingState.step !== "complete" ? (
+            <OnboardingPractice state={onboardingState} />
+          ) : null}
+          {onboardingState.step !== "complete" ? (
             <GestureCoach
-              step={onboardingStep as 0 | 1 | 2}
+              state={onboardingState}
               onBack={goBackOnboarding}
-              onRestart={restartOnboarding}
+              onSkip={skipOnboarding}
             />
           ) : null}
-          {onboardingStep === 3 ? (
-            <>
-              {lastAssistance ? (
-                <div
-                  className="shape-assistance-feedback"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <span>
-                    {primitiveNames[lastAssistance.primitive]} régularisé
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={revertLastAssistance}
-                  >
-                    <Undo2 aria-hidden="true" />
-                    Garder mon tracé
-                  </Button>
-                </div>
-              ) : null}
-              <Button
-                className="gesture-review-action h-10 active:scale-[0.96]"
-                variant="secondary"
-                onClick={restartOnboarding}
-              >
-                Revoir les gestes
+          {lastAssistance ? (
+            <div
+              className="shape-assistance-feedback"
+              role="status"
+              aria-live="polite"
+            >
+              <span>{primitiveNames[lastAssistance.primitive]} régularisé</span>
+              <Button size="sm" variant="ghost" onClick={revertLastAssistance}>
+                <Undo2 aria-hidden="true" />
+                Garder mon tracé
               </Button>
-            </>
+            </div>
+          ) : null}
+          {onboardingState.step === "complete" ? (
+            <Button
+              className="gesture-review-action h-10 active:scale-[0.96]"
+              variant="secondary"
+              onClick={restartOnboarding}
+            >
+              Revoir le tutoriel
+            </Button>
           ) : null}
         </section>
       </main>

@@ -1,49 +1,104 @@
-import type { GestureKind } from "@/core/gestures/gesture-classifier"
+export const onboardingSteps = [
+  "cursor",
+  "draw",
+  "style",
+  "shapes",
+  "correct",
+] as const
 
-export type OnboardingStep = 0 | 1 | 2 | 3
+export type ActiveOnboardingStep = (typeof onboardingSteps)[number]
+export type OnboardingStep = ActiveOnboardingStep | "complete"
 
 export type OnboardingState = {
   step: OnboardingStep
+  cursorTarget: number
   stableFrames: number
+  colorChanged: boolean
+  thicknessChanged: boolean
 }
 
-export const ONBOARDING_STABLE_FRAMES = 10
+export type OnboardingEvent =
+  | { type: "CURSOR_TARGET_OBSERVED"; inside: boolean }
+  | { type: "STROKE_COMPLETED" }
+  | { type: "COLOR_CHANGED" }
+  | { type: "THICKNESS_CHANGED" }
+  | { type: "ASSISTED_SHAPE_CREATED" }
+  | { type: "UNDO_USED" }
+
+export const ONBOARDING_CURSOR_TARGETS = 3
+export const ONBOARDING_STABLE_FRAMES = 6
 
 export const initialOnboardingState: OnboardingState = {
-  step: 0,
+  step: "cursor",
+  cursorTarget: 0,
   stableFrames: 0,
+  colorChanged: false,
+  thicknessChanged: false,
 }
 
-function matchesStep(step: OnboardingStep, gesture: GestureKind) {
-  if (step === 0) return gesture !== "tracking-lost" && gesture !== "uncertain"
-  if (step === 1) return gesture === "pinch"
-  if (step === 2) return gesture === "open-hand"
-  return false
+export function createOnboardingState(step: OnboardingStep): OnboardingState {
+  return { ...initialOnboardingState, step }
 }
 
-export function observeOnboardingGesture(
+export function observeOnboardingEvent(
   state: OnboardingState,
-  gesture: GestureKind,
+  event: OnboardingEvent,
 ): OnboardingState {
-  if (state.step === 3) return state
-  if (!matchesStep(state.step, gesture)) {
-    return state.stableFrames === 0 ? state : { ...state, stableFrames: 0 }
+  if (state.step === "complete") return state
+
+  if (state.step === "cursor") {
+    if (event.type !== "CURSOR_TARGET_OBSERVED") return state
+    if (!event.inside) {
+      return state.stableFrames === 0 ? state : { ...state, stableFrames: 0 }
+    }
+    const stableFrames = state.stableFrames + 1
+    if (stableFrames < ONBOARDING_STABLE_FRAMES) {
+      return { ...state, stableFrames }
+    }
+    const cursorTarget = state.cursorTarget + 1
+    return cursorTarget < ONBOARDING_CURSOR_TARGETS
+      ? { ...state, cursorTarget, stableFrames: 0 }
+      : createOnboardingState("draw")
   }
-  const stableFrames = state.stableFrames + 1
-  if (stableFrames < ONBOARDING_STABLE_FRAMES) {
-    return { ...state, stableFrames }
+
+  if (state.step === "draw" && event.type === "STROKE_COMPLETED") {
+    return createOnboardingState("style")
   }
-  return {
-    step: (state.step + 1) as OnboardingStep,
-    stableFrames: 0,
+
+  if (state.step === "style") {
+    const colorChanged = state.colorChanged || event.type === "COLOR_CHANGED"
+    const thicknessChanged =
+      state.thicknessChanged || event.type === "THICKNESS_CHANGED"
+    if (colorChanged && thicknessChanged) {
+      return createOnboardingState("shapes")
+    }
+    if (
+      colorChanged !== state.colorChanged ||
+      thicknessChanged !== state.thicknessChanged
+    ) {
+      return { ...state, colorChanged, thicknessChanged }
+    }
   }
+
+  if (state.step === "shapes" && event.type === "ASSISTED_SHAPE_CREATED") {
+    return createOnboardingState("correct")
+  }
+
+  if (state.step === "correct" && event.type === "UNDO_USED") {
+    return createOnboardingState("complete")
+  }
+
+  return state
 }
 
 export function previousOnboardingStep(
   state: OnboardingState,
 ): OnboardingState {
-  return {
-    step: Math.max(0, state.step - 1) as OnboardingStep,
-    stableFrames: 0,
-  }
+  const currentIndex =
+    state.step === "complete"
+      ? onboardingSteps.length
+      : onboardingSteps.indexOf(state.step)
+  const previous = onboardingSteps[Math.max(0, currentIndex - 1)] ?? "cursor"
+  if (previous === state.step) return state
+  return createOnboardingState(previous)
 }
