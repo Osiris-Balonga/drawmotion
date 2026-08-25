@@ -4,6 +4,7 @@ import {
   classifyGesture,
   type GestureKind,
 } from "@/core/gestures/gesture-classifier"
+import { PinchDetector } from "@/core/gestures/pinch-detector"
 import type {
   HandTrackerMetrics,
   HandTrackerPort,
@@ -27,6 +28,7 @@ export type GestureFrameListener = (
   result: HandTrackingResult,
   gesture: GestureKind,
   quality: TrackingQuality,
+  pinchActive: boolean,
 ) => void
 
 function createTracker(onMetrics: (metrics: HandTrackerMetrics) => void) {
@@ -64,6 +66,7 @@ export function useHandTracking(
     let active = true
     let previousGesture: GestureKind = "tracking-lost"
     let ambiguousFrames = 0
+    const pinchDetector = new PinchDetector()
     const renderer = new LandmarkOverlayRenderer(canvas, video)
     let tracker: HandTrackerPort
     try {
@@ -85,6 +88,10 @@ export function useHandTracking(
             result.hands[0] ?? null,
             previousGesture,
           )
+          const pinch = pinchDetector.update(
+            result.hands[0] ?? null,
+            quality === "reliable",
+          )
           if (
             classification.kind === "uncertain" ||
             classification.kind === "tracking-lost"
@@ -95,7 +102,12 @@ export function useHandTracking(
             ambiguousFrames = 0
             previousGesture = classification.kind
           }
-          onGestureFrameRef.current?.(result, classification.kind, quality)
+          onGestureFrameRef.current?.(
+            result,
+            classification.kind,
+            quality,
+            pinch.active,
+          )
           setGesture((current) =>
             current === classification.kind ? current : classification.kind,
           )
