@@ -133,9 +133,11 @@ export function createVisionWorkerRuntime(
             recoverable: false,
           })
         } else if (processing) {
-          queuedFrame?.frame.close()
+          if (queuedFrame) {
+            queuedFrame.frame.close()
+            droppedFrames += 1
+          }
           queuedFrame = message
-          droppedFrames += 1
         } else {
           void processFrame(message)
         }
