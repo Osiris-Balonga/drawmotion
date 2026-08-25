@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 
+import {
+  classifyGesture,
+  type GestureKind,
+} from "@/core/gestures/gesture-classifier"
 import type {
   HandTrackerMetrics,
   HandTrackerPort,
@@ -29,6 +33,7 @@ export function useHandTracking(
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<HandTrackingState>("idle")
+  const [gesture, setGesture] = useState<GestureKind>("tracking-lost")
   const [metrics, setMetrics] = useState<HandTrackerMetrics | null>(null)
 
   useEffect(() => {
@@ -44,6 +49,7 @@ export function useHandTracking(
     }
 
     let active = true
+    let previousGesture: GestureKind = "tracking-lost"
     const renderer = new LandmarkOverlayRenderer(canvas, video)
     let tracker: HandTrackerPort
     try {
@@ -61,6 +67,14 @@ export function useHandTracking(
       onResult: (result, quality) => {
         renderer.render(result)
         if (active) {
+          const classification = classifyGesture(
+            result.hands[0] ?? null,
+            previousGesture,
+          )
+          previousGesture = classification.kind
+          setGesture((current) =>
+            current === classification.kind ? current : classification.kind,
+          )
           setState((current) => (current === quality ? current : quality))
         }
       },
@@ -74,6 +88,7 @@ export function useHandTracking(
     queueMicrotask(() => {
       if (active) {
         setState("initializing")
+        setGesture("tracking-lost")
         setMetrics(null)
       }
     })
@@ -104,6 +119,7 @@ export function useHandTracking(
 
   return {
     canvasRef,
+    gesture: enabled ? gesture : "tracking-lost",
     metrics: enabled ? metrics : null,
     state: enabled ? state : "idle",
   }

@@ -38,6 +38,14 @@ const trackingContent = {
   },
 } as const
 
+const gestureLabels = {
+  pinch: "Pincement",
+  "open-hand": "Main ouverte",
+  fist: "Poing",
+  uncertain: "Geste incertain",
+  "tracking-lost": "Aucun geste",
+} as const
+
 const errorContent = {
   denied: {
     title: "Accès caméra refusé",
@@ -77,6 +85,7 @@ export function CameraPreview({
   } = useCameraLifecycle(adapterFactory)
   const {
     canvasRef,
+    gesture,
     metrics,
     state: trackingState,
   } = useHandTracking(state === "ready", videoRef, trackerFactory)
@@ -154,6 +163,11 @@ export function CameraPreview({
               <span aria-hidden="true" className="camera-preview__status-dot" />
               {trackingStatus.label}
             </Badge>
+            {import.meta.env.DEV ? (
+              <Badge variant="outline" aria-label="Geste détecté">
+                Geste · {gestureLabels[gesture]}
+              </Badge>
+            ) : null}
             {import.meta.env.DEV && metrics ? (
               <span className="camera-preview__metrics">
                 {Math.round(metrics.inferenceMs)} ms · {metrics.droppedFrames}{" "}
