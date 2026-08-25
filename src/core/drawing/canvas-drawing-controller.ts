@@ -154,6 +154,11 @@ export class CanvasDrawingController {
     this.#emitHistoryChange()
   }
 
+  exportPng() {
+    this.#finishStroke()
+    return this.#renderer.toPngBlob()
+  }
+
   revertAssistance(strokeId: string) {
     const strokeIndex = this.#history.present.strokes.findIndex(
       (stroke) => stroke.id === strokeId && stroke.assistance,

@@ -17,6 +17,7 @@ export type DrawingCanvasHandle = {
   undo(): void
   redo(): void
   clear(): void
+  exportPng(): Promise<Blob>
 }
 
 type DrawingCanvasProps = {
@@ -83,6 +84,12 @@ export const DrawingCanvas = forwardRef<
       },
       clear() {
         controllerRef.current?.clear()
+      },
+      exportPng() {
+        return (
+          controllerRef.current?.exportPng() ??
+          Promise.reject(new Error("La toile n’est pas encore prête"))
+        )
       },
     }),
     [],

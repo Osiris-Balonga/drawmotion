@@ -2,6 +2,7 @@ import type { CanvasPoint } from "@/core/geometry/coordinate-mapping"
 
 import type { DrawingDocument, Stroke } from "./drawing-model"
 import { emptyDrawingDocument } from "./drawing-model"
+import { canvasToPngBlob } from "./canvas-png-export"
 
 type FrameScheduler = (callback: FrameRequestCallback) => number
 
@@ -76,6 +77,11 @@ export class TwoLayerCanvasRenderer {
   setPreviewStroke(stroke: Stroke | null) {
     this.#previewStroke = stroke
     this.requestRender()
+  }
+
+  toPngBlob() {
+    this.#render()
+    return canvasToPngBlob(this.#persistentCanvas)
   }
 
   requestRender() {

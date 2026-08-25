@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { Undo2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import type {
@@ -22,6 +23,7 @@ import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
+import { createPngFilename, downloadPng } from "@/features/export/png-download"
 import { GestureCoach } from "@/features/onboarding/gesture-coach"
 import {
   initialOnboardingState,
@@ -242,6 +244,19 @@ export function WorkspaceShell() {
     drawingRef.current?.clear()
     setLastAssistance(null)
   }, [])
+  const exportPng = useCallback(async () => {
+    try {
+      const blob = await drawingRef.current?.exportPng()
+      if (!blob) throw new Error("Canvas unavailable")
+      const filename = createPngFilename()
+      downloadPng(blob, filename)
+      toast.success("Dessin exporté", { description: filename })
+    } catch {
+      toast.error("L’export PNG a échoué", {
+        description: "Réessayez après avoir terminé votre trait.",
+      })
+    }
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -278,6 +293,7 @@ export function WorkspaceShell() {
         onUndo={undo}
         onRedo={redo}
         onClear={clear}
+        onExport={() => void exportPng()}
       />
       <main className="workspace-main">
         <ToolRail
