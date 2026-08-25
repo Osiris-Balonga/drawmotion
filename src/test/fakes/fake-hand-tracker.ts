@@ -20,11 +20,10 @@ export class FakeHandTracker implements HandTrackerPort {
   }
 
   detect(
-    frame: ImageBitmap,
+    _frame: ImageBitmap,
     frameId: number,
     timestampMs: number,
   ): Promise<HandTrackingResult> {
-    frame.close()
     this.frames.push({ frameId, timestampMs })
     return Promise.resolve({
       ...this.result,

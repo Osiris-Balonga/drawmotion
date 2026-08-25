@@ -68,7 +68,7 @@ describe("vision worker protocol", () => {
     expect(tracker.initializedWith).toEqual(options)
     expect(tracker.frames).toEqual([{ frameId: 9, timestampMs: 160 }])
     expect(result).toMatchObject({ frameId: 9, timestampMs: 160 })
-    expect(close).toHaveBeenCalledOnce()
+    expect(close).not.toHaveBeenCalled()
     expect(tracker.disposed).toBe(true)
   })
 })
