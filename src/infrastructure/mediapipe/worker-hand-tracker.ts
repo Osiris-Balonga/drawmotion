@@ -26,6 +26,13 @@ function createVisionWorker(): Worker {
   )
 }
 
+export class DroppedFrameError extends Error {
+  constructor() {
+    super("Vision frame superseded by a newer frame")
+    this.name = "DroppedFrameError"
+  }
+}
+
 export class WorkerHandTracker implements HandTrackerPort {
   private readonly worker: WorkerPort
   private initializePromise: Promise<void> | null = null
@@ -131,6 +138,10 @@ export class WorkerHandTracker implements HandTrackerPort {
       }
       case "METRICS":
         this.onMetrics?.(value.metrics)
+        break
+      case "DROPPED":
+        this.pendingFrames.get(value.frameId)?.reject(new DroppedFrameError())
+        this.pendingFrames.delete(value.frameId)
         break
       case "ERROR": {
         const error = new Error(value.message)

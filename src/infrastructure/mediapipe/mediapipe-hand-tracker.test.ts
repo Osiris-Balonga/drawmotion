@@ -95,6 +95,49 @@ describe("MediaPipeHandTracker", () => {
     expect(mediaPipe.detectForVideo).toHaveBeenCalledWith(frame, 80)
   })
 
+  it("falls back to the CPU delegate when GPU initialization fails", async () => {
+    mediaPipe.createFromOptions
+      .mockRejectedValueOnce(new Error("WebGL unavailable"))
+      .mockResolvedValueOnce({
+        close: mediaPipe.close,
+        detectForVideo: mediaPipe.detectForVideo,
+      })
+    const tracker = new MediaPipeHandTracker()
+
+    await tracker.initialize({ ...options, delegate: "GPU" })
+
+    expect(mediaPipe.createFromOptions).toHaveBeenNthCalledWith(
+      1,
+      { fileset: true },
+      {
+        baseOptions: {
+          delegate: "GPU",
+          modelAssetPath: "http://localhost/vision/hand_landmarker.task",
+        },
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.7,
+        numHands: 1,
+        runningMode: "VIDEO",
+      },
+    )
+    expect(mediaPipe.createFromOptions).toHaveBeenNthCalledWith(
+      2,
+      { fileset: true },
+      {
+        baseOptions: {
+          delegate: "CPU",
+          modelAssetPath: "http://localhost/vision/hand_landmarker.task",
+        },
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.7,
+        numHands: 1,
+        runningMode: "VIDEO",
+      },
+    )
+  })
+
   it("rejects detection before initialization and disposes idempotently", async () => {
     const tracker = new MediaPipeHandTracker()
 

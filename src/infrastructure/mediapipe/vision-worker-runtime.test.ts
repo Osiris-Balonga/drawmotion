@@ -176,6 +176,11 @@ describe("createVisionWorkerRuntime", () => {
 
     expect(detect).toHaveBeenCalledTimes(1)
     expect(obsolete.close).toHaveBeenCalledOnce()
+    expect(messages).toContainEqual({
+      version: 1,
+      type: "DROPPED",
+      frameId: 2,
+    })
     clock = 8
     firstResult.resolve({ ...deterministicTrackingResult, frameId: 1 })
     await vi.waitFor(() => expect(detect).toHaveBeenCalledTimes(2))

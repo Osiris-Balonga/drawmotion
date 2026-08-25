@@ -25,6 +25,7 @@ export type HandTrackerMetrics = {
 }
 
 export type HandTrackerOptions = {
+  delegate?: "CPU" | "GPU"
   maxHands: number
   minDetectionConfidence: number
   minPresenceConfidence: number
