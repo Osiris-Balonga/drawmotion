@@ -255,6 +255,50 @@ describe("CanvasDrawingController", () => {
     expect(controller.document.strokes).toHaveLength(1)
   })
 
+  it("publishes history availability and records a reversible clear", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    const onHistoryChange = vi.fn()
+    controller.setBounds({ left: 0, top: 0, width: 100, height: 100 })
+    controller.setHistoryListener(onHistoryChange)
+
+    expect(onHistoryChange).toHaveBeenLastCalledWith({
+      canUndo: false,
+      canRedo: false,
+      canClear: false,
+    })
+
+    controller.handle({
+      version: 1,
+      type: "DRAW_START",
+      point: { x: 20, y: 20 },
+      timestampMs: 0,
+    })
+    controller.handle({
+      version: 1,
+      type: "DRAW_END",
+      point: { x: 20, y: 20 },
+      timestampMs: 1,
+    })
+    expect(onHistoryChange).toHaveBeenLastCalledWith({
+      canUndo: true,
+      canRedo: false,
+      canClear: true,
+    })
+
+    controller.clear()
+    expect(controller.document.strokes).toEqual([])
+    expect(controller.historyAvailability).toEqual({
+      canUndo: true,
+      canRedo: false,
+      canClear: false,
+    })
+
+    controller.undo()
+    expect(controller.document.strokes).toHaveLength(1)
+    expect(controller.historyAvailability.canRedo).toBe(true)
+  })
+
   it("applies style, clamps points, and finishes explicitly", () => {
     const harness = createHarness(1)
     const controller = new CanvasDrawingController(harness.renderer)

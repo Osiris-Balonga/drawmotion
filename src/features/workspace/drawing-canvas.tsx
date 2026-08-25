@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
 import {
   CanvasDrawingController,
+  type DrawingHistoryAvailability,
   type DrawingStyle,
 } from "@/core/drawing/canvas-drawing-controller"
 import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
@@ -13,19 +14,28 @@ import type { DrawingIntention } from "@/core/gestures/drawing-intentions"
 export type DrawingCanvasHandle = {
   handleIntentions(intentions: readonly DrawingIntention[]): void
   revertAssistance(strokeId: string): boolean
+  undo(): void
+  redo(): void
+  clear(): void
 }
 
 type DrawingCanvasProps = {
   assistanceMode: StrokeAssistanceMode
   drawingStyle: DrawingStyle
   onAssistance: (feedback: StrokeAssistanceFeedback) => void
+  onHistoryChange: (availability: DrawingHistoryAvailability) => void
 }
 
 export const DrawingCanvas = forwardRef<
   DrawingCanvasHandle,
   DrawingCanvasProps
 >(function DrawingCanvas(
-  { assistanceMode, drawingStyle, onAssistance }: DrawingCanvasProps,
+  {
+    assistanceMode,
+    drawingStyle,
+    onAssistance,
+    onHistoryChange,
+  }: DrawingCanvasProps,
   ref,
 ) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -33,12 +43,17 @@ export const DrawingCanvas = forwardRef<
   const interactionRef = useRef<HTMLCanvasElement>(null)
   const controllerRef = useRef<CanvasDrawingController | null>(null)
   const onAssistanceRef = useRef(onAssistance)
+  const onHistoryChangeRef = useRef(onHistoryChange)
   const assistanceModeRef = useRef(assistanceMode)
   const drawingStyleRef = useRef(drawingStyle)
 
   useEffect(() => {
     onAssistanceRef.current = onAssistance
   }, [onAssistance])
+
+  useEffect(() => {
+    onHistoryChangeRef.current = onHistoryChange
+  }, [onHistoryChange])
 
   useEffect(() => {
     assistanceModeRef.current = assistanceMode
@@ -60,6 +75,15 @@ export const DrawingCanvas = forwardRef<
       revertAssistance(strokeId) {
         return controllerRef.current?.revertAssistance(strokeId) ?? false
       },
+      undo() {
+        controllerRef.current?.undo()
+      },
+      redo() {
+        controllerRef.current?.redo()
+      },
+      clear() {
+        controllerRef.current?.clear()
+      },
     }),
     [],
   )
@@ -78,6 +102,9 @@ export const DrawingCanvas = forwardRef<
     controller.setStyle(drawingStyleRef.current)
     controller.setAssistanceListener((feedback) =>
       onAssistanceRef.current(feedback),
+    )
+    controller.setHistoryListener((availability) =>
+      onHistoryChangeRef.current(availability),
     )
     controllerRef.current = controller
     const observer = new ResizeObserver(([entry]) => {

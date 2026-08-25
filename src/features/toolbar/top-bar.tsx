@@ -1,11 +1,42 @@
-import { Download, Redo2, Undo2 } from "lucide-react"
+import { useState } from "react"
 
+import { Download, Redo2, Trash2, Undo2 } from "lucide-react"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ToolButton } from "@/features/toolbar/tool-button"
 
-export function TopBar() {
+type TopBarProps = {
+  canUndo: boolean
+  canRedo: boolean
+  canClear: boolean
+  onUndo: () => void
+  onRedo: () => void
+  onClear: () => void
+}
+
+export function TopBar({
+  canUndo,
+  canRedo,
+  canClear,
+  onUndo,
+  onRedo,
+  onClear,
+}: TopBarProps) {
+  const [clearOpen, setClearOpen] = useState(false)
+
   return (
     <header className="border-border bg-background flex h-16 items-center border-b px-4">
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -30,21 +61,59 @@ export function TopBar() {
         className="flex items-center gap-1"
       >
         <ToolButton
-          label="Annuler — bientôt disponible"
+          label="Annuler"
           shortcut="Ctrl Z"
           variant="ghost"
-          disabled
+          disabled={!canUndo}
+          onClick={onUndo}
         >
           <Undo2 aria-hidden="true" />
         </ToolButton>
         <ToolButton
-          label="Rétablir — bientôt disponible"
+          label="Rétablir"
           shortcut="Ctrl Y"
           variant="ghost"
-          disabled
+          disabled={!canRedo}
+          onClick={onRedo}
         >
           <Redo2 aria-hidden="true" />
         </ToolButton>
+        <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+          <AlertDialogTrigger
+            render={
+              <ToolButton
+                label="Effacer la toile"
+                variant="ghost"
+                disabled={!canClear}
+              >
+                <Trash2 aria-hidden="true" />
+              </ToolButton>
+            }
+          />
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Effacer tout le dessin ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                La toile sera vidée. Vous pourrez encore annuler cette action.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-gesture-control="">
+                Conserver le dessin
+              </AlertDialogCancel>
+              <AlertDialogAction
+                data-gesture-control=""
+                variant="destructive"
+                onClick={() => {
+                  onClear()
+                  setClearOpen(false)
+                }}
+              >
+                Effacer la toile
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </nav>
 
       <div className="flex flex-1 items-center justify-end gap-3">
