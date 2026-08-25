@@ -92,6 +92,7 @@ export function CameraPreview({
     canvasRef,
     gesture,
     metrics,
+    pinchPhase,
     state: trackingState,
   } = useHandTracking(
     state === "ready",
@@ -185,7 +186,12 @@ export function CameraPreview({
                 className="camera-preview__gesture"
                 aria-label="Geste détecté"
               >
-                Geste · {gestureLabels[gesture]}
+                Geste ·{" "}
+                {pinchPhase === "active"
+                  ? "Pincement actif"
+                  : pinchPhase === "pending-release"
+                    ? "Relâchement à confirmer"
+                    : gestureLabels[gesture]}
               </Badge>
             ) : null}
             {import.meta.env.DEV && metrics ? (

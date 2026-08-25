@@ -30,36 +30,65 @@ export function measurePinchRatio(hand: TrackedHand | null) {
 }
 
 export type PinchSignal = {
-  active: boolean
+  phase: PinchPhase
   ratio: number | null
 }
 
+export type PinchPhase = "released" | "active" | "pending-release"
+
 /** Keeps pinch activation independent from pointer position and tracking UI. */
 export class PinchDetector {
-  #active = false
+  #phase: PinchPhase = "released"
   #candidateFrames = 0
+  #releaseStartedAtMs: number | null = null
 
-  update(hand: TrackedHand | null, reliable: boolean): PinchSignal {
+  update(
+    hand: TrackedHand | null,
+    reliable: boolean,
+    timestampMs: number,
+  ): PinchSignal {
     const ratio = reliable ? measurePinchRatio(hand) : null
     if (ratio === null) {
       this.#candidateFrames = 0
-      return { active: this.#active, ratio }
+      return { phase: this.#phase, ratio }
     }
 
-    const shouldChange = this.#active
-      ? ratio >= GESTURE_THRESHOLDS.pinchExitRatio
-      : ratio <= GESTURE_THRESHOLDS.pinchEnterRatio
-    this.#candidateFrames = shouldChange ? this.#candidateFrames + 1 : 0
-    if (this.#candidateFrames >= CONFIRMATION_FRAMES) {
-      this.#active = !this.#active
-      this.#candidateFrames = 0
+    if (this.#phase === "released") {
+      const entering = ratio <= GESTURE_THRESHOLDS.pinchEnterRatio
+      this.#candidateFrames = entering ? this.#candidateFrames + 1 : 0
+      if (this.#candidateFrames >= CONFIRMATION_FRAMES) {
+        this.#phase = "active"
+        this.#candidateFrames = 0
+      }
+      return { phase: this.#phase, ratio }
     }
 
-    return { active: this.#active, ratio }
+    if (ratio < GESTURE_THRESHOLDS.drawingPinchExitRatio) {
+      this.#phase = "active"
+      this.#releaseStartedAtMs = null
+      return { phase: this.#phase, ratio }
+    }
+
+    if (this.#phase === "active") {
+      this.#phase = "pending-release"
+      this.#releaseStartedAtMs = timestampMs
+      return { phase: this.#phase, ratio }
+    }
+
+    const releaseElapsedMs = Math.max(
+      0,
+      timestampMs - (this.#releaseStartedAtMs ?? timestampMs),
+    )
+    if (releaseElapsedMs >= GESTURE_THRESHOLDS.drawingReleaseGraceMs) {
+      this.#phase = "released"
+      this.#releaseStartedAtMs = null
+    }
+    return { phase: this.#phase, ratio }
   }
 
   reset() {
-    this.#active = false
+    this.#phase = "released"
     this.#candidateFrames = 0
+    this.#releaseStartedAtMs = null
   }
 }

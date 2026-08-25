@@ -1,6 +1,8 @@
 import type { CanvasPoint } from "@/core/geometry/coordinate-mapping"
 
 import type { GestureKind } from "./gesture-classifier"
+import type { PinchPhase } from "./pinch-detector"
+import { GESTURE_THRESHOLDS } from "./gesture-thresholds"
 import {
   DRAWING_INTENTION_VERSION,
   type DrawingIntention,
@@ -14,6 +16,12 @@ export type GestureMachineState = {
   lastPoint: CanvasPoint | null
   interruption: GestureInterruption
   interruptionFrames: number
+  pendingReleasePoints?: PendingReleasePoint[]
+}
+
+type PendingReleasePoint = {
+  point: CanvasPoint
+  timestampMs: number
 }
 
 export type GestureFrame = {
@@ -21,6 +29,7 @@ export type GestureFrame = {
   point: CanvasPoint | null
   timestampMs: number
   continuous?: boolean
+  pinchPhase?: PinchPhase
 }
 
 export type GestureTransition = {
@@ -111,8 +120,53 @@ export function transitionGestureState(
     )
   }
 
+  if (
+    frame.pinchPhase === "pending-release" &&
+    frame.gesture === "pinch" &&
+    state.mode === "drawing" &&
+    visiblePoint
+  ) {
+    const recentPoints = [
+      ...(state.pendingReleasePoints ?? []),
+      { point: visiblePoint, timestampMs: frame.timestampMs },
+    ].filter(
+      ({ timestampMs }) =>
+        frame.timestampMs - timestampMs <=
+        GESTURE_THRESHOLDS.drawingReleaseGraceMs,
+    )
+    return {
+      state: {
+        ...state,
+        interruption: "release",
+        interruptionFrames: 0,
+        pendingReleasePoints: recentPoints,
+      },
+      intentions,
+    }
+  }
+
+  if (frame.pinchPhase === "pending-release" && frame.gesture === "pinch") {
+    return { state, intentions }
+  }
+
+  if (frame.pinchPhase === "released" && state.mode === "drawing") {
+    stopDrawing(state, intentions, frame.timestampMs)
+    intentions.push(signalIntention("PAUSE", frame.timestampMs))
+    return {
+      state: clearInterruption({ mode: "paused", lastPoint: state.lastPoint }),
+      intentions,
+    }
+  }
+
   if (frame.gesture === "pinch" && visiblePoint) {
     const drawType = state.mode === "drawing" ? "DRAW_MOVE" : "DRAW_START"
+    if (drawType === "DRAW_MOVE") {
+      for (const buffered of state.pendingReleasePoints ?? []) {
+        intentions.push(
+          pointIntention("DRAW_MOVE", buffered.point, buffered.timestampMs),
+        )
+      }
+    }
     intentions.push(pointIntention(drawType, visiblePoint, frame.timestampMs))
     return {
       state: clearInterruption({ mode: "drawing", lastPoint: visiblePoint }),

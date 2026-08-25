@@ -14,6 +14,7 @@ import {
   initialGestureMachineState,
   transitionGestureState,
 } from "./gesture-state-machine"
+import { PinchDetector } from "./pinch-detector"
 import { PointerMotionFilter } from "./pointer-motion-filter"
 
 function classifySequence(ratios: number[], initial: GestureKind) {
@@ -172,6 +173,52 @@ describe("gesture jitter and accidental activation resistance", () => {
     )
     expect(intentionTypes.filter((type) => type === "DRAW_END")).toHaveLength(1)
     expect(state.mode).toBe("paused")
+  })
+
+  it("keeps a circular stroke active while hand rotation loosens the pinch", () => {
+    const ratios = [0.15, 0.15, 0.28, 0.3, 0.32, 0.29, 0.27, 0.29]
+    const points = [
+      { x: 50, y: 20 },
+      { x: 71, y: 29 },
+      { x: 80, y: 50 },
+      { x: 71, y: 71 },
+      { x: 50, y: 80 },
+      { x: 29, y: 71 },
+      { x: 20, y: 50 },
+      { x: 50, y: 20 },
+    ]
+    const detector = new PinchDetector()
+    let state = initialGestureMachineState
+    const intentionTypes: string[] = []
+
+    ratios.forEach((ratio, index) => {
+      const timestampMs = index * 50
+      const pinch = detector.update(
+        handFromGestureFixture(withPinchRatio(ratio)),
+        true,
+        timestampMs,
+      )
+      const transition = transitionGestureState(state, {
+        gesture: pinch.phase === "released" ? "open-hand" : "pinch",
+        pinchPhase: pinch.phase,
+        point: points[index]!,
+        timestampMs,
+      })
+      state = transition.state
+      intentionTypes.push(...transition.intentions.map(({ type }) => type))
+    })
+
+    expect(intentionTypes.filter((type) => type === "DRAW_START")).toHaveLength(
+      1,
+    )
+    expect(intentionTypes.filter((type) => type === "DRAW_MOVE")).toHaveLength(
+      6,
+    )
+    expect(intentionTypes).not.toContain("DRAW_END")
+    expect(state).toMatchObject({
+      mode: "drawing",
+      lastPoint: { x: 50, y: 20 },
+    })
   })
 
   it("rejects an invalid pointer smoothing time constant", () => {
