@@ -73,9 +73,7 @@ describe("CameraPreview", () => {
     )
     const preview = screen.getByRole("region", { name: "Aperçu caméra" })
     expect(preview.querySelector(".camera-preview__live-status")).toBeNull()
-    expect(
-      preview.querySelector(".camera-preview__live-indicator"),
-    ).toBeInTheDocument()
+    expect(preview.querySelector(".camera-preview__live-indicator")).toBeNull()
 
     await user.click(
       screen.getByRole("button", { name: "Mettre la caméra en pause" }),
@@ -86,6 +84,52 @@ describe("CameraPreview", () => {
     expect(
       screen.getByRole("button", { name: "Reprendre la caméra" }),
     ).toBeInTheDocument()
+  })
+
+  it("places transient gesture feedback below the camera viewport", () => {
+    const { adapter } = createAdapter()
+
+    const view = render(
+      <CameraPreview
+        adapterFactory={() => adapter}
+        gestureNotice={{ kind: "eraser", label: "Mode gomme" }}
+      />,
+    )
+
+    const preview = screen.getByRole("region", { name: "Aperçu caméra" })
+    const viewport = screen.getByRole("button", { name: "Activer ma caméra" })
+    const notice = screen.getByRole("status")
+    expect(notice).toHaveTextContent("Mode gomme")
+    expect(viewport.contains(notice)).toBe(false)
+    expect(preview.children[1]).toBe(notice)
+
+    view.rerender(
+      <CameraPreview
+        adapterFactory={() => adapter}
+        gestureNotice={{ kind: "pointer", label: "Mode pointeur" }}
+      />,
+    )
+    expect(screen.getByRole("status")).toHaveTextContent("Mode pointeur")
+
+    view.rerender(
+      <CameraPreview
+        adapterFactory={() => adapter}
+        gestureNotice={{ kind: "pen", label: "Mode stylo" }}
+      />,
+    )
+    expect(screen.getByRole("status")).toHaveTextContent("Mode stylo")
+
+    view.rerender(
+      <CameraPreview
+        adapterFactory={() => adapter}
+        gestureNotice={{
+          kind: "uncertain",
+          label: "Geste incertain",
+          persistent: true,
+        }}
+      />,
+    )
+    expect(screen.getByRole("status")).toHaveAttribute("data-persistent")
   })
 
   it.each([

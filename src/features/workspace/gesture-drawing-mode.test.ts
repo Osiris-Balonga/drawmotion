@@ -56,7 +56,7 @@ describe("resolveGestureDrawingMode", () => {
     })
   })
 
-  it("preserves an uncertain frame and maps pinch according to the active tool", () => {
+  it("preserves an uncertain frame and lets pinch enter drawing from pointer mode", () => {
     expect(
       resolveGestureDrawingMode({
         gesture: "uncertain",
@@ -87,7 +87,7 @@ describe("resolveGestureDrawingMode", () => {
         activeTool: "pointer",
         hasReliablePoint: true,
       }).gesture,
-    ).toBe("open-hand")
+    ).toBe("pinch")
   })
 
   it("starts, moves, and ends a stroke through the drawing state machine", () => {

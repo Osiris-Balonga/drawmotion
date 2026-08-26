@@ -113,6 +113,24 @@
   gap: var(--space-xs);
 }
 
+.command-dock__tool {
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
+}
+
+.command-dock__tool[aria-pressed="true"] > svg {
+  animation: command-dock-tool-select 220ms var(--ease-out-quart);
+}
+
+@keyframes command-dock-tool-select {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
 .command-dock__extended {
   max-width: 32rem;
   flex: 0 0 auto;
@@ -360,41 +378,63 @@ button.camera-preview__viewport:disabled {
   color: var(--foreground);
 }
 
-.camera-preview__live-indicator {
-  position: absolute;
-  right: 0.75rem;
-  bottom: 0.75rem;
-  width: 0.75rem;
-  height: 0.75rem;
-  color: var(--muted-foreground);
-  background: currentColor;
-  border: 2px solid var(--shell-sunken);
-  border-radius: 50%;
-  box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 32%);
+.camera-preview__gesture-toast {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-self: end;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--shell-raised);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 0.375rem 1rem oklch(0.06 0.01 286 / 22%);
+  transform-origin: top right;
+  animation: camera-gesture-toast 1650ms var(--ease-out-quart) both;
 }
 
-.camera-preview__live-indicator[data-tone="success"] {
-  color: var(--success);
+.camera-preview__gesture-toast[data-persistent] {
+  animation: camera-gesture-toast-enter 200ms var(--ease-out-quart) both;
 }
 
-.camera-preview__live-indicator[data-tone="warning"] {
+.camera-preview__gesture-toast > svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--primary);
+}
+
+.camera-preview__gesture-toast[data-kind="uncertain"] > svg,
+.camera-preview__gesture-toast[data-kind="lost"] > svg {
   color: var(--warning);
 }
 
-.camera-preview__live-indicator[data-tone="error"] {
-  color: var(--destructive);
+@keyframes camera-gesture-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem) scale(0.96);
+  }
 }
 
-button.camera-preview__viewport[data-tracking-tone="success"] {
-  border-color: var(--success);
-}
+@keyframes camera-gesture-toast {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.375rem) scale(0.96);
+  }
 
-button.camera-preview__viewport[data-tracking-tone="warning"] {
-  border-color: var(--warning);
-}
+  12%,
+  78% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 
-button.camera-preview__viewport[data-tracking-tone="error"] {
-  border-color: var(--destructive);
+  100% {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
 }
 
 .camera-preview__message,
@@ -560,6 +600,7 @@ button.camera-preview__viewport[data-tracking-tone="error"] {
 }
 
 .gesture-command-palette__action {
+  width: 100%;
   min-height: 5rem;
   flex-direction: column;
   gap: var(--space-sm);
@@ -586,6 +627,11 @@ button.camera-preview__viewport[data-tracking-tone="error"] {
   flex-direction: column;
   gap: var(--space-xs);
   white-space: normal;
+  width: 100%;
+}
+
+.gesture-command-palette button > * {
+  pointer-events: none;
 }
 
 .gesture-command-palette__choice[aria-pressed="true"] {

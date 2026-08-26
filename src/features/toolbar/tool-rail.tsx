@@ -98,6 +98,7 @@ export function ToolRail({
       <div className="command-dock__group" aria-label="Outil actif">
         <ToolButton
           label="Pointeur"
+          className="command-dock__tool"
           tooltipSide="top"
           variant={activeTool === "pointer" ? "default" : "ghost"}
           aria-pressed={activeTool === "pointer"}
@@ -107,6 +108,7 @@ export function ToolRail({
         </ToolButton>
         <ToolButton
           label="Stylo"
+          className="command-dock__tool"
           shortcut="P"
           tooltipSide="top"
           variant={activeTool === "pen" ? "default" : "ghost"}
@@ -117,6 +119,7 @@ export function ToolRail({
         </ToolButton>
         <ToolButton
           label="Gomme"
+          className="command-dock__tool"
           shortcut="E"
           tooltipSide="top"
           variant={activeTool === "eraser" ? "default" : "ghost"}

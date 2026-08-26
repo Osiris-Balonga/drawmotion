@@ -1,6 +1,15 @@
 import { forwardRef, useImperativeHandle } from "react"
 
-import { Camera, CameraOff, CircleAlert, LoaderCircle } from "lucide-react"
+import {
+  Camera,
+  CameraOff,
+  CircleAlert,
+  CircleHelp,
+  Eraser,
+  LoaderCircle,
+  MousePointer2,
+  PenLine,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,12 +21,14 @@ import {
   type GestureFrameListener,
   type HandTrackerFactory,
 } from "@/features/camera/use-hand-tracking"
+import type { GestureModeFeedback } from "@/features/workspace/gesture-mode-feedback"
 
 type CameraPreviewProps = {
   adapterFactory?: CameraAdapterFactory
   trackerFactory?: HandTrackerFactory
   onGestureFrame?: GestureFrameListener
   calibrating?: boolean
+  gestureNotice?: GestureModeFeedback | null
 }
 
 export type CameraPreviewHandle = {
@@ -74,6 +85,7 @@ export const CameraPreview = forwardRef<
     trackerFactory,
     onGestureFrame,
     calibrating = false,
+    gestureNotice = null,
   }: CameraPreviewProps,
   ref,
 ) {
@@ -142,7 +154,6 @@ export const CameraPreview = forwardRef<
                 : "Aperçu caméra"
         }
         disabled={!canToggleFromPreview}
-        data-tracking-tone={state === "ready" ? trackingStatus.tone : undefined}
         onClick={() => {
           if (state === "ready") stop()
           else void start()
@@ -184,15 +195,28 @@ export const CameraPreview = forwardRef<
         {error ? (
           <CameraOff aria-hidden="true" className="text-warning size-12" />
         ) : null}
-
-        {state === "ready" ? (
-          <span
-            aria-hidden="true"
-            className="camera-preview__live-indicator"
-            data-tone={trackingStatus.tone}
-          />
-        ) : null}
       </button>
+
+      {gestureNotice ? (
+        <div
+          key={`${gestureNotice.kind}-${gestureNotice.label}`}
+          className="camera-preview__gesture-toast"
+          data-kind={gestureNotice.kind}
+          data-persistent={gestureNotice.persistent || undefined}
+          role="status"
+        >
+          {gestureNotice.kind === "pointer" ? (
+            <MousePointer2 aria-hidden="true" />
+          ) : gestureNotice.kind === "pen" ? (
+            <PenLine aria-hidden="true" />
+          ) : gestureNotice.kind === "eraser" ? (
+            <Eraser aria-hidden="true" />
+          ) : (
+            <CircleHelp aria-hidden="true" />
+          )}
+          <span>{gestureNotice.label}</span>
+        </div>
+      ) : null}
 
       <div className="camera-preview__controls" aria-live="polite">
         {state === "requesting" ? (

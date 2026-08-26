@@ -18,13 +18,10 @@ type ResolveGestureDrawingModeOptions = {
 }
 
 /** Maps interaction gestures to the drawing state machine without changing classification. */
-export function resolveGestureDrawingMode({
-  gesture,
-  pinchPhase,
-  quality,
-  activeTool,
-  hasReliablePoint,
-}: ResolveGestureDrawingModeOptions): GestureDrawingMode {
+export function resolveGestureDrawingMode(
+  options: ResolveGestureDrawingModeOptions,
+): GestureDrawingMode {
+  const { gesture, pinchPhase, quality, hasReliablePoint } = options
   if (quality === "lost") {
     return {
       gesture: "tracking-lost",
@@ -43,12 +40,7 @@ export function resolveGestureDrawingMode({
   }
 
   return {
-    gesture:
-      activeTool === "pointer"
-        ? "open-hand"
-        : pinchPhase !== "released"
-          ? "pinch"
-          : "open-hand",
+    gesture: pinchPhase !== "released" ? "pinch" : "open-hand",
     pinchPhase,
     temporaryEraser: false,
   }
