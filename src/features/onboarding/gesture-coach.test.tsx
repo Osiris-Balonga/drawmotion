@@ -27,6 +27,9 @@ describe("GestureCoach", () => {
           name: `Progression du tutoriel : mission ${mission + 1} sur 5`,
         }),
       ).toBeInTheDocument()
+      expect(
+        document.querySelector(`[data-lesson-step="${step}"]`),
+      ).toBeInTheDocument()
     },
   )
 

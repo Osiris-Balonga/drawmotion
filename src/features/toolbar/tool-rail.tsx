@@ -27,6 +27,12 @@ import { Slider } from "@/components/ui/slider"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import type { StrokePattern } from "@/core/drawing/drawing-model"
+import { CustomColorPicker } from "@/features/toolbar/custom-color-picker"
+import {
+  drawingPrecisionModes,
+  drawingStrokePatterns,
+  thicknessPresetsForTool,
+} from "@/features/toolbar/drawing-settings"
 import {
   drawingColors,
   type DrawingColor,
@@ -51,32 +57,20 @@ type ToolRailProps = {
 
 const compactDockMediaQuery = "(max-width: 80rem)"
 
-const assistanceModes = [
-  {
-    value: "free",
-    label: "Libre",
+const precisionModeDetails = {
+  free: {
     description: "Respecte chaque mouvement sans correction de forme",
     Icon: PenLine,
   },
-  {
-    value: "stabilized",
-    label: "Stabilisé",
+  stabilized: {
     description: "Réduit les irrégularités sans transformer le dessin",
     Icon: Activity,
   },
-  {
-    value: "shapes",
-    label: "Formes",
+  shapes: {
     description: "Régularise les lignes, cercles, ellipses et rectangles",
     Icon: Shapes,
   },
-] as const
-
-const strokePatterns = [
-  { value: "solid", label: "Continu" },
-  { value: "dashed", label: "Tirets" },
-  { value: "dotted", label: "Pointillé" },
-] as const
+} as const
 
 export function ToolRail({
   activeTool,
@@ -108,6 +102,16 @@ export function ToolRail({
     media.addEventListener("change", handleChange)
     return () => media.removeEventListener("change", handleChange)
   }, [])
+
+  const isEraser = activeTool === "eraser"
+  const thicknessPresets = thicknessPresetsForTool(activeTool)
+  const thicknessLabel = isEraser ? "Taille de la gomme" : "Épaisseur du trait"
+  const thicknessButtonLabel = isEraser
+    ? `${thicknessLabel} ${thickness} pixels`
+    : `Épaisseur ${thickness} pixels`
+  const thicknessMinimum = isEraser ? 16 : 2
+  const thicknessMaximum = isEraser ? 112 : 24
+  const thicknessStep = isEraser ? 8 : 2
 
   return (
     <aside
@@ -156,7 +160,7 @@ export function ToolRail({
         <PopoverTrigger
           render={
             <ToolButton
-              label={`Épaisseur ${thickness} pixels`}
+              label={thicknessButtonLabel}
               tooltipSide="top"
               variant="ghost"
               className="command-dock__thickness"
@@ -165,11 +169,17 @@ export function ToolRail({
               <span
                 aria-hidden="true"
                 className="drawing-thickness-preview"
+                data-tool={isEraser ? "eraser" : "pen"}
                 data-pattern={strokePattern}
                 style={{
-                  width: Math.min(24, Math.max(12, thickness + 8)),
-                  borderTopWidth: Math.max(2, thickness / 4),
-                  color,
+                  width: isEraser
+                    ? Math.min(24, Math.max(12, thickness / 3))
+                    : Math.min(24, Math.max(12, thickness + 8)),
+                  borderTopWidth: isEraser ? 0 : Math.max(2, thickness / 4),
+                  color: isEraser ? "currentColor" : color,
+                  height: isEraser
+                    ? Math.min(16, Math.max(6, thickness / 5))
+                    : 0,
                 }}
               />
               <span className="text-xs font-semibold">{thickness}</span>
@@ -178,16 +188,16 @@ export function ToolRail({
         />
         <PopoverContent side="top" align="center" className="w-72 gap-4 p-4">
           <PopoverHeader>
-            <PopoverTitle>Épaisseur du trait</PopoverTitle>
+            <PopoverTitle>{thicknessLabel}</PopoverTitle>
             <PopoverDescription>
               {thickness} pixels à la résolution de référence
             </PopoverDescription>
           </PopoverHeader>
           <Slider
-            aria-label="Épaisseur du trait"
-            min={2}
-            max={24}
-            step={2}
+            aria-label={thicknessLabel}
+            min={thicknessMinimum}
+            max={thicknessMaximum}
+            step={thicknessStep}
             value={[thickness]}
             onValueChange={(value) => {
               const nextThickness = typeof value === "number" ? value : value[0]
@@ -201,7 +211,7 @@ export function ToolRail({
             className="grid grid-cols-4 gap-2"
             aria-label="Épaisseurs rapides"
           >
-            {[4, 8, 12, 18].map((preset) => (
+            {thicknessPresets.map((preset) => (
               <Button
                 key={preset}
                 type="button"
@@ -214,40 +224,44 @@ export function ToolRail({
               </Button>
             ))}
           </div>
-          <div className="stroke-pattern-field">
-            <span className="stroke-pattern-field__label">Style du trait</span>
-            <ToggleGroup
-              value={[strokePattern]}
-              onValueChange={(nextValue) => {
-                const nextPattern = nextValue[0]
-                if (nextPattern) {
-                  onStrokePatternChange(nextPattern as StrokePattern)
-                }
-              }}
-              variant="outline"
-              size="sm"
-              spacing={1}
-              aria-label="Style du trait"
-              className="w-full"
-            >
-              {strokePatterns.map((pattern) => (
-                <ToggleGroupItem
-                  key={pattern.value}
-                  value={pattern.value}
-                  aria-label={pattern.label}
-                  title={pattern.label}
-                  className="stroke-pattern-option"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="stroke-pattern-option__preview"
-                    data-pattern={pattern.value}
-                  />
-                  <span className="sr-only">{pattern.label}</span>
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
+          {!isEraser ? (
+            <div className="stroke-pattern-field">
+              <span className="stroke-pattern-field__label">
+                Style du trait
+              </span>
+              <ToggleGroup
+                value={[strokePattern]}
+                onValueChange={(nextValue) => {
+                  const nextPattern = nextValue[0]
+                  if (nextPattern) {
+                    onStrokePatternChange(nextPattern as StrokePattern)
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                spacing={1}
+                aria-label="Style du trait"
+                className="w-full"
+              >
+                {drawingStrokePatterns.map((pattern) => (
+                  <ToggleGroupItem
+                    key={pattern.value}
+                    value={pattern.value}
+                    aria-label={pattern.label}
+                    title={pattern.label}
+                    className="stroke-pattern-option"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="stroke-pattern-option__preview"
+                      data-pattern={pattern.value}
+                    />
+                    <span className="sr-only">{pattern.label}</span>
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          ) : null}
         </PopoverContent>
       </Popover>
 
@@ -274,21 +288,24 @@ export function ToolRail({
             aria-label="Mode de précision"
             className="command-dock__precision"
           >
-            {assistanceModes.map(({ value, label, description, Icon }) => (
-              <ToggleGroupItem
-                key={value}
-                value={value}
-                aria-label={`${label} — ${description}`}
-                title={description}
-                data-onboarding-target={
-                  value === "shapes" ? "shapes" : undefined
-                }
-                className="command-dock__precision-option"
-              >
-                <Icon aria-hidden="true" />
-                {label}
-              </ToggleGroupItem>
-            ))}
+            {drawingPrecisionModes.map(({ value, label }) => {
+              const { description, Icon } = precisionModeDetails[value]
+              return (
+                <ToggleGroupItem
+                  key={value}
+                  value={value}
+                  aria-label={`${label} — ${description}`}
+                  title={description}
+                  data-onboarding-target={
+                    value === "shapes" ? "shapes" : undefined
+                  }
+                  className="command-dock__precision-option"
+                >
+                  <Icon aria-hidden="true" />
+                  {label}
+                </ToggleGroupItem>
+              )
+            })}
           </ToggleGroup>
 
           <Separator
@@ -328,6 +345,13 @@ export function ToolRail({
                 </span>
               </ToolButton>
             ))}
+            <CustomColorPicker
+              color={color}
+              onColorChange={(nextColor) => {
+                onColorChange(nextColor)
+                onToolChange("pen")
+              }}
+            />
           </div>
         </div>
       </div>

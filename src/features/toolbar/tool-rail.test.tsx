@@ -101,6 +101,19 @@ describe("ToolRail", () => {
     })
   })
 
+  it("shows dedicated eraser sizes when the eraser is active", async () => {
+    const user = userEvent.setup()
+    const props = renderToolRail({ activeTool: "eraser", thickness: 40 })
+
+    await user.click(
+      screen.getByRole("button", { name: "Taille de la gomme 40 pixels" }),
+    )
+    expect(screen.getByRole("button", { name: "64 px" })).toBeInTheDocument()
+    expect(screen.queryByText("Style du trait")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "64 px" }))
+    expect(props.onThicknessChange).toHaveBeenCalledWith(64)
+  })
+
   it("keeps tutorial replay inside the unified dock", async () => {
     const user = userEvent.setup()
     const props = renderToolRail()

@@ -5,5 +5,9 @@ export const drawingColors = [
   { name: "Orange", value: "#a46c1f", className: "text-warning" },
 ] as const
 
-export type DrawingColor = (typeof drawingColors)[number]["value"]
+export type DrawingColor = string
 export type DrawingTool = "pointer" | "pen" | "eraser"
+
+export function isPresetDrawingColor(color: DrawingColor) {
+  return drawingColors.some((preset) => preset.value === color)
+}

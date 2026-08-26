@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { DrawMotionMark } from "@/features/toolbar/brand-mark"
 import { ToolButton } from "@/features/toolbar/tool-button"
 
 type TopBarProps = {
@@ -40,12 +41,7 @@ export function TopBar({
   return (
     <header className="workspace-topbar">
       <div className="workspace-topbar__island workspace-topbar__brand">
-        <span
-          aria-hidden="true"
-          className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-lg text-sm font-semibold"
-        >
-          D
-        </span>
+        <DrawMotionMark aria-hidden="true" className="drawmotion-mark" />
         <div className="min-w-0">
           <h1 className="truncate text-base leading-tight font-semibold">
             DrawMotion

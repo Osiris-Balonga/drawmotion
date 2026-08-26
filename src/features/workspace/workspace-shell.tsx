@@ -137,7 +137,8 @@ export function WorkspaceShell() {
     initialState.step === "cursor" ? "pointer" : "pen",
   )
   const [color, setColor] = useState<DrawingColor>(drawingColors[0].value)
-  const [thickness, setThickness] = useState(8)
+  const [penThickness, setPenThickness] = useState(8)
+  const [eraserThickness, setEraserThickness] = useState(40)
   const [strokePattern, setStrokePattern] = useState<StrokePattern>("solid")
   const [viewport, setViewport] = useState<CanvasViewport>(
     initialCanvasViewport,
@@ -188,18 +189,17 @@ export function WorkspaceShell() {
     lastPoint: { x: number; y: number } | null
     distance: number
   }>({ lastPoint: null, distance: 0 })
+  const activeThickness =
+    activeTool === "eraser" ? eraserThickness : penThickness
 
   const drawingStyle = useMemo<DrawingStyle>(
     () => ({
       tool: activeTool === "eraser" ? "eraser" : "pen",
       color,
-      width:
-        activeTool === "eraser"
-          ? Math.max(24, thickness) / 1000
-          : thickness / 1000,
+      width: activeThickness / 1000,
       pattern: activeTool === "eraser" ? "solid" : strokePattern,
     }),
-    [activeTool, color, strokePattern, thickness],
+    [activeThickness, activeTool, color, strokePattern],
   )
 
   const changeTool = useCallback((tool: DrawingTool) => {
@@ -615,8 +615,12 @@ export function WorkspaceShell() {
 
   const changeThickness = useCallback(
     (nextThickness: number) => {
-      setThickness(nextThickness)
-      observeOnboarding({ type: "THICKNESS_CHANGED" })
+      if (activeToolRef.current === "eraser") {
+        setEraserThickness(nextThickness)
+      } else {
+        setPenThickness(nextThickness)
+        observeOnboarding({ type: "THICKNESS_CHANGED" })
+      }
     },
     [observeOnboarding],
   )
@@ -854,7 +858,7 @@ export function WorkspaceShell() {
         <ToolRail
           activeTool={activeTool}
           color={color}
-          thickness={thickness}
+          thickness={activeThickness}
           strokePattern={strokePattern}
           assistanceMode={assistanceMode}
           onToolChange={changeTool}
@@ -888,7 +892,7 @@ export function WorkspaceShell() {
             onHistoryChange={setHistoryAvailability}
           />
           <div className="sr-only" aria-live="polite">
-            {toolNames[activeTool]} sélectionné, {thickness} pixels
+            {toolNames[activeTool]} sélectionné, {activeThickness} pixels
           </div>
           <CameraPreview
             calibrating={onboardingState.step === "cursor"}
@@ -928,8 +932,9 @@ export function WorkspaceShell() {
           {gesturePaletteAnchor ? (
             <GestureCommandPalette
               anchor={gesturePaletteAnchor}
+              activeTool={activeTool}
               color={color}
-              thickness={thickness}
+              thickness={activeThickness}
               pattern={strokePattern}
               assistanceMode={assistanceMode}
               onColorChange={(nextColor) => {
@@ -938,7 +943,6 @@ export function WorkspaceShell() {
               }}
               onThicknessChange={(nextThickness) => {
                 changeThickness(nextThickness)
-                changeTool("pen")
               }}
               onPatternChange={(nextPattern) => {
                 setStrokePattern(nextPattern)

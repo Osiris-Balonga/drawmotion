@@ -4,6 +4,7 @@ import {
   Activity,
   ArrowLeft,
   Check,
+  Eraser,
   Palette,
   PenLine,
   Undo2,
@@ -14,14 +15,21 @@ import { Button } from "@/components/ui/button"
 import type { StrokePattern } from "@/core/drawing/drawing-model"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import {
+  drawingPrecisionModes,
+  drawingStrokePatterns,
+  thicknessPresetsForTool,
+} from "@/features/toolbar/drawing-settings"
+import {
   drawingColors,
   type DrawingColor,
+  type DrawingTool,
 } from "@/features/toolbar/drawing-tools"
 
 type GesturePalettePage = "root" | "color" | "stroke" | "precision"
 
 type GestureCommandPaletteProps = {
   anchor: { x: number; y: number }
+  activeTool: DrawingTool
   color: DrawingColor
   thickness: number
   pattern: StrokePattern
@@ -34,20 +42,9 @@ type GestureCommandPaletteProps = {
   onClose: () => void
 }
 
-const thicknesses = [4, 10, 20] as const
-const patterns = [
-  { value: "solid", label: "Continu" },
-  { value: "dashed", label: "Tirets" },
-  { value: "dotted", label: "Pointillé" },
-] as const
-const precisionModes = [
-  { value: "free", label: "Libre" },
-  { value: "stabilized", label: "Stabilisé" },
-  { value: "shapes", label: "Formes" },
-] as const
-
 export function GestureCommandPalette({
   anchor,
+  activeTool,
   color,
   thickness,
   pattern,
@@ -60,6 +57,8 @@ export function GestureCommandPalette({
   onClose,
 }: GestureCommandPaletteProps) {
   const [page, setPage] = useState<GesturePalettePage>("root")
+  const isEraser = activeTool === "eraser"
+  const thicknesses = thicknessPresetsForTool(activeTool)
 
   const selectAndClose = (action: () => void) => {
     action()
@@ -108,8 +107,8 @@ export function GestureCommandPalette({
             onClick={() => setPage("color")}
           />
           <PaletteButton
-            label="Trait"
-            Icon={PenLine}
+            label={isEraser ? "Gomme" : "Trait"}
+            Icon={isEraser ? Eraser : PenLine}
             onClick={() => setPage("stroke")}
           />
           <PaletteButton
@@ -158,8 +157,8 @@ export function GestureCommandPalette({
       {page === "stroke" ? (
         <div className="gesture-command-palette__stroke">
           <div
-            className="gesture-command-palette__choices"
-            aria-label="Épaisseur"
+            className="gesture-command-palette__choices gesture-command-palette__choices--thickness"
+            aria-label={isEraser ? "Taille de la gomme" : "Épaisseur du trait"}
           >
             {thicknesses.map((value) => (
               <Button
@@ -180,28 +179,33 @@ export function GestureCommandPalette({
               </Button>
             ))}
           </div>
-          <div className="gesture-command-palette__choices" aria-label="Motif">
-            {patterns.map((option) => (
-              <Button
-                key={option.value}
-                aria-label={option.label}
-                aria-pressed={pattern === option.value}
-                className="gesture-command-palette__choice"
-                data-gesture-palette-control=""
-                variant="ghost"
-                onClick={() =>
-                  selectAndClose(() => onPatternChange(option.value))
-                }
-              >
-                <span
-                  aria-hidden="true"
-                  className="gesture-command-palette__pattern"
-                  data-pattern={option.value}
-                />
-                <span>{option.label}</span>
-              </Button>
-            ))}
-          </div>
+          {!isEraser ? (
+            <div
+              className="gesture-command-palette__choices"
+              aria-label="Style du trait"
+            >
+              {drawingStrokePatterns.map((option) => (
+                <Button
+                  key={option.value}
+                  aria-label={option.label}
+                  aria-pressed={pattern === option.value}
+                  className="gesture-command-palette__choice"
+                  data-gesture-palette-control=""
+                  variant="ghost"
+                  onClick={() =>
+                    selectAndClose(() => onPatternChange(option.value))
+                  }
+                >
+                  <span
+                    aria-hidden="true"
+                    className="gesture-command-palette__pattern"
+                    data-pattern={option.value}
+                  />
+                  <span>{option.label}</span>
+                </Button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -210,7 +214,7 @@ export function GestureCommandPalette({
           className="gesture-command-palette__choices"
           aria-label="Précision"
         >
-          {precisionModes.map((mode) => (
+          {drawingPrecisionModes.map((mode) => (
             <Button
               key={mode.value}
               aria-label={mode.label}
