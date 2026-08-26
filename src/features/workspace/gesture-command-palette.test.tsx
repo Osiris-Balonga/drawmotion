@@ -9,6 +9,7 @@ function renderPalette(
 ) {
   const props = {
     anchor: { x: 400, y: 300 },
+    activeTool: "pen" as const,
     color: "#17171c" as const,
     thickness: 8,
     pattern: "solid" as const,
@@ -63,10 +64,10 @@ describe("GestureCommandPalette", () => {
 
   it("changes thickness and returns to the root page", async () => {
     const user = userEvent.setup()
-    const props = renderPalette({ thickness: 20 })
+    const props = renderPalette({ thickness: 18 })
 
     await user.click(screen.getByRole("button", { name: "Trait" }))
-    expect(screen.getByRole("button", { name: "20 pixels" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "18 pixels" })).toHaveAttribute(
       "aria-pressed",
       "true",
     )
@@ -74,10 +75,27 @@ describe("GestureCommandPalette", () => {
       screen.getByRole("button", { name: "Retour aux commandes" }),
     )
     await user.click(screen.getByRole("button", { name: "Trait" }))
-    await user.click(screen.getByRole("button", { name: "10 pixels" }))
+    await user.click(screen.getByRole("button", { name: "12 pixels" }))
 
-    expect(props.onThicknessChange).toHaveBeenCalledWith(10)
+    expect(props.onThicknessChange).toHaveBeenCalledWith(12)
     expect(props.onClose).toHaveBeenCalledOnce()
+  })
+
+  it("uses the shared eraser sizes without exposing stroke patterns", async () => {
+    const user = userEvent.setup()
+    const props = renderPalette({ activeTool: "eraser", thickness: 40 })
+
+    await user.click(screen.getByRole("button", { name: "Gomme" }))
+
+    expect(screen.getByRole("button", { name: "40 pixels" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    expect(
+      screen.queryByRole("button", { name: "Pointillé" }),
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "64 pixels" }))
+    expect(props.onThicknessChange).toHaveBeenCalledWith(64)
   })
 
   it("changes precision and exposes the active choice", async () => {

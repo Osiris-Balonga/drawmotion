@@ -1,7 +1,6 @@
-import { MousePointer2, Palette, PenLine, Shapes, Undo2 } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { GestureLessonIllustration } from "@/features/onboarding/gesture-lesson-illustration"
 import {
   onboardingSteps,
   type ActiveOnboardingStep,
@@ -13,31 +12,26 @@ const content = {
     title: "Le point violet est votre curseur",
     description:
       "Déplacez l’index sans pincer et visez les trois repères sur la toile.",
-    Icon: MousePointer2,
   },
   draw: {
     title: "Pincez pour poser le stylo",
     description:
       "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
-    Icon: PenLine,
   },
   style: {
     title: "Faites un V pour ouvrir les commandes",
     description:
       "Tendez l’index et le majeur un court instant, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
-    Icon: Palette,
   },
   shapes: {
     title: "Transformez un geste en forme nette",
     description:
       "Refaites le signe V, activez Formes, puis dessinez un cercle approximatif.",
-    Icon: Shapes,
   },
   correct: {
     title: "Corrigez sans recommencer",
     description:
       "Ouvrez les commandes avec le signe V et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
-    Icon: Undo2,
   },
 } as const
 
@@ -55,13 +49,7 @@ export function GestureCoach({ state, onBack, onSkip }: GestureCoachProps) {
 
   return (
     <section className="gesture-coach" aria-labelledby="gesture-title">
-      <div className="gesture-coach__icon" aria-hidden="true">
-        {step === "style" ? (
-          <span className="gesture-coach__menu-pose">V</span>
-        ) : (
-          <current.Icon />
-        )}
-      </div>
+      <GestureLessonIllustration step={step} />
       <div className="min-w-0 flex-1">
         <h2 id="gesture-title" className="text-base font-semibold">
           {current.title}

@@ -3,5 +3,6 @@ dist/
 node_modules/
 playwright-report/
 public/vision/wasm/
+public/*.svg
 test-results/
 pnpm-lock.yaml
