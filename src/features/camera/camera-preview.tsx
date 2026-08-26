@@ -7,6 +7,7 @@ import {
   CircleHelp,
   Eraser,
   LoaderCircle,
+  Menu,
   MousePointer2,
   PenLine,
 } from "lucide-react"
@@ -48,6 +49,7 @@ const gestureLabels = {
   pinch: "Pincement",
   "open-hand": "Main ouverte",
   fist: "Poing",
+  menu: "Commandes",
   uncertain: "Geste incertain",
   "tracking-lost": "Aucun geste",
 } as const
@@ -129,7 +131,9 @@ export const CameraPreview = forwardRef<
             ? "Relâchement…"
             : gesture === "fist"
               ? gestureLabels.fist
-              : trackingStatus.label
+              : gesture === "menu"
+                ? gestureLabels.menu
+                : trackingStatus.label
       : trackingStatus.label
 
   useImperativeHandle(ref, () => ({
@@ -211,6 +215,8 @@ export const CameraPreview = forwardRef<
             <PenLine aria-hidden="true" />
           ) : gestureNotice.kind === "eraser" ? (
             <Eraser aria-hidden="true" />
+          ) : gestureNotice.kind === "commands" ? (
+            <Menu aria-hidden="true" />
           ) : (
             <CircleHelp aria-hidden="true" />
           )}

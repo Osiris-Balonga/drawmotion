@@ -60,6 +60,15 @@ export const fistGestureLandmarks = pose({
   20: [0.59, 0.69],
 })
 
+export const menuGestureLandmarks = pose({
+  14: [0.57, 0.56],
+  15: [0.56, 0.61],
+  16: [0.55, 0.66],
+  18: [0.64, 0.6],
+  19: [0.62, 0.65],
+  20: [0.59, 0.69],
+})
+
 export const uncertainGestureLandmarks = pose({
   4: [0.34, 0.44],
   8: [0.42, 0.3],

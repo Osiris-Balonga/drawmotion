@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { NormalizedLandmark } from "@/infrastructure/mediapipe/hand-tracker-port"
 import {
   fistGestureLandmarks,
+  menuGestureLandmarks,
   openHandGestureLandmarks,
   pinchGestureLandmarks,
   uncertainGestureLandmarks,
@@ -31,6 +32,7 @@ describe("gesture classification fixtures", () => {
     ["pinch", pinchGestureLandmarks],
     ["open hand", openHandGestureLandmarks],
     ["fist", fistGestureLandmarks],
+    ["menu", menuGestureLandmarks],
     ["uncertain hand", uncertainGestureLandmarks],
   ])("provides a complete %s pose", (_name, landmarks) => {
     expect(landmarks).toHaveLength(21)

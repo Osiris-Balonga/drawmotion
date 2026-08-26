@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   fistGestureLandmarks,
   handFromGestureFixture,
+  menuGestureLandmarks,
   openHandGestureLandmarks,
   pinchGestureLandmarks,
   uncertainGestureLandmarks,
@@ -16,6 +17,7 @@ describe("classifyGesture", () => {
     ["pinch", pinchGestureLandmarks, "pinch"],
     ["open hand", openHandGestureLandmarks, "open-hand"],
     ["fist", fistGestureLandmarks, "fist"],
+    ["menu pose", menuGestureLandmarks, "menu"],
     ["uncertain hand", uncertainGestureLandmarks, "uncertain"],
   ] as const)("classifies a %s fixture", (_name, landmarks, expected) => {
     expect(classifyGesture(handFromGestureFixture(landmarks)).kind).toBe(

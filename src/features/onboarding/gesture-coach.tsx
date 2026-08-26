@@ -22,21 +22,21 @@ const content = {
     Icon: PenLine,
   },
   style: {
-    title: "Ouvrez les commandes gestuelles",
+    title: "Faites un V pour ouvrir les commandes",
     description:
-      "Gardez la main ouverte et immobile, puis choisissez le vert et une autre épaisseur.",
+      "Tendez l’index et le majeur un court instant, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
     Icon: Palette,
   },
   shapes: {
     title: "Transformez un geste en forme nette",
     description:
-      "Rouvrez les commandes, activez Formes, puis dessinez un cercle approximatif.",
+      "Refaites le signe V, activez Formes, puis dessinez un cercle approximatif.",
     Icon: Shapes,
   },
   correct: {
     title: "Corrigez sans recommencer",
     description:
-      "Annulez depuis les commandes gestuelles. Pour gommer directement, fermez le poing et déplacez la main.",
+      "Ouvrez les commandes avec le signe V et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
     Icon: Undo2,
   },
 } as const
@@ -56,7 +56,11 @@ export function GestureCoach({ state, onBack, onSkip }: GestureCoachProps) {
   return (
     <section className="gesture-coach" aria-labelledby="gesture-title">
       <div className="gesture-coach__icon" aria-hidden="true">
-        <current.Icon />
+        {step === "style" ? (
+          <span className="gesture-coach__menu-pose">V</span>
+        ) : (
+          <current.Icon />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <h2 id="gesture-title" className="text-base font-semibold">

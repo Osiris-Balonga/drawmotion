@@ -7,6 +7,7 @@ describe("resolveGestureModeFeedback", () => {
     ["open-hand", "reliable", "released", "pointer"],
     ["pinch", "reliable", "active", "pen"],
     ["fist", "reliable", "released", "eraser"],
+    ["menu", "reliable", "released", "commands"],
   ] as const)(
     "maps %s to the %s dock mode",
     (gesture, quality, phase, kind) => {

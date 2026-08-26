@@ -3,7 +3,7 @@ import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 
 export type GestureModeFeedback = {
-  kind: "pointer" | "pen" | "eraser" | "uncertain" | "lost"
+  kind: "pointer" | "pen" | "eraser" | "commands" | "uncertain" | "lost"
   label: string
   persistent?: boolean
 }
@@ -25,6 +25,9 @@ export function resolveGestureModeFeedback(
   }
   if (gesture === "fist") {
     return { kind: "eraser", label: "Mode gomme" }
+  }
+  if (gesture === "menu") {
+    return { kind: "commands", label: "Ouverture des commandes" }
   }
   if (gesture === "pinch" || pinchPhase !== "released") {
     return { kind: "pen", label: "Mode stylo" }
