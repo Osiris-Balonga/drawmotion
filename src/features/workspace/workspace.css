@@ -47,30 +47,19 @@
 }
 
 .drawmotion-mark {
-  width: 2.25rem;
-  height: 2.25rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: 0 0 auto;
+  place-items: center;
   overflow: visible;
 }
 
-.drawmotion-mark__cursor {
-  fill: var(--primary-foreground);
-  stroke: var(--shell-raised);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-}
-
-.drawmotion-mark__anchor {
-  fill: var(--primary);
-  stroke: var(--primary-foreground);
-  stroke-width: 1.5;
-}
-
-.drawmotion-mark__stroke {
-  fill: none;
-  stroke: var(--primary);
-  stroke-width: 3;
-  stroke-linecap: round;
+.drawmotion-mark img {
+  width: 2.75rem;
+  max-width: none;
+  height: 2.75rem;
+  object-fit: contain;
 }
 
 .workspace-topbar__history {
@@ -163,7 +152,7 @@
 }
 
 .command-dock__extended {
-  max-width: 32rem;
+  max-width: 38rem;
   flex: 0 0 auto;
   overflow: hidden;
   opacity: 1;
@@ -451,7 +440,7 @@
 .camera-preview {
   position: absolute;
   top: 5.75rem;
-  right: clamp(var(--space-xl), 3vw, var(--space-3xl));
+  right: var(--space-xl);
   z-index: var(--z-floating-controls);
   display: grid;
   width: 10rem;
@@ -668,10 +657,12 @@ button.camera-preview__viewport:disabled {
   left: var(--space-xl);
   z-index: var(--z-floating-controls);
   display: flex;
-  min-height: 3rem;
+  min-width: 10rem;
+  min-height: 3.75rem;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-xs);
-  padding: var(--space-xs);
+  padding: var(--space-sm);
   color: var(--foreground);
   background: var(--shell-raised);
   border-radius: var(--radius-xl);
@@ -1076,227 +1067,41 @@ button.camera-preview__viewport:disabled {
 
 .gesture-lesson {
   position: relative;
-  width: 7.5rem;
-  height: 4.5rem;
+  width: 8.5rem;
+  height: 5.25rem;
   flex: 0 0 auto;
   overflow: hidden;
-  color: var(--primary-foreground);
   background: var(--shell-sunken);
   border-radius: var(--radius-lg);
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
-.gesture-lesson svg {
-  position: absolute;
-  width: 1.25rem;
-  height: 1.25rem;
+.gesture-lesson img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.04);
 }
 
 .gesture-lesson__caption {
   position: absolute;
   right: var(--space-sm);
-  bottom: 0.35rem;
+  bottom: var(--space-xs);
   left: var(--space-sm);
+  z-index: 1;
+  padding: 0.25rem 0.45rem;
   overflow: hidden;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   font-size: 0.65rem;
   font-weight: 600;
   line-height: 1;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.gesture-lesson__pointer-motion {
-  position: absolute;
-  top: 0.75rem;
-  left: 1rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  animation: lesson-pointer-move 1.8s var(--ease-out-quart) infinite;
-}
-
-.gesture-lesson__pointer {
-  inset: 0;
-  color: var(--primary);
-}
-
-.gesture-lesson__motion-line {
-  position: absolute;
-  top: 1.35rem;
-  left: 2.4rem;
-  width: 2.8rem;
-  border-top: 2px dashed var(--border);
-}
-
-.gesture-lesson__target {
-  position: absolute;
-  top: 1.05rem;
-  width: 0.65rem;
-  height: 0.65rem;
-  background: var(--canvas);
-  border: 2px solid var(--primary);
-  border-radius: 50%;
-}
-
-.gesture-lesson__target--one {
-  left: 4.65rem;
-}
-
-.gesture-lesson__target--two {
-  left: 5.85rem;
-}
-
-@keyframes lesson-pointer-move {
-  50% {
-    transform: translateX(3.7rem);
-  }
-}
-
-.gesture-lesson__finger {
-  position: absolute;
-  top: 0.45rem;
-  width: 0.65rem;
-  height: 2.1rem;
-  background: var(--primary-foreground);
-  border-radius: 999px;
-  transform-origin: bottom center;
-}
-
-.gesture-lesson__finger--thumb {
-  left: 1.55rem;
-  transform: rotate(-35deg);
-  animation: lesson-pinch-thumb 1.5s var(--ease-out-quart) infinite;
-}
-
-.gesture-lesson__finger--index {
-  left: 3rem;
-  transform: rotate(35deg);
-  animation: lesson-pinch-index 1.5s var(--ease-out-quart) infinite;
-}
-
-.gesture-lesson__pinch-point {
-  position: absolute;
-  top: 1.65rem;
-  left: 2.45rem;
-  width: 0.65rem;
-  height: 0.65rem;
-  background: var(--success);
-  border-radius: 50%;
-  animation: lesson-pinch-point 1.5s var(--ease-out-quart) infinite;
-}
-
-.gesture-lesson__pen {
-  top: 0.95rem;
-  right: 1.15rem;
-  color: var(--primary);
-}
-
-@keyframes lesson-pinch-thumb {
-  50% {
-    transform: translateX(0.35rem) rotate(-22deg);
-  }
-}
-
-@keyframes lesson-pinch-index {
-  50% {
-    transform: translateX(-0.35rem) rotate(22deg);
-  }
-}
-
-@keyframes lesson-pinch-point {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.gesture-lesson__v {
-  position: absolute;
-  top: 0.3rem;
-  left: 1.4rem;
-  color: var(--primary-foreground);
-  font-size: 2rem;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.gesture-lesson__hold-ring {
-  position: absolute;
-  top: 0.45rem;
-  right: 1.3rem;
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 3px solid var(--primary);
-  border-bottom-color: var(--border);
-  border-radius: 50%;
-  animation: lesson-hold-spin 1.1s linear infinite;
-}
-
-@keyframes lesson-hold-spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-.gesture-lesson__rough-shape,
-.gesture-lesson__clean-shape {
-  position: absolute;
-  top: 0.65rem;
-  width: 1.65rem;
-  height: 1.65rem;
-  border-radius: 46% 54% 50% 48%;
-}
-
-.gesture-lesson__rough-shape {
-  left: 0.75rem;
-  border: 2px dashed var(--muted-foreground);
-}
-
-.gesture-lesson__clean-shape {
-  right: 0.75rem;
-  border: 2px solid var(--success);
-  border-radius: 50%;
-}
-
-.gesture-lesson__shape-icon {
-  top: 0.85rem;
-  left: 3.15rem;
-  color: var(--primary);
-}
-
-.gesture-lesson__fist {
-  position: absolute;
-  top: 0.55rem;
-  left: 0.9rem;
-  color: var(--primary-foreground);
-  font-size: 1.35rem;
-  line-height: 1;
-}
-
-.gesture-lesson__eraser {
-  top: 0.55rem;
-  left: 2.35rem;
-  color: var(--primary);
-}
-
-.gesture-lesson__or {
-  position: absolute;
-  top: 0.85rem;
-  left: 4rem;
-  color: var(--muted-foreground);
-  font-size: 0.65rem;
-}
-
-.gesture-lesson__undo {
-  top: 0.55rem;
-  right: 0.85rem;
-  color: var(--success);
+  background: oklch(0.13 0.012 286 / 88%);
+  box-shadow: 0 0.25rem 0.75rem oklch(0.06 0.01 286 / 24%);
+  backdrop-filter: blur(0.5rem);
 }
 
 .shape-assistance-feedback {
@@ -1352,6 +1157,10 @@ button.camera-preview__viewport:disabled {
 
 @media (max-height: 48rem) {
   .tool-rail {
+    bottom: var(--space-lg);
+  }
+
+  .canvas-viewport-controls {
     bottom: var(--space-lg);
   }
 
@@ -1441,7 +1250,7 @@ button.camera-preview__viewport:disabled {
 
   .camera-preview {
     top: 5.75rem;
-    right: var(--space-xl);
+    right: var(--space-md);
     width: 8rem;
   }
 
