@@ -70,6 +70,11 @@ import {
 } from "@/features/workspace/drawing-canvas"
 import { GestureCommandPalette } from "@/features/workspace/gesture-command-palette"
 import { resolveGestureDrawingMode } from "@/features/workspace/gesture-drawing-mode"
+import {
+  resolveGestureModeFeedback,
+  type GestureModeFeedback,
+} from "@/features/workspace/gesture-mode-feedback"
+import { findGesturePaletteControl } from "@/features/workspace/gesture-palette-hit-test"
 import { resolveGesturePaletteAction } from "@/features/workspace/gesture-palette-interaction"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
@@ -101,34 +106,15 @@ const cursorPracticeTargets = [
 ] as const
 
 const tutorialStrokeDistance = 120
-const gestureMenuHoldMs = 700
+const gestureMenuHoldMs = 1200
+const gestureMenuPostDrawingGuardMs = 600
 const gestureMenuMovementTolerance = 36
-const gesturePaletteMagnetism = 28
 const gesturePointerRadius = 6
+const gestureNoticeDurationMs = 1650
 
 type GestureMenuHold = {
   startedAt: number
   origin: { x: number; y: number }
-}
-
-function findGesturePaletteControl(point: { x: number; y: number }) {
-  let closest: { element: HTMLButtonElement; distance: number } | null = null
-  for (const element of document.querySelectorAll<HTMLButtonElement>(
-    "[data-gesture-palette-control]",
-  )) {
-    if (element.disabled) continue
-    const bounds = element.getBoundingClientRect()
-    const deltaX = Math.max(bounds.left - point.x, 0, point.x - bounds.right)
-    const deltaY = Math.max(bounds.top - point.y, 0, point.y - bounds.bottom)
-    const distance = Math.hypot(deltaX, deltaY)
-    if (
-      distance <= gesturePaletteMagnetism &&
-      (!closest || distance < closest.distance)
-    ) {
-      closest = { element, distance }
-    }
-  }
-  return closest?.element ?? null
 }
 
 function isEditableTarget(target: EventTarget | null) {
@@ -159,6 +145,8 @@ export function WorkspaceShell() {
     x: number
     y: number
   } | null>(null)
+  const [gestureNotice, setGestureNotice] =
+    useState<GestureModeFeedback | null>(null)
   const [assistanceMode, setAssistanceMode] =
     useState<StrokeAssistanceMode>("stabilized")
   const [lastAssistance, setLastAssistance] =
@@ -173,10 +161,18 @@ export function WorkspaceShell() {
   const pointerOverlayRef = useRef<HTMLDivElement>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
   const viewportRef = useRef(viewport)
+  const activeToolRef = useRef(activeTool)
   const gesturePaletteOpenRef = useRef(false)
   const gesturePaletteHoverRef = useRef<HTMLButtonElement | null>(null)
   const gesturePalettePinchConsumedRef = useRef(false)
   const gestureMenuHoldRef = useRef<GestureMenuHold | null>(null)
+  const lastDrawingGestureAtRef = useRef(Number.NEGATIVE_INFINITY)
+  const lastGestureFeedbackRef = useRef<GestureModeFeedback["kind"] | null>(
+    null,
+  )
+  const gestureNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
   const panSessionRef = useRef<{
     pointerId: number
     x: number
@@ -205,57 +201,103 @@ export function WorkspaceShell() {
     [activeTool, color, strokePattern, thickness],
   )
 
+  const changeTool = useCallback((tool: DrawingTool) => {
+    activeToolRef.current = tool
+    setActiveTool(tool)
+  }, [])
+
+  const publishGestureFeedback = useCallback(
+    (notice: GestureModeFeedback) => {
+      const gestureTool =
+        notice.kind === "pointer" ||
+        notice.kind === "pen" ||
+        notice.kind === "eraser"
+          ? notice.kind
+          : null
+      if (gestureTool && activeToolRef.current !== gestureTool) {
+        changeTool(gestureTool)
+      }
+
+      if (lastGestureFeedbackRef.current === notice.kind) return
+      lastGestureFeedbackRef.current = notice.kind
+      if (gestureNoticeTimerRef.current) {
+        clearTimeout(gestureNoticeTimerRef.current)
+        gestureNoticeTimerRef.current = null
+      }
+      setGestureNotice(notice)
+      if (!notice.persistent) {
+        gestureNoticeTimerRef.current = setTimeout(() => {
+          setGestureNotice(null)
+          gestureNoticeTimerRef.current = null
+        }, gestureNoticeDurationMs)
+      }
+    },
+    [changeTool],
+  )
+
+  useEffect(
+    () => () => {
+      if (gestureNoticeTimerRef.current) {
+        clearTimeout(gestureNoticeTimerRef.current)
+      }
+    },
+    [],
+  )
+
   const restartOnboarding = useCallback(() => {
     onboardingStateRef.current = initialOnboardingState
     resetOnboardingCompletion()
     setOnboardingState(initialOnboardingState)
-    setActiveTool("pointer")
-  }, [])
+    changeTool("pointer")
+  }, [changeTool])
 
   const skipOnboarding = useCallback(() => {
     const complete = createOnboardingState("complete")
     onboardingStateRef.current = complete
     setOnboardingState(complete)
-    setActiveTool("pen")
+    changeTool("pen")
     saveOnboardingProgress({ status: "skipped", currentStep: "complete" })
-  }, [])
+  }, [changeTool])
 
   const goBackOnboarding = useCallback(() => {
     const previous = previousOnboardingStep(onboardingStateRef.current)
     onboardingStateRef.current = previous
     setOnboardingState(previous)
-    setActiveTool(previous.step === "cursor" ? "pointer" : "pen")
+    changeTool(previous.step === "cursor" ? "pointer" : "pen")
     saveOnboardingProgress({
       status: "in_progress",
       currentStep: previous.step,
     })
-  }, [])
+  }, [changeTool])
 
-  const observeOnboarding = useCallback((event: OnboardingEvent) => {
-    const previous = onboardingStateRef.current
-    const next = observeOnboardingEvent(previous, event)
-    onboardingStateRef.current = next
-    const visibleProgressChanged =
-      next.step !== previous.step ||
-      next.cursorTarget !== previous.cursorTarget ||
-      next.colorChanged !== previous.colorChanged ||
-      next.thicknessChanged !== previous.thicknessChanged
-    if (!visibleProgressChanged) return
+  const observeOnboarding = useCallback(
+    (event: OnboardingEvent) => {
+      const previous = onboardingStateRef.current
+      const next = observeOnboardingEvent(previous, event)
+      onboardingStateRef.current = next
+      const visibleProgressChanged =
+        next.step !== previous.step ||
+        next.cursorTarget !== previous.cursorTarget ||
+        next.colorChanged !== previous.colorChanged ||
+        next.thicknessChanged !== previous.thicknessChanged
+      if (!visibleProgressChanged) return
 
-    setOnboardingState(next)
-    if (previous.step === "cursor" && next.step === "draw") {
-      setActiveTool("pen")
-    }
-    saveOnboardingProgress({
-      status: next.step === "complete" ? "completed" : "in_progress",
-      currentStep: next.step,
-    })
-    if (next.step === "complete") {
-      toast.success("Vous êtes prêt à dessiner", {
-        description: "Le tutoriel reste accessible depuis la toile.",
+      setOnboardingState(next)
+      if (previous.step === "cursor" && next.step === "draw") {
+        changeTool("pen")
+      }
+      saveOnboardingProgress({
+        status: next.step === "complete" ? "completed" : "in_progress",
+        currentStep: next.step,
       })
-    }
-  }, [])
+      if (next.step === "complete") {
+        toast.success("Vous êtes prêt à dessiner", {
+          description: "Le tutoriel reste accessible depuis la toile.",
+        })
+      }
+    },
+    [changeTool],
+  )
 
   const updateViewport = useCallback(
     (update: (current: CanvasViewport) => CanvasViewport) => {
@@ -366,6 +408,12 @@ export function WorkspaceShell() {
       const mapped = filtered.point
         ? mapMirroredCameraPointToCanvas(filtered.point, bounds)
         : null
+      publishGestureFeedback(
+        resolveGestureModeFeedback(gesture, quality, pinchPhase),
+      )
+      if (pinchPhase !== "released" || gesture === "fist") {
+        lastDrawingGestureAtRef.current = result.timestampMs
+      }
       if (onboardingStateRef.current.step === "cursor") {
         const target =
           cursorPracticeTargets[onboardingStateRef.current.cursorTarget]
@@ -387,8 +435,13 @@ export function WorkspaceShell() {
         if (pinchPhase !== "active") {
           gesturePalettePinchConsumedRef.current = false
         }
+        const palette = document.querySelector<HTMLElement>(
+          ".gesture-command-palette",
+        )
         const control =
-          mapped && filtered.reliable ? findGesturePaletteControl(mapped) : null
+          mapped && filtered.reliable && palette
+            ? findGesturePaletteControl(palette, mapped)
+            : null
         if (control !== gesturePaletteHoverRef.current) {
           clearGesturePaletteHover()
           control?.setAttribute("data-gesture-hover", "")
@@ -422,7 +475,9 @@ export function WorkspaceShell() {
         pinchPhase === "released" &&
         filtered.reliable &&
         mapped &&
-        gestureStateRef.current.mode !== "drawing"
+        gestureStateRef.current.mode !== "drawing" &&
+        result.timestampMs - lastDrawingGestureAtRef.current >=
+          gestureMenuPostDrawingGuardMs
       if (canPrepareGestureMenu) {
         const hold = gestureMenuHoldRef.current
         const moved = hold
@@ -523,6 +578,7 @@ export function WorkspaceShell() {
       drawingStyle,
       observeOnboarding,
       openGesturePalette,
+      publishGestureFeedback,
       updateGesturePointer,
     ],
   )
@@ -689,10 +745,10 @@ export function WorkspaceShell() {
         redo()
       } else if (!withCommand && !event.altKey && key === "p") {
         event.preventDefault()
-        setActiveTool("pen")
+        changeTool("pen")
       } else if (!withCommand && !event.altKey && key === "e") {
         event.preventDefault()
-        setActiveTool("eraser")
+        changeTool("eraser")
       } else if (
         !withCommand &&
         !event.altKey &&
@@ -735,6 +791,7 @@ export function WorkspaceShell() {
     }
   }, [
     closeGesturePalette,
+    changeTool,
     historyAvailability,
     redo,
     resetViewport,
@@ -767,7 +824,7 @@ export function WorkspaceShell() {
           thickness={thickness}
           strokePattern={strokePattern}
           assistanceMode={assistanceMode}
-          onToolChange={setActiveTool}
+          onToolChange={changeTool}
           onColorChange={changeColor}
           onThicknessChange={changeThickness}
           onStrokePatternChange={setStrokePattern}
@@ -801,6 +858,7 @@ export function WorkspaceShell() {
           </div>
           <CameraPreview
             calibrating={onboardingState.step === "cursor"}
+            gestureNotice={gestureNotice}
             onGestureFrame={handleGestureFrame}
           />
           <CanvasViewportControls
@@ -842,15 +900,15 @@ export function WorkspaceShell() {
               assistanceMode={assistanceMode}
               onColorChange={(nextColor) => {
                 changeColor(nextColor)
-                setActiveTool("pen")
+                changeTool("pen")
               }}
               onThicknessChange={(nextThickness) => {
                 changeThickness(nextThickness)
-                setActiveTool("pen")
+                changeTool("pen")
               }}
               onPatternChange={(nextPattern) => {
                 setStrokePattern(nextPattern)
-                setActiveTool("pen")
+                changeTool("pen")
               }}
               onAssistanceModeChange={changeAssistanceMode}
               onUndo={undo}
