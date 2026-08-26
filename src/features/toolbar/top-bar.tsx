@@ -124,7 +124,7 @@ export function TopBar({
         onClick={onExport}
       >
         <Download aria-hidden="true" data-icon="inline-start" />
-        Exporter en PNG
+        <span className="workspace-topbar__export-label">Exporter en PNG</span>
       </Button>
     </header>
   )

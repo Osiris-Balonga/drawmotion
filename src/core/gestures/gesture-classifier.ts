@@ -7,7 +7,7 @@ import { GESTURE_THRESHOLDS } from "./gesture-thresholds"
 import { measurePinchRatio } from "./pinch-detector"
 
 export type GestureKind =
-  "pinch" | "open-hand" | "fist" | "uncertain" | "tracking-lost"
+  "pinch" | "open-hand" | "fist" | "menu" | "uncertain" | "tracking-lost"
 
 export type GestureClassification = {
   kind: GestureKind
@@ -17,10 +17,10 @@ export type GestureClassification = {
 
 const WRIST = 0
 const FINGER_JOINTS = [
-  { pip: 6, tip: 8 },
-  { pip: 10, tip: 12 },
-  { pip: 14, tip: 16 },
-  { pip: 18, tip: 20 },
+  { name: "index", pip: 6, tip: 8 },
+  { name: "middle", pip: 10, tip: 12 },
+  { name: "ring", pip: 14, tip: 16 },
+  { name: "little", pip: 18, tip: 20 },
 ] as const
 
 function distance(a: NormalizedLandmark, b: NormalizedLandmark) {
@@ -31,22 +31,22 @@ function landmarkAt(landmarks: NormalizedLandmark[], index: number) {
   return landmarks[index] ?? null
 }
 
-function countExtendedFingers(landmarks: NormalizedLandmark[]) {
+function extendedFingers(landmarks: NormalizedLandmark[]) {
   const wrist = landmarkAt(landmarks, WRIST)
-  if (!wrist) return 0
+  if (!wrist) return new Set<string>()
 
-  return FINGER_JOINTS.reduce((count, { pip, tip }) => {
+  return FINGER_JOINTS.reduce((extended, { name, pip, tip }) => {
     const pipLandmark = landmarkAt(landmarks, pip)
     const tipLandmark = landmarkAt(landmarks, tip)
-    if (!pipLandmark || !tipLandmark) return count
+    if (!pipLandmark || !tipLandmark) return extended
 
     const extensionRatio =
       distance(wrist, tipLandmark) / distance(wrist, pipLandmark)
-    return (
-      count +
-      (extensionRatio >= GESTURE_THRESHOLDS.fingerExtensionRatio ? 1 : 0)
-    )
-  }, 0)
+    if (extensionRatio >= GESTURE_THRESHOLDS.fingerExtensionRatio) {
+      extended.add(name)
+    }
+    return extended
+  }, new Set<string>())
 }
 
 export function classifyGesture(
@@ -62,7 +62,8 @@ export function classifyGesture(
   }
 
   const pinchRatio = measurePinchRatio(hand)
-  const extendedFingerCount = countExtendedFingers(hand.landmarks)
+  const extended = extendedFingers(hand.landmarks)
+  const extendedFingerCount = extended.size
   if (pinchRatio === null) {
     return {
       kind: "uncertain",
@@ -93,6 +94,18 @@ export function classifyGesture(
   if (pinchRatio <= GESTURE_THRESHOLDS.pinchEnterRatio + Number.EPSILON * 16) {
     return {
       kind: "pinch",
+      pinchRatio,
+      extendedFingerCount,
+    }
+  }
+
+  if (
+    extendedFingerCount === 2 &&
+    extended.has("index") &&
+    extended.has("middle")
+  ) {
+    return {
+      kind: "menu",
       pinchRatio,
       extendedFingerCount,
     }

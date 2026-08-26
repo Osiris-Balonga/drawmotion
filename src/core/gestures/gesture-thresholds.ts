@@ -13,4 +13,6 @@ export const GESTURE_THRESHOLDS = {
   openHandMinimumExtendedFingers: 4,
   /** Maximum extended fingers accepted as a fist. */
   fistMaximumExtendedFingers: 0,
+  /** Stable duration required before the dedicated menu pose can open UI. */
+  menuPoseHoldMs: 550,
 } as const

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { AppProviders } from "@/app/providers"
+import { canOpenGestureMenu } from "@/features/workspace/gesture-menu-availability"
 import { WorkspaceShell } from "@/features/workspace/workspace-shell"
 import { saveOnboardingCompletion } from "@/features/onboarding/onboarding-persistence"
 
@@ -17,6 +18,20 @@ function renderWorkspace() {
 beforeEach(() => localStorage.clear())
 
 describe("WorkspaceShell", () => {
+  it.each([
+    ["cursor", false],
+    ["draw", false],
+    ["style", true],
+    ["shapes", true],
+    ["correct", true],
+    ["complete", true],
+  ] as const)(
+    "guards gesture commands during %s onboarding",
+    (step, allowed) => {
+      expect(canOpenGestureMenu(step)).toBe(allowed)
+    },
+  )
+
   it("expose une structure et des états techniques compréhensibles", () => {
     renderWorkspace()
 
@@ -77,6 +92,28 @@ describe("WorkspaceShell", () => {
       "true",
     )
     input.remove()
+  })
+
+  it("ouvre les commandes avec le bouton de secours et la touche M", async () => {
+    const user = userEvent.setup()
+    saveOnboardingCompletion()
+    renderWorkspace()
+
+    await user.click(
+      screen.getByRole("button", { name: "Ouvrir les commandes" }),
+    )
+    expect(
+      screen.getByRole("region", { name: "Commandes gestuelles" }),
+    ).toBeInTheDocument()
+
+    await user.keyboard("m")
+    expect(
+      screen.queryByRole("region", { name: "Commandes gestuelles" }),
+    ).not.toBeInTheDocument()
+    await user.keyboard("m")
+    expect(
+      screen.getByRole("region", { name: "Commandes gestuelles" }),
+    ).toBeInTheDocument()
   })
 
   it("présente une première mission qui explique le curseur", () => {

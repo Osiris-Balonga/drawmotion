@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   Activity,
@@ -8,6 +8,7 @@ import {
   Circle,
   Eraser,
   MousePointer2,
+  Menu,
   PenLine,
   Shapes,
 } from "lucide-react"
@@ -45,7 +46,10 @@ type ToolRailProps = {
   onStrokePatternChange: (pattern: StrokePattern) => void
   onAssistanceModeChange: (mode: StrokeAssistanceMode) => void
   onReplayOnboarding: () => void
+  onOpenGestureCommands: () => void
 }
+
+const compactDockMediaQuery = "(max-width: 80rem)"
 
 const assistanceModes = [
   {
@@ -86,8 +90,24 @@ export function ToolRail({
   onStrokePatternChange,
   onAssistanceModeChange,
   onReplayOnboarding,
+  onOpenGestureCommands,
 }: ToolRailProps) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia(compactDockMediaQuery).matches,
+  )
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return
+    const media = window.matchMedia(compactDockMediaQuery)
+    const handleChange = (event: MediaQueryListEvent) => {
+      setCollapsed(event.matches)
+    }
+    media.addEventListener("change", handleChange)
+    return () => media.removeEventListener("change", handleChange)
+  }, [])
 
   return (
     <aside
@@ -314,10 +334,22 @@ export function ToolRail({
 
       <Separator orientation="vertical" className="command-dock__separator" />
       <ToolButton
+        label="Ouvrir les commandes"
+        shortcut="M"
+        tooltipSide="top"
+        variant="ghost"
+        onClick={onOpenGestureCommands}
+      >
+        <Menu aria-hidden="true" />
+      </ToolButton>
+      <ToolButton
         label="Revoir le tutoriel"
         tooltipSide="top"
         variant="ghost"
-        onClick={onReplayOnboarding}
+        onClick={() => {
+          setCollapsed(true)
+          onReplayOnboarding()
+        }}
       >
         <BookOpen aria-hidden="true" />
       </ToolButton>

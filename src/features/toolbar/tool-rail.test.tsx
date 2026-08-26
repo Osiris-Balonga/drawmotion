@@ -20,6 +20,7 @@ function renderToolRail(
     onStrokePatternChange: vi.fn(),
     onAssistanceModeChange: vi.fn(),
     onReplayOnboarding: vi.fn(),
+    onOpenGestureCommands: vi.fn(),
     ...overrides,
   }
   render(
@@ -107,6 +108,20 @@ describe("ToolRail", () => {
     await user.click(screen.getByRole("button", { name: "Revoir le tutoriel" }))
 
     expect(props.onReplayOnboarding).toHaveBeenCalledOnce()
+    expect(
+      screen.getByRole("complementary", { name: "Outils de dessin" }),
+    ).toHaveAttribute("data-collapsed", "true")
+  })
+
+  it("offers an explicit mouse and touch fallback for gesture commands", async () => {
+    const user = userEvent.setup()
+    const props = renderToolRail()
+
+    await user.click(
+      screen.getByRole("button", { name: "Ouvrir les commandes" }),
+    )
+
+    expect(props.onOpenGestureCommands).toHaveBeenCalledOnce()
   })
 
   it("collapses the optional controls without removing them", async () => {

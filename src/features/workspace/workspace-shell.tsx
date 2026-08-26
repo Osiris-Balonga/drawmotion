@@ -8,7 +8,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react"
 
-import { Undo2 } from "lucide-react"
+import { MonitorUp, Undo2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -35,6 +35,7 @@ import {
 import { PointerMotionFilter } from "@/core/gestures/pointer-motion-filter"
 import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
 import type { PinchPhase } from "@/core/gestures/pinch-detector"
+import { GESTURE_THRESHOLDS } from "@/core/gestures/gesture-thresholds"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
 import { CameraPreview } from "@/features/camera/camera-preview"
@@ -70,6 +71,7 @@ import {
 } from "@/features/workspace/drawing-canvas"
 import { GestureCommandPalette } from "@/features/workspace/gesture-command-palette"
 import { resolveGestureDrawingMode } from "@/features/workspace/gesture-drawing-mode"
+import { canOpenGestureMenu } from "@/features/workspace/gesture-menu-availability"
 import {
   resolveGestureModeFeedback,
   type GestureModeFeedback,
@@ -106,8 +108,7 @@ const cursorPracticeTargets = [
 ] as const
 
 const tutorialStrokeDistance = 120
-const gestureMenuHoldMs = 1200
-const gestureMenuPostDrawingGuardMs = 600
+const gestureMenuPostDrawingGuardMs = 250
 const gestureMenuMovementTolerance = 36
 const gesturePointerRadius = 6
 const gestureNoticeDurationMs = 1650
@@ -365,6 +366,18 @@ export function WorkspaceShell() {
     [observeOnboarding],
   )
 
+  const openGesturePaletteFromDock = useCallback(() => {
+    const bounds = stageRef.current?.getBoundingClientRect()
+    if (!bounds) return
+    openGesturePalette(
+      {
+        x: bounds.left + bounds.width / 2,
+        y: bounds.top + bounds.height / 2,
+      },
+      bounds,
+    )
+  }, [openGesturePalette])
+
   const updateGesturePointer = useCallback(
     (
       point: { x: number; y: number } | null,
@@ -471,10 +484,11 @@ export function WorkspaceShell() {
       clearGesturePaletteHover()
       let dwellProgress = 0
       const canPrepareGestureMenu =
-        gesture === "open-hand" &&
+        gesture === "menu" &&
         pinchPhase === "released" &&
         filtered.reliable &&
         mapped &&
+        canOpenGestureMenu(onboardingStateRef.current.step) &&
         gestureStateRef.current.mode !== "drawing" &&
         result.timestampMs - lastDrawingGestureAtRef.current >=
           gestureMenuPostDrawingGuardMs
@@ -491,7 +505,8 @@ export function WorkspaceShell() {
         } else {
           dwellProgress = Math.min(
             1,
-            (result.timestampMs - hold.startedAt) / gestureMenuHoldMs,
+            (result.timestampMs - hold.startedAt) /
+              GESTURE_THRESHOLDS.menuPoseHoldMs,
           )
           if (dwellProgress >= 1) {
             openGesturePalette(mapped, bounds)
@@ -749,6 +764,10 @@ export function WorkspaceShell() {
       } else if (!withCommand && !event.altKey && key === "e") {
         event.preventDefault()
         changeTool("eraser")
+      } else if (!withCommand && !event.altKey && key === "m") {
+        event.preventDefault()
+        if (gesturePaletteOpenRef.current) closeGesturePalette()
+        else openGesturePaletteFromDock()
       } else if (
         !withCommand &&
         !event.altKey &&
@@ -793,6 +812,7 @@ export function WorkspaceShell() {
     closeGesturePalette,
     changeTool,
     historyAvailability,
+    openGesturePaletteFromDock,
     redo,
     resetViewport,
     undo,
@@ -810,6 +830,19 @@ export function WorkspaceShell() {
       <a className="skip-link" href="#drawing-canvas">
         Aller à la toile
       </a>
+      <section
+        className="mobile-workspace-notice"
+        aria-labelledby="mobile-title"
+      >
+        <MonitorUp aria-hidden="true" />
+        <div>
+          <h1 id="mobile-title">Un écran plus large est nécessaire</h1>
+          <p>
+            DrawMotion est conçu pour ordinateur et tablette. Passez en paysage
+            ou utilisez un écran d’au moins 768 pixels.
+          </p>
+        </div>
+      </section>
       <TopBar
         {...historyAvailability}
         onUndo={undo}
@@ -830,6 +863,7 @@ export function WorkspaceShell() {
           onStrokePatternChange={setStrokePattern}
           onAssistanceModeChange={changeAssistanceMode}
           onReplayOnboarding={restartOnboarding}
+          onOpenGestureCommands={openGesturePaletteFromDock}
         />
 
         <section
