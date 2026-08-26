@@ -70,6 +70,7 @@ import {
 } from "@/features/workspace/drawing-canvas"
 import { GestureCommandPalette } from "@/features/workspace/gesture-command-palette"
 import { resolveGestureDrawingMode } from "@/features/workspace/gesture-drawing-mode"
+import { resolveGesturePaletteAction } from "@/features/workspace/gesture-palette-interaction"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 import "./workspace.css"
@@ -174,6 +175,7 @@ export function WorkspaceShell() {
   const viewportRef = useRef(viewport)
   const gesturePaletteOpenRef = useRef(false)
   const gesturePaletteHoverRef = useRef<HTMLButtonElement | null>(null)
+  const gesturePalettePinchConsumedRef = useRef(false)
   const gestureMenuHoldRef = useRef<GestureMenuHold | null>(null)
   const panSessionRef = useRef<{
     pointerId: number
@@ -185,7 +187,6 @@ export function WorkspaceShell() {
     initialGestureMachineState,
   )
   const onboardingStateRef = useRef<OnboardingState>(initialState)
-  const previousPinchPhaseRef = useRef<PinchPhase>("released")
   const tutorialStrokeRef = useRef<{
     lastPoint: { x: number; y: number } | null
     distance: number
@@ -294,6 +295,7 @@ export function WorkspaceShell() {
   const closeGesturePalette = useCallback(() => {
     clearGesturePaletteHover()
     gesturePaletteOpenRef.current = false
+    gesturePalettePinchConsumedRef.current = false
     setGesturePaletteAnchor(null)
   }, [clearGesturePaletteHover])
 
@@ -313,6 +315,7 @@ export function WorkspaceShell() {
         ),
       }
       gesturePaletteOpenRef.current = true
+      gesturePalettePinchConsumedRef.current = false
       gestureMenuHoldRef.current = null
       setGesturePaletteAnchor(anchor)
       observeOnboarding({ type: "COMMAND_PALETTE_OPENED" })
@@ -380,10 +383,10 @@ export function WorkspaceShell() {
         )
         observeOnboarding({ type: "CURSOR_TARGET_OBSERVED", inside })
       }
-      const pinchBecameActive =
-        pinchPhase === "active" && previousPinchPhaseRef.current !== "active"
-      previousPinchPhaseRef.current = pinchPhase
       if (gesturePaletteOpenRef.current) {
+        if (pinchPhase !== "active") {
+          gesturePalettePinchConsumedRef.current = false
+        }
         const control =
           mapped && filtered.reliable ? findGesturePaletteControl(mapped) : null
         if (control !== gesturePaletteHoverRef.current) {
@@ -400,8 +403,15 @@ export function WorkspaceShell() {
         drawingRef.current?.handleIntentions([
           { version: 1, type: "PAUSE", timestampMs: result.timestampMs },
         ])
-        if (gesture === "fist") closeGesturePalette()
-        else if (pinchBecameActive) control?.click()
+        const paletteAction = resolveGesturePaletteAction(
+          gesture,
+          pinchPhase,
+          control !== null && !gesturePalettePinchConsumedRef.current,
+        )
+        if (paletteAction === "select") {
+          gesturePalettePinchConsumedRef.current = true
+          control?.click()
+        } else if (paletteAction === "close") closeGesturePalette()
         return
       }
 

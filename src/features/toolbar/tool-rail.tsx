@@ -142,7 +142,12 @@ export function ToolRail({
               <span
                 aria-hidden="true"
                 className="drawing-thickness-preview"
-                style={{ width: Math.min(22, thickness) }}
+                data-pattern={strokePattern}
+                style={{
+                  width: Math.min(24, Math.max(12, thickness + 8)),
+                  borderTopWidth: Math.max(2, thickness / 4),
+                  color,
+                }}
               />
               <span className="text-xs font-semibold">{thickness}</span>
             </ToolButton>
@@ -187,6 +192,7 @@ export function ToolRail({
             ))}
           </div>
           <div className="stroke-pattern-field">
+            <span className="stroke-pattern-field__label">Style du trait</span>
             <ToggleGroup
               value={[strokePattern]}
               onValueChange={(nextValue) => {
@@ -275,15 +281,17 @@ export function ToolRail({
                 variant="ghost"
                 aria-pressed={color === drawingColor.value}
                 className="command-dock__color"
-                data-onboarding-target={
-                  drawingColor.value === "#238554" ? "color" : undefined
-                }
                 onClick={() => {
                   onColorChange(drawingColor.value)
                   onToolChange("pen")
                 }}
               >
-                <span className="command-dock__color-swatch">
+                <span
+                  className="command-dock__color-swatch"
+                  data-onboarding-target={
+                    drawingColor.value === "#238554" ? "color" : undefined
+                  }
+                >
                   <Circle
                     aria-hidden="true"
                     className={`${drawingColor.className} fill-current stroke-current`}

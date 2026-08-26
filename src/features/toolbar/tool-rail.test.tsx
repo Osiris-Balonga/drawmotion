@@ -5,7 +5,9 @@ import { describe, expect, it, vi } from "vitest"
 import { AppProviders } from "@/app/providers"
 import { ToolRail } from "@/features/toolbar/tool-rail"
 
-function renderToolRail() {
+function renderToolRail(
+  overrides: Partial<Parameters<typeof ToolRail>[0]> = {},
+) {
   const props = {
     activeTool: "pen" as const,
     color: "#17171c" as const,
@@ -18,6 +20,7 @@ function renderToolRail() {
     onStrokePatternChange: vi.fn(),
     onAssistanceModeChange: vi.fn(),
     onReplayOnboarding: vi.fn(),
+    ...overrides,
   }
   render(
     <AppProviders>
@@ -73,7 +76,28 @@ describe("ToolRail", () => {
 
     await user.click(screen.getByRole("button", { name: "Pointillé" }))
     expect(props.onStrokePatternChange).toHaveBeenCalledWith("dotted")
-    expect(screen.queryByText("Style du trait")).not.toBeInTheDocument()
+    expect(screen.getByText("Style du trait")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Continu" })).toHaveAttribute(
+      "data-pressed",
+    )
+  })
+
+  it("previews the current thickness, pattern, and color in the dock", () => {
+    renderToolRail({
+      color: "#238554",
+      thickness: 12,
+      strokePattern: "dashed",
+    })
+
+    const trigger = screen.getByRole("button", {
+      name: "Épaisseur 12 pixels",
+    })
+    const preview = trigger.querySelector(".drawing-thickness-preview")
+    expect(preview).toHaveAttribute("data-pattern", "dashed")
+    expect(preview).toHaveStyle({
+      borderTopWidth: "3px",
+      color: "rgb(35, 133, 84)",
+    })
   })
 
   it("keeps tutorial replay inside the unified dock", async () => {

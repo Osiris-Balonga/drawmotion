@@ -117,17 +117,15 @@ export function TopBar({
         </AlertDialog>
       </nav>
 
-      <div className="workspace-topbar__island workspace-topbar__actions">
-        <Button
-          className="h-11"
-          variant="outline"
-          disabled={!canClear}
-          onClick={onExport}
-        >
-          <Download aria-hidden="true" data-icon="inline-start" />
-          Exporter en PNG
-        </Button>
-      </div>
+      <Button
+        className="workspace-topbar__export"
+        variant="secondary"
+        disabled={!canClear}
+        onClick={onExport}
+      >
+        <Download aria-hidden="true" data-icon="inline-start" />
+        Exporter en PNG
+      </Button>
     </header>
   )
 }
