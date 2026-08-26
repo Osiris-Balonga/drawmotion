@@ -54,6 +54,9 @@ describe("onboarding progression", () => {
     state = observeOnboardingEvent(state, { type: "STROKE_COMPLETED" })
     expect(state.step).toBe("style")
 
+    state = observeOnboardingEvent(state, { type: "COMMAND_PALETTE_OPENED" })
+    expect(state.paletteOpened).toBe(true)
+
     state = observeOnboardingEvent(state, { type: "COLOR_CHANGED" })
     expect(state.step).toBe("style")
     expect(state.colorChanged).toBe(true)

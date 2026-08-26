@@ -5,6 +5,7 @@ import {
   type DrawingHistoryAvailability,
   type DrawingStyle,
 } from "@/core/drawing/canvas-drawing-controller"
+import type { CanvasViewport } from "@/core/drawing/canvas-viewport"
 import type { StrokeAssistanceFeedback } from "@/core/drawing/canvas-drawing-controller"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
 import { TwoLayerCanvasRenderer } from "@/core/drawing/two-layer-canvas-renderer"
@@ -13,6 +14,7 @@ import type { DrawingIntention } from "@/core/gestures/drawing-intentions"
 
 export type DrawingCanvasHandle = {
   handleIntentions(intentions: readonly DrawingIntention[]): void
+  setStyle(style: DrawingStyle): void
   revertAssistance(strokeId: string): boolean
   undo(): void
   redo(): void
@@ -23,6 +25,8 @@ export type DrawingCanvasHandle = {
 type DrawingCanvasProps = {
   assistanceMode: StrokeAssistanceMode
   drawingStyle: DrawingStyle
+  renderPointer?: boolean
+  viewport: CanvasViewport
   onAssistance: (feedback: StrokeAssistanceFeedback) => void
   onHistoryChange: (availability: DrawingHistoryAvailability) => void
 }
@@ -34,6 +38,8 @@ export const DrawingCanvas = forwardRef<
   {
     assistanceMode,
     drawingStyle,
+    renderPointer = true,
+    viewport,
     onAssistance,
     onHistoryChange,
   }: DrawingCanvasProps,
@@ -47,6 +53,7 @@ export const DrawingCanvas = forwardRef<
   const onHistoryChangeRef = useRef(onHistoryChange)
   const assistanceModeRef = useRef(assistanceMode)
   const drawingStyleRef = useRef(drawingStyle)
+  const viewportRef = useRef(viewport)
 
   useEffect(() => {
     onAssistanceRef.current = onAssistance
@@ -66,12 +73,20 @@ export const DrawingCanvas = forwardRef<
     controllerRef.current?.setStyle(drawingStyle)
   }, [drawingStyle])
 
+  useEffect(() => {
+    viewportRef.current = viewport
+    controllerRef.current?.setViewport(viewport)
+  }, [viewport])
+
   useImperativeHandle(
     ref,
     () => ({
       handleIntentions(intentions) {
         for (const intention of intentions)
           controllerRef.current?.handle(intention)
+      },
+      setStyle(style) {
+        controllerRef.current?.setStyle(style)
       },
       revertAssistance(strokeId) {
         return controllerRef.current?.revertAssistance(strokeId) ?? false
@@ -104,7 +119,9 @@ export const DrawingCanvas = forwardRef<
     }
 
     const renderer = new TwoLayerCanvasRenderer(persistent, interaction)
+    renderer.setPointerVisible(renderPointer)
     const controller = new CanvasDrawingController(renderer)
+    controller.setViewport(viewportRef.current)
     controller.setAssistanceMode(assistanceModeRef.current)
     controller.setStyle(drawingStyleRef.current)
     controller.setAssistanceListener((feedback) =>
@@ -131,7 +148,7 @@ export const DrawingCanvas = forwardRef<
       controllerRef.current = null
       renderer.dispose()
     }
-  }, [])
+  }, [renderPointer])
 
   return (
     <div ref={rootRef} className="drawing-canvas" aria-hidden="true">

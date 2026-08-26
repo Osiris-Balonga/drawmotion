@@ -58,7 +58,7 @@ describe("ToolRail", () => {
     expect(props.onAssistanceModeChange).toHaveBeenCalledWith("shapes")
   })
 
-  it("offers a gesture-accessible thickness popover", async () => {
+  it("offers a compact thickness and stroke-style popover", async () => {
     const user = userEvent.setup()
     const props = renderToolRail()
 
@@ -68,12 +68,12 @@ describe("ToolRail", () => {
     })
     expect(slider.querySelector('[data-slot="slider-thumb"]')).not.toBeNull()
     const preset = screen.getByRole("button", { name: "12 px" })
-    expect(preset).toHaveAttribute("data-gesture-control")
     await user.click(preset)
     expect(props.onThicknessChange).toHaveBeenCalledWith(12)
 
     await user.click(screen.getByRole("button", { name: "Pointillé" }))
     expect(props.onStrokePatternChange).toHaveBeenCalledWith("dotted")
+    expect(screen.queryByText("Style du trait")).not.toBeInTheDocument()
   })
 
   it("keeps tutorial replay inside the unified dock", async () => {

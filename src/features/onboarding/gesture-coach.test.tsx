@@ -9,7 +9,7 @@ describe("GestureCoach", () => {
   it.each([
     ["cursor", "Le point violet est votre curseur"],
     ["draw", "Pincez pour poser le stylo"],
-    ["style", "Donnez un style au prochain trait"],
+    ["style", "Ouvrez les commandes gestuelles"],
     ["shapes", "Transformez un geste en forme nette"],
     ["correct", "Corrigez sans recommencer"],
   ] as const)(

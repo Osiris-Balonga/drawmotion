@@ -114,6 +114,18 @@ describe("TwoLayerCanvasRenderer", () => {
     expect(harness.persistentContext.lineTo).toHaveBeenLastCalledWith(300, 100)
   })
 
+  it("applies zoom and pan to document strokes", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setViewport({ zoom: 0.5, offsetX: 20, offsetY: 10 })
+    harness.renderer.setDocument({ strokes: [stroke] })
+    harness.flush()
+
+    expect(harness.persistentContext.moveTo).toHaveBeenLastCalledWith(45, 35)
+    expect(harness.persistentContext.lineTo).toHaveBeenLastCalledWith(95, 35)
+    expect(harness.persistentContext.lineWidth).toBe(0.5)
+  })
+
   it("coalesces pointer and preview updates into one animation frame", () => {
     const harness = createHarness(1)
     harness.renderer.resize(200, 100)
@@ -207,6 +219,28 @@ describe("TwoLayerCanvasRenderer", () => {
       "destination-out",
     )
     expect(harness.persistentContext.stroke).toHaveBeenCalledOnce()
+  })
+
+  it("previews erasing directly on the persistent layer", () => {
+    const harness = createHarness(1)
+    harness.renderer.resize(200, 100)
+    harness.renderer.setDocument({ strokes: [stroke] })
+    harness.renderer.setPreviewStroke({
+      ...stroke,
+      id: "eraser-preview",
+      tool: "eraser",
+      points: [
+        { x: 0.4, y: 0.5 },
+        { x: 0.6, y: 0.5 },
+      ],
+    })
+    harness.flush()
+
+    expect(harness.persistentContext.globalCompositeOperation).toBe(
+      "destination-out",
+    )
+    expect(harness.persistentContext.stroke).toHaveBeenCalledTimes(2)
+    expect(harness.interactionContext.stroke).not.toHaveBeenCalled()
   })
 
   it("clears the interaction layer when pointer and preview are absent", () => {
@@ -324,7 +358,7 @@ describe("CanvasDrawingController", () => {
     expect(controller.historyAvailability.canRedo).toBe(true)
   })
 
-  it("applies style, clamps points, and finishes explicitly", () => {
+  it("applies style, preserves virtual-canvas points, and finishes explicitly", () => {
     const harness = createHarness(1)
     const controller = new CanvasDrawingController(harness.renderer)
     controller.setBounds({ left: 10, top: 20, width: 100, height: 50 })
@@ -358,8 +392,29 @@ describe("CanvasDrawingController", () => {
       color: "#ffffff",
       width: 0.04,
       pattern: "solid",
-      points: [{ x: 0, y: 1 }],
+      points: [{ x: -1.1, y: 9.6 }],
     })
+  })
+
+  it("maps screen points back through the current viewport", () => {
+    const harness = createHarness(1)
+    const controller = new CanvasDrawingController(harness.renderer)
+    controller.setBounds({ left: 0, top: 0, width: 100, height: 100 })
+    controller.setViewport({ zoom: 0.5, offsetX: 25, offsetY: 25 })
+    controller.handle({
+      version: 1,
+      type: "DRAW_START",
+      point: { x: 50, y: 50 },
+      timestampMs: 0,
+    })
+    controller.handle({
+      version: 1,
+      type: "DRAW_END",
+      point: { x: 50, y: 50 },
+      timestampMs: 16,
+    })
+
+    expect(controller.document.strokes[0]?.points).toEqual([{ x: 0.5, y: 0.5 }])
   })
 
   it("safely ignores move and pause signals without an active stroke", () => {

@@ -13,9 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { ToolButton } from "@/features/toolbar/tool-button"
 
 type TopBarProps = {
@@ -104,11 +102,8 @@ export function TopBar({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel data-gesture-control="">
-                Conserver le dessin
-              </AlertDialogCancel>
+              <AlertDialogCancel>Conserver le dessin</AlertDialogCancel>
               <AlertDialogAction
-                data-gesture-control=""
                 variant="destructive"
                 onClick={() => {
                   onClear()
@@ -123,17 +118,9 @@ export function TopBar({
       </nav>
 
       <div className="workspace-topbar__island workspace-topbar__actions">
-        <Badge
-          variant="outline"
-          className="text-muted-foreground hidden lg:flex"
-        >
-          Démonstration simulée
-        </Badge>
-        <Separator orientation="vertical" className="h-6" />
         <Button
           className="h-11"
           variant="outline"
-          data-gesture-control=""
           disabled={!canClear}
           onClick={onExport}
         >

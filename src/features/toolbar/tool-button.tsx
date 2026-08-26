@@ -30,7 +30,6 @@ export function ToolButton({
           <Button
             aria-label={label}
             className={cn("size-11", className)}
-            data-gesture-control=""
             size="icon-lg"
             {...props}
           />

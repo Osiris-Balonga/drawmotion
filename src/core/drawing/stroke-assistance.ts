@@ -44,8 +44,8 @@ function toPixels(points: readonly NormalizedPoint[], bounds: CanvasBounds) {
 
 function toNormalized(points: readonly Point2D[], bounds: CanvasBounds) {
   return points.map((point) => ({
-    x: clampUnit(point.x / Math.max(1, bounds.width)),
-    y: clampUnit(point.y / Math.max(1, bounds.height)),
+    x: point.x / Math.max(1, bounds.width),
+    y: point.y / Math.max(1, bounds.height),
   }))
 }
 
