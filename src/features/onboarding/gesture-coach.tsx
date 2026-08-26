@@ -19,19 +19,19 @@ const content = {
       "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
   },
   style: {
-    title: "Faites un V pour ouvrir les commandes",
+    title: "Faites le signe paix pour ouvrir les commandes",
     description:
-      "Tendez l’index et le majeur un court instant, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
+      "Tendez l’index et le majeur en signe paix pendant 0,5 seconde, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
   },
   shapes: {
     title: "Transformez un geste en forme nette",
     description:
-      "Refaites le signe V, activez Formes, puis dessinez un cercle approximatif.",
+      "Refaites le signe paix, activez Formes, puis dessinez un cercle approximatif.",
   },
   correct: {
     title: "Corrigez sans recommencer",
     description:
-      "Ouvrez les commandes avec le signe V et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
+      "Ouvrez les commandes avec le signe paix et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
   },
 } as const
 
