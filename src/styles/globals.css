@@ -51,6 +51,8 @@
   --duration-state: 200ms;
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --z-floating-controls: 10;
+  --z-gesture-palette: 20;
+  --z-gesture-pointer: 30;
   --z-skip-link: 40;
 }
 

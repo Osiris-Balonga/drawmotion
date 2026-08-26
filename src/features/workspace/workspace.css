@@ -63,6 +63,14 @@
   outline-offset: 2px;
 }
 
+.drawing-stage[data-pan-ready] {
+  cursor: grab;
+}
+
+.drawing-stage[data-panning] {
+  cursor: grabbing;
+}
+
 .drawing-canvas,
 .drawing-canvas__layer {
   position: absolute;
@@ -122,6 +130,8 @@
 }
 
 .command-dock__separator[data-slot="separator"] {
+  align-self: center;
+  flex: 0 0 1px;
   width: 1px;
   height: 2rem;
   margin-inline: var(--space-xs);
@@ -149,12 +159,14 @@
 }
 
 .stroke-pattern-option {
-  min-width: 4.5rem;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  padding-inline: 0;
 }
 
 .stroke-pattern-option__preview {
   display: block;
-  width: 1.25rem;
+  width: 1.5rem;
   height: 0;
   color: currentColor;
   border-top: 0.125rem solid currentColor;
@@ -233,9 +245,9 @@
   right: var(--space-xl);
   z-index: var(--z-floating-controls);
   display: grid;
-  width: 18rem;
+  width: 10rem;
   justify-items: end;
-  gap: var(--space-sm);
+  gap: var(--space-md);
 }
 
 .camera-preview__viewport {
@@ -313,9 +325,43 @@ button.camera-preview__viewport:disabled {
 .camera-preview__controls {
   display: grid;
   width: 100%;
-  justify-items: center;
+  justify-items: end;
   gap: var(--space-sm);
   color: var(--foreground);
+}
+
+.camera-preview__live-status {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: inline-flex;
+  max-width: calc(100% - 1rem);
+  min-height: 1.75rem;
+  align-items: center;
+  gap: 0.375rem;
+  padding-inline: 0.625rem;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: oklch(0.16 0.012 286 / 92%);
+  border-radius: 999px;
+  box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 24%);
+}
+
+.camera-preview__live-status[data-tone="success"] {
+  color: var(--success);
+}
+
+.camera-preview__live-status[data-tone="warning"] {
+  color: var(--warning);
+}
+
+.camera-preview__live-status[data-tone="error"] {
+  color: var(--destructive);
 }
 
 .camera-preview__message,
@@ -346,46 +392,22 @@ button.camera-preview__viewport:disabled {
 
 .camera-preview__error {
   flex-direction: column;
-}
-
-.camera-preview__status {
-  color: var(--success-foreground);
-  background: var(--success);
+  width: 18rem;
+  justify-self: end;
 }
 
 .camera-preview__status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  flex: 0 0 auto;
   background: currentColor;
   border-radius: 50%;
 }
 
-.camera-preview__tracking--uncertain {
-  color: var(--warning-foreground);
-  background: var(--warning);
-}
-
-.camera-preview__tracking--error {
-  color: var(--destructive-foreground);
-  background: var(--destructive);
-}
-
-.camera-preview__gesture {
-  color: var(--foreground);
-  background: var(--shell-raised);
-  border-color: transparent;
-  box-shadow: 0 0.125rem 0.25rem oklch(0.06 0.01 286 / 18%);
-}
-
-.camera-preview__metrics {
-  color: var(--muted-foreground);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-}
-
 .camera-preview__device-field {
   display: grid;
-  width: 100%;
+  width: 18rem;
+  justify-self: end;
   gap: var(--space-xs);
   padding: var(--space-sm);
   color: var(--foreground);
@@ -412,6 +434,235 @@ button.camera-preview__viewport:disabled {
   to {
     transform: rotate(1turn);
   }
+}
+
+.canvas-viewport-controls {
+  position: absolute;
+  bottom: var(--space-xl);
+  left: var(--space-xl);
+  z-index: var(--z-floating-controls);
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  color: var(--foreground);
+  background: var(--shell-raised);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 0.375rem 0.75rem oklch(0.06 0.01 286 / 20%);
+}
+
+.canvas-viewport-controls__value {
+  min-width: 3.5rem;
+  min-height: 2.5rem;
+  padding-inline: var(--space-sm);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
+}
+
+.canvas-viewport-controls__value:hover {
+  background: var(--muted);
+}
+
+.canvas-viewport-controls__value:active {
+  transform: scale(0.96);
+}
+
+.canvas-viewport-controls__value:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.gesture-command-palette {
+  position: absolute;
+  z-index: var(--z-gesture-palette);
+  display: grid;
+  width: 21rem;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  color: var(--foreground);
+  background: var(--shell-raised);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 0.75rem 1.5rem oklch(0.06 0.01 286 / 28%);
+  transform: translate(-50%, -50%);
+  animation: gesture-command-palette-enter 200ms var(--ease-out-quart);
+}
+
+@keyframes gesture-command-palette-enter {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+
+.gesture-command-palette__header {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 2.5rem;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.gesture-command-palette__header > span:first-child {
+  grid-column: 1 / 2;
+}
+
+.gesture-command-palette__hint {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.gesture-command-palette__grid,
+.gesture-command-palette__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.gesture-command-palette__action {
+  min-height: 5rem;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-size: 0.875rem;
+}
+
+.gesture-command-palette__action > svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.gesture-command-palette__choices {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gesture-command-palette__choices--colors {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gesture-command-palette__choice {
+  position: relative;
+  min-width: 0;
+  min-height: 4.5rem;
+  flex-direction: column;
+  gap: var(--space-xs);
+  white-space: normal;
+}
+
+.gesture-command-palette__choice[aria-pressed="true"],
+.gesture-command-palette [data-gesture-hover] {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+.gesture-command-palette__choice > svg:last-child {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+}
+
+.gesture-command-palette__swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 22%);
+}
+
+.gesture-command-palette__stroke {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.gesture-command-palette__weight,
+.gesture-command-palette__pattern {
+  display: block;
+  width: 2.25rem;
+  max-height: 0.75rem;
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.gesture-command-palette__pattern {
+  height: 0;
+  background: transparent;
+  border-top: 0.125rem solid currentColor;
+  border-radius: 0;
+}
+
+.gesture-command-palette__pattern[data-pattern="dashed"] {
+  border-top-style: dashed;
+}
+
+.gesture-command-palette__pattern[data-pattern="dotted"] {
+  border-top-style: dotted;
+}
+
+.gesture-pointer-overlay {
+  --gesture-dwell-offset: 50.3;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--z-gesture-pointer);
+  width: 0.75rem;
+  height: 0.75rem;
+  pointer-events: none;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--canvas),
+    0 0.125rem 0.375rem rgb(0 0 0 / 24%);
+  opacity: 0;
+  transition:
+    opacity var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart),
+    box-shadow var(--duration-fast) var(--ease-out-quart);
+  will-change: transform;
+}
+
+.gesture-pointer-overlay[data-visible] {
+  opacity: 1;
+}
+
+.gesture-pointer-overlay[data-drawing] {
+  background: var(--success);
+  box-shadow:
+    0 0 0 3px var(--canvas),
+    0 0 0 6px oklch(0.72 0.16 151 / 24%);
+}
+
+.gesture-pointer-overlay > svg {
+  position: absolute;
+  inset: -0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.gesture-pointer-overlay circle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 50.3;
+  stroke-dashoffset: var(--gesture-dwell-offset);
+  transition: stroke-dashoffset 80ms linear;
 }
 
 .gesture-coach {

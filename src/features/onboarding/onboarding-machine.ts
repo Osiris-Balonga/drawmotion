@@ -13,6 +13,7 @@ export type OnboardingState = {
   step: OnboardingStep
   cursorTarget: number
   stableFrames: number
+  paletteOpened: boolean
   colorChanged: boolean
   thicknessChanged: boolean
 }
@@ -20,6 +21,7 @@ export type OnboardingState = {
 export type OnboardingEvent =
   | { type: "CURSOR_TARGET_OBSERVED"; inside: boolean }
   | { type: "STROKE_COMPLETED" }
+  | { type: "COMMAND_PALETTE_OPENED" }
   | { type: "COLOR_CHANGED" }
   | { type: "THICKNESS_CHANGED" }
   | { type: "ASSISTED_SHAPE_CREATED" }
@@ -32,6 +34,7 @@ export const initialOnboardingState: OnboardingState = {
   step: "cursor",
   cursorTarget: 0,
   stableFrames: 0,
+  paletteOpened: false,
   colorChanged: false,
   thicknessChanged: false,
 }
@@ -66,17 +69,20 @@ export function observeOnboardingEvent(
   }
 
   if (state.step === "style") {
+    const paletteOpened =
+      state.paletteOpened || event.type === "COMMAND_PALETTE_OPENED"
     const colorChanged = state.colorChanged || event.type === "COLOR_CHANGED"
     const thicknessChanged =
       state.thicknessChanged || event.type === "THICKNESS_CHANGED"
-    if (colorChanged && thicknessChanged) {
+    if (paletteOpened && colorChanged && thicknessChanged) {
       return createOnboardingState("shapes")
     }
     if (
+      paletteOpened !== state.paletteOpened ||
       colorChanged !== state.colorChanged ||
       thicknessChanged !== state.thicknessChanged
     ) {
-      return { ...state, colorChanged, thicknessChanged }
+      return { ...state, paletteOpened, colorChanged, thicknessChanged }
     }
   }
 

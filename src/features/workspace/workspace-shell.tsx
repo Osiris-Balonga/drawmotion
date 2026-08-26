@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from "react"
 
 import { Undo2 } from "lucide-react"
 import { toast } from "sonner"
@@ -9,6 +17,12 @@ import type {
   DrawingStyle,
   StrokeAssistanceFeedback,
 } from "@/core/drawing/canvas-drawing-controller"
+import {
+  initialCanvasViewport,
+  panCanvasViewport,
+  zoomCanvasViewport,
+  type CanvasViewport,
+} from "@/core/drawing/canvas-viewport"
 import type { AssistedPrimitive } from "@/core/drawing/drawing-model"
 import type { StrokePattern } from "@/core/drawing/drawing-model"
 import type { StrokeAssistanceMode } from "@/core/drawing/stroke-assistance"
@@ -23,10 +37,7 @@ import { selectGesturePointer } from "@/core/gestures/gesture-pointer"
 import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import { mapMirroredCameraPointToCanvas } from "@/core/geometry/coordinate-mapping"
 
-import {
-  CameraPreview,
-  type CameraPreviewHandle,
-} from "@/features/camera/camera-preview"
+import { CameraPreview } from "@/features/camera/camera-preview"
 import { createPngFilename, downloadPng } from "@/features/export/png-download"
 import {
   GestureCoach,
@@ -45,7 +56,6 @@ import {
   resetOnboardingCompletion,
   saveOnboardingProgress,
 } from "@/features/onboarding/onboarding-persistence"
-import { findGestureControlAtPoint } from "@/features/toolbar/gesture-control-hit-test"
 import {
   drawingColors,
   type DrawingColor,
@@ -53,10 +63,13 @@ import {
 } from "@/features/toolbar/drawing-tools"
 import { ToolRail } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
+import { CanvasViewportControls } from "@/features/workspace/canvas-viewport-controls"
 import {
   DrawingCanvas,
   type DrawingCanvasHandle,
 } from "@/features/workspace/drawing-canvas"
+import { GestureCommandPalette } from "@/features/workspace/gesture-command-palette"
+import { resolveGestureDrawingMode } from "@/features/workspace/gesture-drawing-mode"
 import type { HandTrackingResult } from "@/infrastructure/mediapipe/hand-tracker-port"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 import "./workspace.css"
@@ -87,6 +100,35 @@ const cursorPracticeTargets = [
 ] as const
 
 const tutorialStrokeDistance = 120
+const gestureMenuHoldMs = 700
+const gestureMenuMovementTolerance = 36
+const gesturePaletteMagnetism = 28
+const gesturePointerRadius = 6
+
+type GestureMenuHold = {
+  startedAt: number
+  origin: { x: number; y: number }
+}
+
+function findGesturePaletteControl(point: { x: number; y: number }) {
+  let closest: { element: HTMLButtonElement; distance: number } | null = null
+  for (const element of document.querySelectorAll<HTMLButtonElement>(
+    "[data-gesture-palette-control]",
+  )) {
+    if (element.disabled) continue
+    const bounds = element.getBoundingClientRect()
+    const deltaX = Math.max(bounds.left - point.x, 0, point.x - bounds.right)
+    const deltaY = Math.max(bounds.top - point.y, 0, point.y - bounds.bottom)
+    const distance = Math.hypot(deltaX, deltaY)
+    if (
+      distance <= gesturePaletteMagnetism &&
+      (!closest || distance < closest.distance)
+    ) {
+      closest = { element, distance }
+    }
+  }
+  return closest?.element ?? null
+}
 
 function isEditableTarget(target: EventTarget | null) {
   return (
@@ -109,6 +151,13 @@ export function WorkspaceShell() {
   const [color, setColor] = useState<DrawingColor>(drawingColors[0].value)
   const [thickness, setThickness] = useState(8)
   const [strokePattern, setStrokePattern] = useState<StrokePattern>("solid")
+  const [viewport, setViewport] = useState<CanvasViewport>(
+    initialCanvasViewport,
+  )
+  const [gesturePaletteAnchor, setGesturePaletteAnchor] = useState<{
+    x: number
+    y: number
+  } | null>(null)
   const [assistanceMode, setAssistanceMode] =
     useState<StrokeAssistanceMode>("stabilized")
   const [lastAssistance, setLastAssistance] =
@@ -120,14 +169,23 @@ export function WorkspaceShell() {
     useState<OnboardingState>(initialState)
   const stageRef = useRef<HTMLElement>(null)
   const drawingRef = useRef<DrawingCanvasHandle>(null)
-  const cameraRef = useRef<CameraPreviewHandle>(null)
+  const pointerOverlayRef = useRef<HTMLDivElement>(null)
   const pointerFilterRef = useRef(new PointerMotionFilter())
+  const viewportRef = useRef(viewport)
+  const gesturePaletteOpenRef = useRef(false)
+  const gesturePaletteHoverRef = useRef<HTMLButtonElement | null>(null)
+  const gestureMenuHoldRef = useRef<GestureMenuHold | null>(null)
+  const panSessionRef = useRef<{
+    pointerId: number
+    x: number
+    y: number
+  } | null>(null)
+  const spacePanRef = useRef(false)
   const gestureStateRef = useRef<GestureMachineState>(
     initialGestureMachineState,
   )
   const onboardingStateRef = useRef<OnboardingState>(initialState)
   const previousPinchPhaseRef = useRef<PinchPhase>("released")
-  const gestureControlActiveRef = useRef(false)
   const tutorialStrokeRef = useRef<{
     lastPoint: { x: number; y: number } | null
     distance: number
@@ -137,7 +195,10 @@ export function WorkspaceShell() {
     () => ({
       tool: activeTool === "eraser" ? "eraser" : "pen",
       color,
-      width: thickness / 1000,
+      width:
+        activeTool === "eraser"
+          ? Math.max(24, thickness) / 1000
+          : thickness / 1000,
       pattern: activeTool === "eraser" ? "solid" : strokePattern,
     }),
     [activeTool, color, strokePattern, thickness],
@@ -195,6 +256,94 @@ export function WorkspaceShell() {
     }
   }, [])
 
+  const updateViewport = useCallback(
+    (update: (current: CanvasViewport) => CanvasViewport) => {
+      setViewport((current) => {
+        const next = update(current)
+        viewportRef.current = next
+        return next
+      })
+    },
+    [],
+  )
+
+  const zoomAtStageCenter = useCallback(
+    (factor: number) => {
+      const bounds = stageRef.current?.getBoundingClientRect()
+      if (!bounds) return
+      updateViewport((current) =>
+        zoomCanvasViewport(current, current.zoom * factor, {
+          x: bounds.width / 2,
+          y: bounds.height / 2,
+        }),
+      )
+    },
+    [updateViewport],
+  )
+
+  const resetViewport = useCallback(() => {
+    viewportRef.current = initialCanvasViewport
+    setViewport(initialCanvasViewport)
+  }, [])
+
+  const clearGesturePaletteHover = useCallback(() => {
+    gesturePaletteHoverRef.current?.removeAttribute("data-gesture-hover")
+    gesturePaletteHoverRef.current = null
+  }, [])
+
+  const closeGesturePalette = useCallback(() => {
+    clearGesturePaletteHover()
+    gesturePaletteOpenRef.current = false
+    setGesturePaletteAnchor(null)
+  }, [clearGesturePaletteHover])
+
+  const openGesturePalette = useCallback(
+    (point: { x: number; y: number }, bounds: DOMRect) => {
+      const halfWidth = 10.5 * 16
+      const topGuard = 8.5 * 16
+      const bottomGuard = 13 * 16
+      const anchor = {
+        x: Math.min(
+          bounds.width - halfWidth,
+          Math.max(halfWidth, point.x - bounds.left),
+        ),
+        y: Math.min(
+          bounds.height - bottomGuard,
+          Math.max(topGuard, point.y - bounds.top),
+        ),
+      }
+      gesturePaletteOpenRef.current = true
+      gestureMenuHoldRef.current = null
+      setGesturePaletteAnchor(anchor)
+      observeOnboarding({ type: "COMMAND_PALETTE_OPENED" })
+    },
+    [observeOnboarding],
+  )
+
+  const updateGesturePointer = useCallback(
+    (
+      point: { x: number; y: number } | null,
+      bounds: DOMRect,
+      reliable: boolean,
+      drawing: boolean,
+      dwellProgress = 0,
+    ) => {
+      const pointer = pointerOverlayRef.current
+      if (!pointer || !point || !reliable) {
+        pointer?.removeAttribute("data-visible")
+        return
+      }
+      pointer.style.transform = `translate3d(${point.x - bounds.left - gesturePointerRadius}px, ${point.y - bounds.top - gesturePointerRadius}px, 0)`
+      pointer.style.setProperty(
+        "--gesture-dwell-offset",
+        `${50.3 * (1 - dwellProgress)}`,
+      )
+      pointer.toggleAttribute("data-drawing", drawing)
+      pointer.setAttribute("data-visible", "")
+    },
+    [],
+  )
+
   const handleGestureFrame = useCallback(
     (
       result: HandTrackingResult,
@@ -234,53 +383,94 @@ export function WorkspaceShell() {
       const pinchBecameActive =
         pinchPhase === "active" && previousPinchPhaseRef.current !== "active"
       previousPinchPhaseRef.current = pinchPhase
-      if (
-        mapped &&
-        filtered.reliable &&
-        pinchBecameActive &&
-        !gestureControlActiveRef.current
-      ) {
-        const control = findGestureControlAtPoint(mapped)
-        if (control) {
-          control.click()
-          gestureControlActiveRef.current = true
+      if (gesturePaletteOpenRef.current) {
+        const control =
+          mapped && filtered.reliable ? findGesturePaletteControl(mapped) : null
+        if (control !== gesturePaletteHoverRef.current) {
+          clearGesturePaletteHover()
+          control?.setAttribute("data-gesture-hover", "")
+          gesturePaletteHoverRef.current = control
         }
-      }
-      if (gestureControlActiveRef.current) {
+        updateGesturePointer(
+          mapped,
+          bounds,
+          filtered.reliable,
+          pinchPhase === "active",
+        )
         drawingRef.current?.handleIntentions([
-          ...(mapped
-            ? ([
-                {
-                  version: 1,
-                  type: "POINTER_MOVE",
-                  point: mapped,
-                  timestampMs: result.timestampMs,
-                },
-              ] as const)
-            : []),
           { version: 1, type: "PAUSE", timestampMs: result.timestampMs },
         ])
-        if (pinchPhase === "released") gestureControlActiveRef.current = false
+        if (gesture === "fist") closeGesturePalette()
+        else if (pinchBecameActive) control?.click()
         return
       }
-      const drawingGesture: GestureKind =
-        quality === "lost"
-          ? "tracking-lost"
-          : quality === "uncertain"
-            ? "uncertain"
-            : activeTool === "pointer"
-              ? "open-hand"
-              : pinchPhase !== "released"
-                ? "pinch"
-                : gesture === "fist"
-                  ? "fist"
-                  : "open-hand"
+
+      clearGesturePaletteHover()
+      let dwellProgress = 0
+      const canPrepareGestureMenu =
+        gesture === "open-hand" &&
+        pinchPhase === "released" &&
+        filtered.reliable &&
+        mapped &&
+        gestureStateRef.current.mode !== "drawing"
+      if (canPrepareGestureMenu) {
+        const hold = gestureMenuHoldRef.current
+        const moved = hold
+          ? Math.hypot(mapped.x - hold.origin.x, mapped.y - hold.origin.y)
+          : 0
+        if (!hold || moved > gestureMenuMovementTolerance) {
+          gestureMenuHoldRef.current = {
+            startedAt: result.timestampMs,
+            origin: mapped,
+          }
+        } else {
+          dwellProgress = Math.min(
+            1,
+            (result.timestampMs - hold.startedAt) / gestureMenuHoldMs,
+          )
+          if (dwellProgress >= 1) {
+            openGesturePalette(mapped, bounds)
+            updateGesturePointer(mapped, bounds, true, false, 0)
+            drawingRef.current?.handleIntentions([
+              { version: 1, type: "PAUSE", timestampMs: result.timestampMs },
+            ])
+            return
+          }
+        }
+      } else {
+        gestureMenuHoldRef.current = null
+      }
+
+      const drawingMode = resolveGestureDrawingMode({
+        gesture,
+        pinchPhase,
+        quality,
+        activeTool,
+        hasReliablePoint: filtered.reliable && mapped !== null,
+      })
+      updateGesturePointer(
+        mapped,
+        bounds,
+        filtered.reliable,
+        drawingMode.temporaryEraser || drawingMode.pinchPhase === "active",
+        dwellProgress,
+      )
+      drawingRef.current?.setStyle(
+        drawingMode.temporaryEraser
+          ? {
+              ...drawingStyle,
+              tool: "eraser",
+              pattern: "solid",
+              width: Math.max(0.04, drawingStyle.width),
+            }
+          : drawingStyle,
+      )
       const transition = transitionGestureState(gestureStateRef.current, {
-        gesture: drawingGesture,
+        gesture: drawingMode.gesture,
         point: filtered.reliable ? mapped : null,
         timestampMs: result.timestampMs,
         continuous: !filtered.discontinuity,
-        pinchPhase,
+        pinchPhase: drawingMode.pinchPhase,
       })
       gestureStateRef.current = transition.state
       if (
@@ -307,6 +497,7 @@ export function WorkspaceShell() {
           tutorialStrokeRef.current.lastPoint = intention.point
         } else if (
           intention.type === "DRAW_END" &&
+          !drawingMode.temporaryEraser &&
           tutorialStrokeRef.current.distance >= tutorialStrokeDistance
         ) {
           observeOnboarding({ type: "STROKE_COMPLETED" })
@@ -315,7 +506,15 @@ export function WorkspaceShell() {
       }
       drawingRef.current?.handleIntentions(transition.intentions)
     },
-    [activeTool, observeOnboarding],
+    [
+      activeTool,
+      clearGesturePaletteHover,
+      closeGesturePalette,
+      drawingStyle,
+      observeOnboarding,
+      openGesturePalette,
+      updateGesturePointer,
+    ],
   )
 
   const changeAssistanceMode = useCallback((mode: StrokeAssistanceMode) => {
@@ -381,6 +580,87 @@ export function WorkspaceShell() {
     }
   }, [])
 
+  const handleStageWheel = useCallback(
+    (event: ReactWheelEvent<HTMLElement>) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("button, select, input, [role='dialog']")
+      ) {
+        return
+      }
+      event.preventDefault()
+      const bounds = event.currentTarget.getBoundingClientRect()
+      if (event.ctrlKey || event.metaKey) {
+        const factor = Math.exp(-event.deltaY * 0.002)
+        updateViewport((current) =>
+          zoomCanvasViewport(current, current.zoom * factor, {
+            x: event.clientX - bounds.left,
+            y: event.clientY - bounds.top,
+          }),
+        )
+      } else {
+        updateViewport((current) =>
+          panCanvasViewport(current, {
+            x: -event.deltaX,
+            y: -event.deltaY,
+          }),
+        )
+      }
+    },
+    [updateViewport],
+  )
+
+  const handleStagePointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const canPan =
+        event.button === 1 || (event.button === 0 && spacePanRef.current)
+      if (!canPan) return
+      if (
+        event.target instanceof Element &&
+        event.target.closest("button, select, input, [role='dialog']")
+      ) {
+        return
+      }
+      event.preventDefault()
+      event.currentTarget.setPointerCapture(event.pointerId)
+      event.currentTarget.setAttribute("data-panning", "")
+      panSessionRef.current = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+      }
+    },
+    [],
+  )
+
+  const handleStagePointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const session = panSessionRef.current
+      if (!session || session.pointerId !== event.pointerId) return
+      const delta = {
+        x: event.clientX - session.x,
+        y: event.clientY - session.y,
+      }
+      session.x = event.clientX
+      session.y = event.clientY
+      updateViewport((current) => panCanvasViewport(current, delta))
+    },
+    [updateViewport],
+  )
+
+  const finishStagePan = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const session = panSessionRef.current
+      if (!session || session.pointerId !== event.pointerId) return
+      panSessionRef.current = null
+      event.currentTarget.removeAttribute("data-panning")
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      }
+    },
+    [],
+  )
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target)) return
@@ -406,21 +686,56 @@ export function WorkspaceShell() {
       } else if (
         !withCommand &&
         !event.altKey &&
+        (key === "+" || key === "=")
+      ) {
+        event.preventDefault()
+        zoomAtStageCenter(1.2)
+      } else if (!withCommand && !event.altKey && key === "-") {
+        event.preventDefault()
+        zoomAtStageCenter(1 / 1.2)
+      } else if (!withCommand && !event.altKey && key === "0") {
+        event.preventDefault()
+        resetViewport()
+      } else if (event.key === "Escape" && gesturePaletteOpenRef.current) {
+        event.preventDefault()
+        closeGesturePalette()
+      } else if (
+        !withCommand &&
+        !event.altKey &&
         event.code === "Space" &&
         !(event.target instanceof HTMLButtonElement)
       ) {
         event.preventDefault()
-        cameraRef.current?.togglePause()
+        spacePanRef.current = true
+        stageRef.current?.setAttribute("data-pan-ready", "")
       }
     }
 
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code !== "Space") return
+      spacePanRef.current = false
+      stageRef.current?.removeAttribute("data-pan-ready")
+    }
+
     window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [historyAvailability, redo, undo])
+    window.addEventListener("keyup", handleKeyUp)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
+    }
+  }, [
+    closeGesturePalette,
+    historyAvailability,
+    redo,
+    resetViewport,
+    undo,
+    zoomAtStageCenter,
+  ])
 
   return (
     <div
       className="workspace-shell"
+      data-gesture-palette-open={gesturePaletteAnchor ? "" : undefined}
       data-onboarding-step={
         onboardingState.step === "complete" ? undefined : onboardingState.step
       }
@@ -456,11 +771,18 @@ export function WorkspaceShell() {
           tabIndex={-1}
           aria-label="Toile de dessin vide"
           className="drawing-stage"
+          onPointerDown={handleStagePointerDown}
+          onPointerMove={handleStagePointerMove}
+          onPointerUp={finishStagePan}
+          onPointerCancel={finishStagePan}
+          onWheel={handleStageWheel}
         >
           <DrawingCanvas
             ref={drawingRef}
             assistanceMode={assistanceMode}
             drawingStyle={drawingStyle}
+            renderPointer={false}
+            viewport={viewport}
             onAssistance={handleAssistance}
             onHistoryChange={setHistoryAvailability}
           />
@@ -468,14 +790,19 @@ export function WorkspaceShell() {
             {toolNames[activeTool]} sélectionné, {thickness} pixels
           </div>
           <CameraPreview
-            ref={cameraRef}
             calibrating={onboardingState.step === "cursor"}
             onGestureFrame={handleGestureFrame}
           />
-          {onboardingState.step !== "complete" ? (
+          <CanvasViewportControls
+            zoom={viewport.zoom}
+            onZoomIn={() => zoomAtStageCenter(1.2)}
+            onZoomOut={() => zoomAtStageCenter(1 / 1.2)}
+            onReset={resetViewport}
+          />
+          {onboardingState.step !== "complete" && !gesturePaletteAnchor ? (
             <OnboardingPractice state={onboardingState} />
           ) : null}
-          {onboardingState.step !== "complete" ? (
+          {onboardingState.step !== "complete" && !gesturePaletteAnchor ? (
             <GestureCoach
               key={onboardingState.step}
               state={onboardingState}
@@ -496,6 +823,39 @@ export function WorkspaceShell() {
               </Button>
             </div>
           ) : null}
+          {gesturePaletteAnchor ? (
+            <GestureCommandPalette
+              anchor={gesturePaletteAnchor}
+              color={color}
+              thickness={thickness}
+              pattern={strokePattern}
+              assistanceMode={assistanceMode}
+              onColorChange={(nextColor) => {
+                changeColor(nextColor)
+                setActiveTool("pen")
+              }}
+              onThicknessChange={(nextThickness) => {
+                changeThickness(nextThickness)
+                setActiveTool("pen")
+              }}
+              onPatternChange={(nextPattern) => {
+                setStrokePattern(nextPattern)
+                setActiveTool("pen")
+              }}
+              onAssistanceModeChange={changeAssistanceMode}
+              onUndo={undo}
+              onClose={closeGesturePalette}
+            />
+          ) : null}
+          <div
+            ref={pointerOverlayRef}
+            aria-hidden="true"
+            className="gesture-pointer-overlay"
+          >
+            <svg viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="8" />
+            </svg>
+          </div>
         </section>
       </main>
     </div>

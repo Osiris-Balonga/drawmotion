@@ -1,6 +1,7 @@
 import type { DrawingIntention } from "@/core/gestures/drawing-intentions"
 import type { CanvasBounds } from "@/core/geometry/coordinate-mapping"
 
+import { initialCanvasViewport, type CanvasViewport } from "./canvas-viewport"
 import { applyDrawingCommand } from "./drawing-commands"
 import {
   createDrawingHistory,
@@ -49,6 +50,7 @@ export class CanvasDrawingController {
     width: 0.008,
     pattern: "solid",
   }
+  #viewport: CanvasViewport = initialCanvasViewport
   #assistanceMode: StrokeAssistanceMode = "stabilized"
   #activeStroke: Stroke | null = null
   #nextStrokeId = 1
@@ -81,6 +83,12 @@ export class CanvasDrawingController {
 
   setStyle(style: DrawingStyle) {
     this.#style = style
+  }
+
+  setViewport(viewport: CanvasViewport) {
+    this.#finishStroke()
+    this.#viewport = viewport
+    this.#renderer.setViewport(viewport)
   }
 
   setAssistanceMode(mode: StrokeAssistanceMode) {
@@ -193,7 +201,11 @@ export class CanvasDrawingController {
     if (!this.#activeStroke) return
     const assisted = assistStroke(
       this.#activeStroke,
-      this.#bounds,
+      {
+        ...this.#bounds,
+        width: this.#bounds.width * this.#viewport.zoom,
+        height: this.#bounds.height * this.#viewport.zoom,
+      },
       this.#assistanceMode,
     )
     const next = applyDrawingCommand(this.#history.present, {
@@ -223,14 +235,12 @@ export class CanvasDrawingController {
 
   #normalize(point: { x: number; y: number }): NormalizedPoint {
     return {
-      x: Math.min(
-        1,
-        Math.max(0, (point.x - this.#bounds.left) / this.#bounds.width),
-      ),
-      y: Math.min(
-        1,
-        Math.max(0, (point.y - this.#bounds.top) / this.#bounds.height),
-      ),
+      x:
+        (point.x - this.#bounds.left - this.#viewport.offsetX) /
+        (this.#bounds.width * this.#viewport.zoom),
+      y:
+        (point.y - this.#bounds.top - this.#viewport.offsetY) /
+        (this.#bounds.height * this.#viewport.zoom),
     }
   }
 }

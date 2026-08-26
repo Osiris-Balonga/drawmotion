@@ -51,7 +51,6 @@ describe("TopBar", () => {
     const confirm = within(dialog).getByRole("button", {
       name: "Effacer la toile",
     })
-    expect(confirm).toHaveAttribute("data-gesture-control")
     expect(props.onClear).not.toHaveBeenCalled()
 
     await user.click(confirm)
@@ -66,7 +65,6 @@ describe("TopBar", () => {
       name: "Exporter en PNG",
     })
 
-    expect(exportButton).toHaveAttribute("data-gesture-control")
     await user.click(exportButton)
     expect(props.onExport).toHaveBeenCalledOnce()
   })

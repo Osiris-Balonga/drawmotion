@@ -1,6 +1,5 @@
 import { MousePointer2, Palette, PenLine, Shapes, Undo2 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -14,35 +13,30 @@ const content = {
     title: "Le point violet est votre curseur",
     description:
       "Déplacez l’index sans pincer et visez les trois repères sur la toile.",
-    hint: "Pas besoin de toucher l’écran",
     Icon: MousePointer2,
   },
   draw: {
     title: "Pincez pour poser le stylo",
     description:
       "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
-    hint: "Tracez la ligne pointillée",
     Icon: PenLine,
   },
   style: {
-    title: "Donnez un style au prochain trait",
+    title: "Ouvrez les commandes gestuelles",
     description:
-      "Choisissez la couleur verte, puis une autre épaisseur dans la palette du bas.",
-    hint: "Visez un contrôle puis pincez pour le sélectionner",
+      "Gardez la main ouverte et immobile, puis choisissez le vert et une autre épaisseur.",
     Icon: Palette,
   },
   shapes: {
     title: "Transformez un geste en forme nette",
     description:
-      "Activez Formes, puis dessinez un cercle approximatif. DrawMotion le régularise à la fin du trait.",
-    hint: "Vous pourrez garder le tracé original",
+      "Rouvrez les commandes, activez Formes, puis dessinez un cercle approximatif.",
     Icon: Shapes,
   },
   correct: {
     title: "Corrigez sans recommencer",
     description:
-      "Annulez votre dernière forme avec le bouton du haut. La gomme reste disponible pour les retouches locales.",
-    hint: "Raccourci : Ctrl Z",
+      "Annulez depuis les commandes gestuelles. Pour gommer directement, fermez le poing et déplacez la main.",
     Icon: Undo2,
   },
 } as const
@@ -65,12 +59,6 @@ export function GestureCoach({ state, onBack, onSkip }: GestureCoachProps) {
         <current.Icon />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="mb-2 flex items-center gap-2">
-          <Badge variant="outline">
-            Mission {stepIndex + 1} sur {onboardingSteps.length}
-          </Badge>
-          <span className="text-muted-foreground text-xs">{current.hint}</span>
-        </div>
         <h2 id="gesture-title" className="text-base font-semibold">
           {current.title}
         </h2>

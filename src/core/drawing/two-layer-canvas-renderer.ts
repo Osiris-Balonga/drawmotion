@@ -1,5 +1,6 @@
 import type { CanvasPoint } from "@/core/geometry/coordinate-mapping"
 
+import { initialCanvasViewport, type CanvasViewport } from "./canvas-viewport"
 import type { DrawingDocument, Stroke } from "./drawing-model"
 import { emptyDrawingDocument } from "./drawing-model"
 import { canvasToPngBlob } from "./canvas-png-export"
@@ -22,7 +23,9 @@ export class TwoLayerCanvasRenderer {
   readonly #cancelFrame: (handle: number) => void
   #document: DrawingDocument = emptyDrawingDocument
   #pointer: CanvasPoint | null = null
+  #pointerVisible = true
   #previewStroke: Stroke | null = null
+  #viewport: CanvasViewport = initialCanvasViewport
   #width = 0
   #height = 0
   #frameHandle: number | null = null
@@ -74,8 +77,18 @@ export class TwoLayerCanvasRenderer {
     this.requestRender()
   }
 
+  setPointerVisible(visible: boolean) {
+    this.#pointerVisible = visible
+    this.requestRender()
+  }
+
   setPreviewStroke(stroke: Stroke | null) {
     this.#previewStroke = stroke
+    this.requestRender()
+  }
+
+  setViewport(viewport: CanvasViewport) {
+    this.#viewport = viewport
     this.requestRender()
   }
 
@@ -112,7 +125,8 @@ export class TwoLayerCanvasRenderer {
         ? "destination-out"
         : "source-over"
     context.strokeStyle = stroke.color
-    context.lineWidth = stroke.width * Math.min(this.#width, this.#height)
+    context.lineWidth =
+      stroke.width * Math.min(this.#width, this.#height) * this.#viewport.zoom
     context.lineCap = "round"
     context.lineJoin = "round"
     const dashUnit = Math.max(2, context.lineWidth)
@@ -126,13 +140,8 @@ export class TwoLayerCanvasRenderer {
 
     if (rest.length === 0) {
       context.beginPath()
-      context.arc(
-        first.x * this.#width,
-        first.y * this.#height,
-        context.lineWidth / 2,
-        0,
-        Math.PI * 2,
-      )
+      const point = this.#toViewportPoint(first)
+      context.arc(point.x, point.y, context.lineWidth / 2, 0, Math.PI * 2)
       context.fillStyle = stroke.color
       context.fill()
       context.restore()
@@ -140,19 +149,21 @@ export class TwoLayerCanvasRenderer {
     }
 
     context.beginPath()
-    context.moveTo(first.x * this.#width, first.y * this.#height)
+    const start = this.#toViewportPoint(first)
+    context.moveTo(start.x, start.y)
     for (const [index, point] of rest.entries()) {
       const next = rest[index + 1]
       if (!next) {
-        context.lineTo(point.x * this.#width, point.y * this.#height)
+        const end = this.#toViewportPoint(point)
+        context.lineTo(end.x, end.y)
         continue
       }
-      context.quadraticCurveTo(
-        point.x * this.#width,
-        point.y * this.#height,
-        ((point.x + next.x) / 2) * this.#width,
-        ((point.y + next.y) / 2) * this.#height,
-      )
+      const control = this.#toViewportPoint(point)
+      const midpoint = this.#toViewportPoint({
+        x: (point.x + next.x) / 2,
+        y: (point.y + next.y) / 2,
+      })
+      context.quadraticCurveTo(control.x, control.y, midpoint.x, midpoint.y)
     }
     context.stroke()
     context.restore()
@@ -163,12 +174,15 @@ export class TwoLayerCanvasRenderer {
     for (const stroke of this.#document.strokes) {
       this.#renderStroke(this.#persistentContext, stroke, true)
     }
+    if (this.#previewStroke?.tool === "eraser") {
+      this.#renderStroke(this.#persistentContext, this.#previewStroke, true)
+    }
 
     this.#interactionContext.clearRect(0, 0, this.#width, this.#height)
-    if (this.#previewStroke) {
+    if (this.#previewStroke && this.#previewStroke.tool !== "eraser") {
       this.#renderStroke(this.#interactionContext, this.#previewStroke, false)
     }
-    if (!this.#pointer) return
+    if (!this.#pointer || !this.#pointerVisible) return
     this.#interactionContext.beginPath()
     this.#interactionContext.arc(
       this.#pointer.x,
@@ -179,5 +193,12 @@ export class TwoLayerCanvasRenderer {
     )
     this.#interactionContext.fillStyle = "#7c3aed"
     this.#interactionContext.fill()
+  }
+
+  #toViewportPoint(point: CanvasPoint): CanvasPoint {
+    return {
+      x: point.x * this.#width * this.#viewport.zoom + this.#viewport.offsetX,
+      y: point.y * this.#height * this.#viewport.zoom + this.#viewport.offsetY,
+    }
   }
 }

@@ -2,7 +2,6 @@ import { forwardRef, useImperativeHandle } from "react"
 
 import { Camera, CameraOff, CircleAlert, LoaderCircle } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   useCameraLifecycle,
@@ -26,18 +25,12 @@ export type CameraPreviewHandle = {
 }
 
 const trackingContent = {
-  idle: { label: "Suivi en pause", className: "" },
-  initializing: { label: "Analyse de la main…", className: "" },
-  reliable: { label: "Suivi fiable", className: "camera-preview__status" },
-  uncertain: {
-    label: "Suivi hésitant",
-    className: "camera-preview__tracking--uncertain",
-  },
-  lost: { label: "Main non détectée", className: "" },
-  error: {
-    label: "Suivi indisponible",
-    className: "camera-preview__tracking--error",
-  },
+  idle: { label: "Suivi en pause", tone: "neutral" },
+  initializing: { label: "Analyse de la main…", tone: "neutral" },
+  reliable: { label: "Main détectée", tone: "success" },
+  uncertain: { label: "Suivi hésitant", tone: "warning" },
+  lost: { label: "Main non détectée", tone: "neutral" },
+  error: { label: "Suivi indisponible", tone: "error" },
 } as const
 
 const gestureLabels = {
@@ -96,9 +89,7 @@ export const CameraPreview = forwardRef<
   const {
     canvasRef,
     gesture,
-    metrics,
     pinchPhase,
-    pinchRatio,
     state: trackingState,
   } = useHandTracking(
     state === "ready",
@@ -114,7 +105,20 @@ export const CameraPreview = forwardRef<
     state === "failed"
       ? errorContent[state]
       : null
-  const canActivateFromPreview = state === "idle" || state === "stopped"
+  const canToggleFromPreview =
+    state === "idle" || state === "stopped" || state === "ready"
+  const visibleTrackingLabel =
+    trackingState === "reliable"
+      ? pinchPhase === "pending-entry"
+        ? "Pincement…"
+        : pinchPhase === "active"
+          ? "Pincement actif"
+          : pinchPhase === "pending-release"
+            ? "Relâchement…"
+            : gesture === "fist"
+              ? gestureLabels.fist
+              : trackingStatus.label
+      : trackingStatus.label
 
   useImperativeHandle(ref, () => ({
     togglePause() {
@@ -129,15 +133,19 @@ export const CameraPreview = forwardRef<
         type="button"
         className="camera-preview__viewport"
         aria-label={
-          state === "stopped"
-            ? "Reprendre la caméra"
-            : state === "idle"
-              ? "Activer ma caméra"
-              : "Aperçu caméra actif"
+          state === "ready"
+            ? "Mettre la caméra en pause"
+            : state === "stopped"
+              ? "Reprendre la caméra"
+              : state === "idle"
+                ? "Activer ma caméra"
+                : "Aperçu caméra"
         }
-        disabled={!canActivateFromPreview}
-        data-gesture-control={canActivateFromPreview ? "" : undefined}
-        onClick={() => void start()}
+        disabled={!canToggleFromPreview}
+        onClick={() => {
+          if (state === "ready") stop()
+          else void start()
+        }}
       >
         <video
           ref={videoRef}
@@ -175,47 +183,38 @@ export const CameraPreview = forwardRef<
         {error ? (
           <CameraOff aria-hidden="true" className="text-warning size-12" />
         ) : null}
+
+        {state === "ready" ? (
+          <span
+            aria-hidden="true"
+            className="camera-preview__live-status"
+            data-tone={trackingStatus.tone}
+          >
+            <span className="camera-preview__status-dot" />
+            <span>{visibleTrackingLabel}</span>
+          </span>
+        ) : null}
+
+        {state === "stopped" ? (
+          <span
+            aria-hidden="true"
+            className="camera-preview__live-status"
+            data-tone="neutral"
+          >
+            <span className="camera-preview__status-dot" />
+            <span>En pause</span>
+          </span>
+        ) : null}
       </button>
 
       <div className="camera-preview__controls" aria-live="polite">
         {state === "requesting" ? (
-          <Badge variant="secondary">Activation de la caméra…</Badge>
+          <span className="sr-only">Activation de la caméra…</span>
         ) : null}
 
         {state === "ready" ? (
           <>
-            <Badge className="camera-preview__status">
-              <span aria-hidden="true" className="camera-preview__status-dot" />
-              Caméra active
-            </Badge>
-            <Badge variant="secondary" className={trackingStatus.className}>
-              <span aria-hidden="true" className="camera-preview__status-dot" />
-              {trackingStatus.label}
-            </Badge>
-            {import.meta.env.DEV ? (
-              <Badge
-                variant="outline"
-                className="camera-preview__gesture"
-                aria-label="Geste détecté"
-              >
-                Geste ·{" "}
-                {pinchPhase === "pending-entry"
-                  ? "Pincement à confirmer"
-                  : pinchPhase === "active"
-                    ? "Pincement actif"
-                    : pinchPhase === "pending-release"
-                      ? "Relâchement à confirmer"
-                      : gestureLabels[gesture]}
-              </Badge>
-            ) : null}
-            {import.meta.env.DEV && metrics ? (
-              <span className="camera-preview__metrics">
-                {Math.round(metrics.inferenceMs)} ms · {metrics.droppedFrames}{" "}
-                frame{metrics.droppedFrames === 1 ? "" : "s"} ignorée
-                {metrics.droppedFrames === 1 ? "" : "s"}
-                {pinchRatio === null ? "" : ` · pince ${pinchRatio.toFixed(2)}`}
-              </span>
-            ) : null}
+            <span className="sr-only">Caméra active</span>
             {devices.length > 1 ? (
               <label className="camera-preview__device-field">
                 <span>Caméra utilisée</span>
@@ -231,19 +230,11 @@ export const CameraPreview = forwardRef<
                 </select>
               </label>
             ) : null}
-            <Button
-              variant="ghost"
-              size="sm"
-              data-gesture-control=""
-              onClick={stop}
-            >
-              Mettre la caméra en pause
-            </Button>
           </>
         ) : null}
 
         {state === "stopped" ? (
-          <Badge variant="secondary">Caméra en pause</Badge>
+          <span className="sr-only">Caméra en pause</span>
         ) : null}
 
         {error ? (
@@ -255,11 +246,7 @@ export const CameraPreview = forwardRef<
                 <p>{error.description}</p>
               </div>
             </div>
-            <Button
-              className="h-11 w-full"
-              data-gesture-control=""
-              onClick={() => void start()}
-            >
+            <Button className="h-11 w-full" onClick={() => void start()}>
               {error.action}
             </Button>
           </div>

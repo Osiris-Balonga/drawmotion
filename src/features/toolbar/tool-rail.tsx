@@ -180,7 +180,6 @@ export function ToolRail({
                 size="sm"
                 variant={thickness === preset ? "default" : "outline"}
                 aria-pressed={thickness === preset}
-                data-gesture-control=""
                 onClick={() => onThicknessChange(preset)}
               >
                 {preset} px
@@ -188,9 +187,6 @@ export function ToolRail({
             ))}
           </div>
           <div className="stroke-pattern-field">
-            <span className="text-muted-foreground text-xs font-medium">
-              Style du trait
-            </span>
             <ToggleGroup
               value={[strokePattern]}
               onValueChange={(nextValue) => {
@@ -210,15 +206,15 @@ export function ToolRail({
                   key={pattern.value}
                   value={pattern.value}
                   aria-label={pattern.label}
-                  data-gesture-control=""
-                  className="stroke-pattern-option flex-1"
+                  title={pattern.label}
+                  className="stroke-pattern-option"
                 >
                   <span
                     aria-hidden="true"
                     className="stroke-pattern-option__preview"
                     data-pattern={pattern.value}
                   />
-                  {pattern.label}
+                  <span className="sr-only">{pattern.label}</span>
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
@@ -255,7 +251,6 @@ export function ToolRail({
                 value={value}
                 aria-label={`${label} — ${description}`}
                 title={description}
-                data-gesture-control=""
                 data-onboarding-target={
                   value === "shapes" ? "shapes" : undefined
                 }
