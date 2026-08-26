@@ -142,6 +142,7 @@ export const CameraPreview = forwardRef<
                 : "Aperçu caméra"
         }
         disabled={!canToggleFromPreview}
+        data-tracking-tone={state === "ready" ? trackingStatus.tone : undefined}
         onClick={() => {
           if (state === "ready") stop()
           else void start()
@@ -187,23 +188,9 @@ export const CameraPreview = forwardRef<
         {state === "ready" ? (
           <span
             aria-hidden="true"
-            className="camera-preview__live-status"
+            className="camera-preview__live-indicator"
             data-tone={trackingStatus.tone}
-          >
-            <span className="camera-preview__status-dot" />
-            <span>{visibleTrackingLabel}</span>
-          </span>
-        ) : null}
-
-        {state === "stopped" ? (
-          <span
-            aria-hidden="true"
-            className="camera-preview__live-status"
-            data-tone="neutral"
-          >
-            <span className="camera-preview__status-dot" />
-            <span>En pause</span>
-          </span>
+          />
         ) : null}
       </button>
 
@@ -215,6 +202,7 @@ export const CameraPreview = forwardRef<
         {state === "ready" ? (
           <>
             <span className="sr-only">Caméra active</span>
+            <span className="sr-only">{visibleTrackingLabel}</span>
             {devices.length > 1 ? (
               <label className="camera-preview__device-field">
                 <span>Caméra utilisée</span>

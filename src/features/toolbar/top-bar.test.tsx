@@ -65,6 +65,7 @@ describe("TopBar", () => {
       name: "Exporter en PNG",
     })
 
+    expect(exportButton.parentElement).toHaveClass("workspace-topbar")
     await user.click(exportButton)
     expect(props.onExport).toHaveBeenCalledOnce()
   })

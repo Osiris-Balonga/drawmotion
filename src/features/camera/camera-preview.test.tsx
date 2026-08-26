@@ -71,6 +71,11 @@ describe("CameraPreview", () => {
     expect(screen.getByLabelText("Flux vidéo local")).not.toHaveAttribute(
       "hidden",
     )
+    const preview = screen.getByRole("region", { name: "Aperçu caméra" })
+    expect(preview.querySelector(".camera-preview__live-status")).toBeNull()
+    expect(
+      preview.querySelector(".camera-preview__live-indicator"),
+    ).toBeInTheDocument()
 
     await user.click(
       screen.getByRole("button", { name: "Mettre la caméra en pause" }),
