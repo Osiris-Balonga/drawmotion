@@ -14,6 +14,18 @@ export default defineConfig({
   // Camera inference and accessibility scans compete for the same CPU/GPU.
   // Keep runs reproducible on ordinary laptops and shared CI runners.
   workers: 1,
+  projects: [
+    {
+      name: "chromium",
+      testIgnore: /pwa(?:-update)?\.spec\.ts/,
+      use: { serviceWorkers: "block" },
+    },
+    {
+      name: "pwa",
+      testMatch: /pwa(?:-update)?\.spec\.ts/,
+      use: { serviceWorkers: "allow" },
+    },
+  ],
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: ".artifacts/playwright-report" }],
