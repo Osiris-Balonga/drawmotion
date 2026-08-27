@@ -1,0 +1,9 @@
+allowBuilds:
+  # Optional image-generator peer required by Vite PWA's public types only.
+  # Icons are packaged with the existing Playwright browser, not native scripts.
+  sharp: false
+overrides:
+  # Pin the patched type-only upstream fix until unconfig publishes valid types.
+  "@vite-pwa/assets-generator>unconfig": 7.3.3
+patchedDependencies:
+  unconfig@7.3.3: patches/unconfig@7.3.3.patch
