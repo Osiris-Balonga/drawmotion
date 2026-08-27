@@ -47,16 +47,32 @@ if (base.protocol === "https:") {
   assert.ok((await sitemap.text()).includes(`<loc>${base.href}</loc>`))
 }
 const assets = [
+  "sw.js",
   "vision/hand_landmarker.task",
   "vision/wasm/vision_wasm_internal.wasm",
   ...[
     ...document.querySelectorAll(
-      'script[src],link[rel="stylesheet"],link[rel="icon"]',
+      'script[src],link[rel="stylesheet"],link[rel="icon"],link[rel="manifest"],link[rel="apple-touch-icon"]',
     ),
   ].map(
     (element) => element.getAttribute("src") || element.getAttribute("href"),
   ),
 ]
+const manifestUrl = new URL(
+  document.querySelector('link[rel="manifest"]')?.getAttribute("href"),
+  base,
+)
+assert.equal(manifestUrl.pathname, `${base.pathname}manifest.webmanifest`)
+const manifestResponse = await fetch(manifestUrl, {
+  signal: AbortSignal.timeout(20_000),
+})
+assert.equal(manifestResponse.status, 200)
+const manifest = await manifestResponse.json()
+assert.equal(manifest.scope, base.pathname)
+assert.equal(manifest.start_url, base.pathname)
+assert.equal(manifest.id, base.pathname)
+assert.ok(document.querySelector('meta[name="drawmotion-build"]')?.content)
+assets.push(...manifest.icons.map((icon) => icon.src))
 for (const path of assets) {
   const url = new URL(path, base)
   assert.equal(url.origin, base.origin)
@@ -72,6 +88,8 @@ for (const path of assets) {
   assert.equal(asset.status, 200, `${url.pathname}: expected 200`)
   if (url.pathname.endsWith(".wasm"))
     assert.ok(asset.headers.get("content-type")?.includes("application/wasm"))
+  if (url.pathname.endsWith("sw.js"))
+    assert.ok(/javascript/.test(asset.headers.get("content-type") ?? ""))
   console.info(`Asset verified: ${url.pathname}`)
 }
 dom.window.close()

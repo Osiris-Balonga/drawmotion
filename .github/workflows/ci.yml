@@ -154,7 +154,7 @@ jobs:
           path: dist/
 
       - name: Run browser journeys
-        run: pnpm test:e2e
+        run: pnpm test:e2e:ui
         env:
           E2E_USE_BUILD: "1"
 
@@ -169,10 +169,49 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
+  pwa:
+    name: pwa
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Download verified production build A
+        uses: actions/download-artifact@v5
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+      - name: Verify cold offline launch and deferred A/B updates
+        run: pnpm test:pwa
+        env:
+          E2E_USE_BUILD: "1"
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: pwa-failures-${{ github.sha }}
+          path: |
+            .artifacts/playwright-report/
+            .artifacts/test-results/
+          include-hidden-files: true
+          retention-days: 7
+
   deploy-pages:
     name: deploy-pages
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [quality, unit-tests, build, e2e-chromium]
+    needs: [quality, unit-tests, build, e2e-chromium, pwa]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
