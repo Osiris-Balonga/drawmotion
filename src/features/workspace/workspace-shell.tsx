@@ -525,7 +525,6 @@ export function WorkspaceShell() {
         gesture,
         pinchPhase,
         quality,
-        activeTool,
         hasReliablePoint: filtered.reliable && mapped !== null,
       })
       updateGesturePointer(
@@ -541,7 +540,7 @@ export function WorkspaceShell() {
               ...drawingStyle,
               tool: "eraser",
               pattern: "solid",
-              width: Math.max(0.04, drawingStyle.width),
+              width: eraserThickness / 1000,
             }
           : drawingStyle,
       )
@@ -587,10 +586,10 @@ export function WorkspaceShell() {
       drawingRef.current?.handleIntentions(transition.intentions)
     },
     [
-      activeTool,
       clearGesturePaletteHover,
       closeGesturePalette,
       drawingStyle,
+      eraserThickness,
       observeOnboarding,
       openGesturePalette,
       publishGestureFeedback,

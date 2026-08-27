@@ -14,7 +14,6 @@ describe("resolveGestureDrawingMode", () => {
         gesture: "fist",
         pinchPhase: "released",
         quality: "reliable",
-        activeTool: "pen",
         hasReliablePoint: true,
       }),
     ).toEqual({
@@ -30,7 +29,6 @@ describe("resolveGestureDrawingMode", () => {
         gesture: "fist",
         pinchPhase: "released",
         quality: "reliable",
-        activeTool: "pen",
         hasReliablePoint: false,
       }),
     ).toEqual({
@@ -46,7 +44,6 @@ describe("resolveGestureDrawingMode", () => {
         gesture: "fist",
         pinchPhase: "active",
         quality: "lost",
-        activeTool: "eraser",
         hasReliablePoint: false,
       }),
     ).toEqual({
@@ -62,7 +59,6 @@ describe("resolveGestureDrawingMode", () => {
         gesture: "uncertain",
         pinchPhase: "pending-entry",
         quality: "uncertain",
-        activeTool: "pen",
         hasReliablePoint: true,
       }),
     ).toEqual({
@@ -75,16 +71,6 @@ describe("resolveGestureDrawingMode", () => {
         gesture: "pinch",
         pinchPhase: "active",
         quality: "reliable",
-        activeTool: "pen",
-        hasReliablePoint: true,
-      }).gesture,
-    ).toBe("pinch")
-    expect(
-      resolveGestureDrawingMode({
-        gesture: "pinch",
-        pinchPhase: "active",
-        quality: "reliable",
-        activeTool: "pointer",
         hasReliablePoint: true,
       }).gesture,
     ).toBe("pinch")
@@ -95,7 +81,6 @@ describe("resolveGestureDrawingMode", () => {
       gesture: "fist",
       pinchPhase: "released",
       quality: "reliable",
-      activeTool: "pen",
       hasReliablePoint: true,
     })
     const started = transitionGestureState(initialGestureMachineState, {
@@ -114,7 +99,6 @@ describe("resolveGestureDrawingMode", () => {
       gesture: "open-hand",
       pinchPhase: "released",
       quality: "reliable",
-      activeTool: "pen",
       hasReliablePoint: true,
     })
     const ended = transitionGestureState(moved.state, {

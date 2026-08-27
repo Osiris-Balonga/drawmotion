@@ -173,6 +173,40 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
   expect(errors).toEqual([])
 })
 
+test("fist eraser respects the selected 24px size instead of the old 40px minimum", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Passer le tutoriel" }).click()
+  await activateCamera(page)
+  const start = { x: 0.3, y: 0.4 }
+  const end = { x: 0.7, y: 0.4 }
+  await aimAt(page, start)
+  await playHands(page, [
+    ...hold("pinch", start, 4),
+    ...move("pinch", start, end),
+    ...hold("open", end),
+  ])
+  // Freeze fixture input while choosing settings with the mouse.
+  await playHands(page, [[], [], [], []])
+  await page.getByRole("button", { name: "Gomme", exact: true }).click()
+  await page
+    .getByRole("button", { name: "Taille de la gomme 40 pixels" })
+    .click()
+  await page.getByRole("button", { name: "24 px", exact: true }).click()
+  await page.keyboard.press("Escape")
+  await aimAt(page, { x: 0.5, y: 0.3 })
+  await playHands(page, [
+    ...move("fist", { x: 0.5, y: 0.3 }, { x: 0.5, y: 0.5 }),
+    ...hold("open", { x: 0.5, y: 0.5 }),
+  ])
+  // At 1440x900, a 24 reference-pixel eraser has radius 10.8px;
+  // the old 40px minimum erased up to 18px on either side.
+  expect(await inkIn(page, { x: 0.5, y: 0.4 }, 1)).toBe(0)
+  expect(await inkIn(page, { x: 0.5 + 14 / 1440, y: 0.4 }, 1)).toBeGreaterThan(
+    0,
+  )
+})
+
 test("tracking loss ends ink and reacquisition never bridges distant strokes", async ({
   page,
 }) => {
