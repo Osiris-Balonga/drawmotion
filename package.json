@@ -1,7 +1,7 @@
 {
   "name": "drawmotion",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "engines": {
