@@ -111,4 +111,20 @@ describe("PointerMotionFilter", () => {
       discontinuity: false,
     })
   })
+
+  it("does not treat time without tracking as evidence of continuous movement", () => {
+    const filter = new PointerMotionFilter()
+    filter.update({ x: 0.4, y: 0.35 }, 0)
+    filter.update(null, 400)
+
+    expect(filter.update({ x: 0.6, y: 0.55 }, 450)).toMatchObject({
+      reliable: false,
+      discontinuity: true,
+    })
+    expect(filter.update({ x: 0.6, y: 0.55 }, 500)).toEqual({
+      point: { x: 0.6, y: 0.55 },
+      reliable: true,
+      discontinuity: true,
+    })
+  })
 })

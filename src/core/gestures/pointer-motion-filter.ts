@@ -63,6 +63,7 @@ export class PointerMotionFilter {
   #lastRawPoint: CanvasPoint | null = null
   #lastTimestampMs: number | null = null
   #pendingJump: CanvasPoint | null = null
+  #hadTrackingGap = false
 
   constructor(options: PointerMotionFilterOptions = {}) {
     this.#minCutoffHz = positiveOption(
@@ -97,6 +98,7 @@ export class PointerMotionFilter {
     reliable = point !== null,
   ): FilteredPointer {
     if (!point || !reliable) {
+      this.#hadTrackingGap = true
       return {
         point: this.#lastReliablePoint,
         reliable: false,
@@ -126,10 +128,14 @@ export class PointerMotionFilter {
       point.x - this.#lastRawPoint.x,
       point.y - this.#lastRawPoint.y,
     )
-    const permittedDisplacement =
-      this.#jumpTolerance +
-      this.#maxNormalizedSpeed *
-        Math.min(elapsedSeconds, MAX_JUMP_INTERVAL_SECONDS)
+    // Time without observations is not evidence of continuous movement.
+    // Keep short, nearby dropouts smooth, but confirm a distant return instead
+    // of interpolating ink from the old position after a long tracking gap.
+    const permittedDisplacement = this.#hadTrackingGap
+      ? this.#jumpConfirmationRadius
+      : this.#jumpTolerance +
+        this.#maxNormalizedSpeed *
+          Math.min(elapsedSeconds, MAX_JUMP_INTERVAL_SECONDS)
 
     if (displacement > permittedDisplacement) {
       this.#pendingJump = { ...point }
@@ -141,6 +147,7 @@ export class PointerMotionFilter {
     }
 
     this.#pendingJump = null
+    this.#hadTrackingGap = false
     const filterInterval = Math.min(elapsedSeconds, MAX_FILTER_INTERVAL_SECONDS)
     this.#x = this.#filterAxis(point.x, this.#x, filterInterval)
     this.#y = this.#filterAxis(point.y, this.#y, filterInterval)
@@ -165,6 +172,7 @@ export class PointerMotionFilter {
     this.#lastRawPoint = null
     this.#lastTimestampMs = null
     this.#pendingJump = null
+    this.#hadTrackingGap = false
   }
 
   #filterAxis(value: number, state: AxisFilterState | null, elapsed: number) {
@@ -195,6 +203,7 @@ export class PointerMotionFilter {
     this.#lastReliablePoint = { ...point }
     this.#lastTimestampMs = timestampMs
     this.#pendingJump = null
+    this.#hadTrackingGap = false
     return { point: this.#lastReliablePoint, reliable: true, discontinuity }
   }
 }
