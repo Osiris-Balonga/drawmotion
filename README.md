@@ -56,6 +56,22 @@ Settings work without a camera, but freehand drawing still requires a detected
 hand. Accuracy depends on framing, lighting, and hardware; DrawMotion is not
 a replacement for a drawing tablet.
 
+## Install and use offline
+
+On a production build, open the small menu beside **DrawMotion**, then choose
+**Prepare offline** while connected (about 50 MB). Wait for confirmation, close
+all DrawMotion windows, and reopen. The menu must say **Ready for offline use**
+before disconnecting. Preparation never activates the camera.
+
+Install through that menu when the browser offers it, or use the browser's
+installation controls. Installation and offline preparation are separate.
+Updates wait until all old-version windows close; they never reload a drawing
+session. Export important work: browser storage is not a backup.
+
+This is disabled in `pnpm dev`; test with `pnpm build && pnpm preview`.
+See [offline limits and recovery](docs/COMPATIBILITY.md#offline-use-and-recovery)
+and the [manual release checks](docs/qa/v1.0.0.md#offline-release-checks).
+
 ## Local processing
 
 MediaPipe Hand Landmarker runs in a Web Worker. The model, WASM, fonts, and

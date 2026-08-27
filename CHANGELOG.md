@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add explicit offline preparation, install guidance and optional persistent
+  storage, with scoped integrity-checked caching of the complete application.
+- Defer PWA updates until all old-version windows close; never reload a drawing
+  session automatically. Gate Pages deployment on cold-start and A/B browser tests.
+
 - Save the latest drawing and canvas view locally across page reloads, including
   erasing, assistance and clearing; explain storage failures without blocking drawing.
 - Show pointer cursors on enabled clickable controls, including the dock and navigation.
