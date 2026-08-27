@@ -1,6 +1,23 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test, type Locator, type Page } from "@playwright/test"
 
+test("small touch screens get a readable compatibility message", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto("/")
+  await expect(
+    page.getByRole("heading", { name: "Un écran plus large est nécessaire" }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Activer ma caméra" }),
+  ).toBeHidden()
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze()
+  expect(results.violations).toEqual([])
+})
+
 async function tabTo(page: Page, locator: Locator) {
   // Exercise the browser's actual tab order instead of programmatic focus.
   for (let index = 0; index < 40; index++) {
@@ -21,6 +38,18 @@ test("WCAG checks on onboarding, stroke settings, custom color and commands", as
   await page.goto("/")
   const scan = async (state: string) =>
     test.step(`axe: ${state}`, async () => {
+      // Measure settled colors, not the translucent middle of a popover entrance.
+      await page.evaluate(async () => {
+        await Promise.all(
+          document
+            .getAnimations()
+            .filter(
+              (animation) =>
+                animation.effect?.getTiming().iterations !== Infinity,
+            )
+            .map((animation) => animation.finished.catch(() => undefined)),
+        )
+      })
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
         .analyze()

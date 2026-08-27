@@ -291,3 +291,33 @@ test("lost-hand notice stays legible below the camera across tablet and desktop 
     }
   }
 })
+
+test("reduced motion keeps mode feedback visible; unavailable inference explains recovery", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.getByRole("button", { name: "Passer le tutoriel" }).click()
+  await activateCamera(page)
+  await aimAt(page, { x: 0.4, y: 0.4 })
+  await playHands(page, hold("pinch", { x: 0.4, y: 0.4 }, 4))
+  const toast = page.locator('.camera-preview__gesture-toast[data-kind="pen"]')
+  await expect(toast).toHaveCSS("animation-name", "none")
+  await expect(toast).toHaveCSS("opacity", "1")
+  await page
+    .getByRole("button", { name: "Mettre la caméra en pause", exact: true })
+    .click()
+  await page.route(/\/assets\/hand-tracking\.worker-[^/]+\.js$/, (route) =>
+    route.abort(),
+  )
+  await page.getByRole("button", { name: "Reprendre la caméra" }).click()
+  await expect(page.getByRole("alert")).toContainText(
+    "Le suivi de la main est indisponible",
+  )
+  await page
+    .getByRole("alert")
+    .getByRole("button", { name: "Mettre la caméra en pause" })
+    .click()
+  await expect(
+    page.getByRole("button", { name: "Reprendre la caméra" }),
+  ).toBeEnabled()
+})
