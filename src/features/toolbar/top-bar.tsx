@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { DrawMotionMark } from "@/features/toolbar/brand-mark"
 import { ToolButton } from "@/features/toolbar/tool-button"
+import { PwaMenu } from "@/features/pwa/pwa-menu"
 
 type TopBarProps = {
   canUndo: boolean
@@ -52,6 +53,7 @@ export function TopBar({
             {t("app.tagline")}
           </p>
         </div>
+        <PwaMenu />
       </div>
 
       <nav

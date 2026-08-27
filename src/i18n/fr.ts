@@ -1,6 +1,24 @@
 import type { Messages } from "./en"
 
 export const fr = {
+  "pwa.menu": "Installation et hors ligne",
+  "pwa.title": "Emportez DrawMotion",
+  "pwa.description":
+    "Préparez l’app en ligne, puis dessinez sans connexion. La caméra reste éteinte pendant la préparation.",
+  "pwa.prepare": "Préparer hors ligne · environ 50 Mo",
+  "pwa.unavailable":
+    "La préparation hors ligne n’est pas disponible ici. Utilisez un navigateur compatible en HTTPS.",
+  "pwa.idle": "Pas encore préparé pour le hors ligne.",
+  "pwa.preparing": "Préparation de l’app et de la détection des gestes…",
+  "pwa.reopen":
+    "Préparation terminée. Fermez toutes les fenêtres DrawMotion, puis rouvrez l’app pour l’utiliser hors ligne.",
+  "pwa.verifying": "Vérification des ressources hors ligne…",
+  "pwa.ready": "Prêt pour le hors ligne sur cet appareil.",
+  "pwa.failed":
+    "Les ressources hors ligne n’ont pas pu être vérifiées. Reconnectez-vous et réessayez. Si cela persiste, consultez les étapes de récupération dans la documentation du projet.",
+  "pwa.retry": "Vérifier à nouveau",
+  "pwa.limits":
+    "Le navigateur peut effacer le stockage local. Exportez vos dessins importants.",
   "app.title": "DrawMotion — Dessinez dans les airs avec votre webcam",
   "draft.restoreFailed":
     "Le dessin sauvegardé n’a pas pu être restauré. Le stockage local est peut-être indisponible ou le brouillon endommagé.",

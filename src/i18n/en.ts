@@ -1,4 +1,22 @@
 export const en = {
+  "pwa.menu": "Install & offline",
+  "pwa.title": "Keep DrawMotion with you",
+  "pwa.description":
+    "Prepare once online, then draw without a connection. Your camera stays off during preparation.",
+  "pwa.prepare": "Prepare offline · about 50 MB",
+  "pwa.unavailable":
+    "Offline preparation is unavailable here. Use a supported browser over HTTPS.",
+  "pwa.idle": "Not prepared for offline use.",
+  "pwa.preparing": "Preparing the app and gesture detection…",
+  "pwa.reopen":
+    "Prepared. Close all DrawMotion windows, then reopen to use it offline.",
+  "pwa.verifying": "Checking offline resources…",
+  "pwa.ready": "Ready for offline use on this device.",
+  "pwa.failed":
+    "Offline resources could not be verified. Connect and retry. If this persists, follow the recovery steps in the project documentation.",
+  "pwa.retry": "Check again",
+  "pwa.limits":
+    "Browser storage can be cleared or evicted. Export important drawings.",
   "app.title": "DrawMotion — Draw in the air with your webcam",
   "draft.restoreFailed":
     "The saved drawing could not be restored. Local storage may be unavailable or the draft damaged.",
