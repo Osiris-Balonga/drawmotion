@@ -8,6 +8,10 @@ Public demo candidate, version `1.0.0-rc.1`.
 [GitHub Pages demo](https://osiris-balonga.github.io/drawmotion/) is deployed
 from `main` after CI passes. See [features and limitations](CHANGELOG.md).
 
+![DrawMotion preview showing gesture-drawn shapes and floating controls](docs/assets/drawmotion-preview.png)
+
+Created by [Osiris Balonga](https://github.com/Osiris-Balonga).
+
 ## Getting started
 
 Requirements: **Node.js 24** and **pnpm 11.19.0**.
@@ -41,7 +45,13 @@ targets; see [compatibility limitations](docs/COMPATIBILITY.md).
 - **Export**: the PNG captures the visible area at the current zoom, not
   automatically the entire document. Zoom out and recenter before exporting.
 
-Drawings stay in memory: **export before reloading or closing the page**.
+Your latest drawing and canvas view are automatically saved in this browser
+and restored after a reload. Clearing the canvas also updates the saved draft.
+Undo/redo history and tool settings reset on reload. Storage is local to this
+browser and site, not a cloud backup: export important drawings before clearing
+browser data or using private browsing. If storage is full or blocked, an alert
+asks you to export before leaving. Multiple tabs do not merge drawings; the last
+saved edit wins.
 Settings work without a camera, but freehand drawing still requires a detected
 hand. Accuracy depends on framing, lighting, and hardware; DrawMotion is not
 a replacement for a drawing tablet.
@@ -50,8 +60,8 @@ a replacement for a drawing tablet.
 
 MediaPipe Hand Landmarker runs in a Web Worker. The model, WASM, fonts, and
 illustrations are served with the site. DrawMotion does not record or upload
-video and does not request microphone access. Only tutorial progress is saved
-in local storage.
+video and does not request microphone access. Tutorial progress, drawing strokes
+and the canvas view are saved in local storage, never video or hand landmarks.
 
 The [privacy documentation](docs/COMPATIBILITY.md#privacy) distinguishes in-memory
 data, normal asset requests, and network checks. To report a vulnerability,
@@ -88,6 +98,6 @@ Original code is licensed under [MIT](LICENSE). Dependencies, the font, and the
 model retain their own licenses: see [third-party notices](docs/THIRD_PARTY.md).
 `pnpm build` includes the required texts in `dist/licenses/`.
 
-Publication still requires [manual QA](docs/qa/v1.0.0.md) and the
+A stable release still requires [manual QA](docs/qa/v1.0.0.md) and the
 [release procedure](docs/RELEASE.md). Historical plans are kept in
 [the archive](docs/archive/README.md), not used as current instructions.

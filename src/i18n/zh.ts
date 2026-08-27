@@ -1,6 +1,9 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "draft.restoreFailed":
+    "无法恢复已保存的绘图。本地存储可能不可用，或草稿已损坏。",
+  "draft.saveFailed": "无法在此设备上保存绘图。关闭或刷新页面前，请导出 PNG。",
   "app.title": "DrawMotion — 用摄像头在空中绘画",
   "app.description": "DrawMotion 将手势转换为数字画布上的笔画。",
   "app.tagline": "手势画布",

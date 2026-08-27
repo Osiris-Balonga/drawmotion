@@ -84,6 +84,38 @@ const stroke: Stroke = {
 }
 
 describe("TwoLayerCanvasRenderer", () => {
+  it("restores an editable document and assigns distinct IDs to new strokes", () => {
+    const harness = createHarness(1)
+    const restored = { strokes: [stroke, { ...stroke, id: "stroke-3" }] }
+    const controller = new CanvasDrawingController(
+      harness.renderer,
+      50,
+      restored,
+    )
+    controller.setBounds({ left: 0, top: 0, width: 300, height: 200 })
+    expect(controller.historyAvailability).toEqual({
+      canUndo: false,
+      canRedo: false,
+      canClear: true,
+    })
+    for (let i = 0; i < 2; i++) {
+      controller.handle({
+        type: "DRAW_START",
+        version: 1,
+        timestampMs: i,
+        point: { x: 30, y: 40 },
+      })
+      controller.handle({ type: "PAUSE", version: 1, timestampMs: i + 1 })
+    }
+    expect(new Set(controller.document.strokes.map((s) => s.id)).size).toBe(4)
+    controller.undo()
+    controller.undo()
+    expect(controller.document).toEqual(restored)
+    controller.clear()
+    expect(controller.document.strokes).toEqual([])
+    controller.undo()
+    expect(controller.document).toEqual(restored)
+  })
   it("sizes both layers for high-DPI output", () => {
     const harness = createHarness(2)
     harness.renderer.resize(300, 200)

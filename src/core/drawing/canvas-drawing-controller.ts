@@ -12,6 +12,7 @@ import {
 } from "./drawing-history"
 import {
   emptyDrawingDocument,
+  type DrawingDocument,
   type AssistedPrimitive,
   type NormalizedPoint,
   type Stroke,
@@ -54,13 +55,19 @@ export class CanvasDrawingController {
   #assistanceMode: StrokeAssistanceMode = "stabilized"
   #activeStroke: Stroke | null = null
   #nextStrokeId = 1
+  readonly #usedStrokeIds: Set<string>
   #onAssistance: ((feedback: StrokeAssistanceFeedback) => void) | null = null
   #onHistoryChange:
     ((availability: DrawingHistoryAvailability) => void) | null = null
 
-  constructor(renderer: TwoLayerCanvasRenderer, historyLimit = 50) {
+  constructor(
+    renderer: TwoLayerCanvasRenderer,
+    historyLimit = 50,
+    document: DrawingDocument = emptyDrawingDocument,
+  ) {
     this.#renderer = renderer
-    this.#history = createDrawingHistory(emptyDrawingDocument, historyLimit)
+    this.#history = createDrawingHistory(document, historyLimit)
+    this.#usedStrokeIds = new Set(document.strokes.map((stroke) => stroke.id))
   }
 
   get document() {
@@ -115,8 +122,12 @@ export class CanvasDrawingController {
         break
       case "DRAW_START": {
         const point = this.#normalize(intention.point)
+        while (this.#usedStrokeIds.has(`stroke-${this.#nextStrokeId}`))
+          this.#nextStrokeId++
+        const id = `stroke-${this.#nextStrokeId++}`
+        this.#usedStrokeIds.add(id)
         this.#activeStroke = {
-          id: `stroke-${this.#nextStrokeId++}`,
+          id,
           ...this.#style,
           pattern:
             this.#style.tool === "eraser"

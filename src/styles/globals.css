@@ -122,6 +122,11 @@ select {
   html {
     @apply font-sans;
   }
+  :where(button, [role="button"], a[href], summary):not(:disabled):not(
+      [aria-disabled="true"]
+    ):not([data-disabled]) {
+    cursor: pointer;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

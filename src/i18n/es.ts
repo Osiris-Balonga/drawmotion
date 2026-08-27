@@ -1,6 +1,10 @@
 import type { Messages } from "./en"
 
 export const es = {
+  "draft.restoreFailed":
+    "No se pudo restaurar el dibujo guardado. El almacenamiento local puede no estar disponible o el borrador puede estar dañado.",
+  "draft.saveFailed":
+    "No se pudo guardar el dibujo en este dispositivo. Exporta un PNG antes de cerrar o recargar la página.",
   "app.title": "DrawMotion — Dibuja en el aire con tu cámara web",
   "app.description":
     "DrawMotion convierte los gestos de tu mano en trazos sobre un lienzo digital.",

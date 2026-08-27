@@ -2,6 +2,10 @@ import type { Messages } from "./en"
 
 export const fr = {
   "app.title": "DrawMotion — Dessinez dans les airs avec votre webcam",
+  "draft.restoreFailed":
+    "Le dessin sauvegardé n’a pas pu être restauré. Le stockage local est peut-être indisponible ou le brouillon endommagé.",
+  "draft.saveFailed":
+    "Le dessin n’a pas pu être sauvegardé sur cet appareil. Exportez un PNG avant de fermer ou recharger la page.",
   "app.description":
     "DrawMotion transforme les gestes de votre main en traits sur une toile numérique.",
   "app.tagline": "Toile gestuelle",
