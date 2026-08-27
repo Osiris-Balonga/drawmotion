@@ -39,9 +39,18 @@ scope mistakes and size-budget overruns.
 a bounded MessageChannel protocol. `src/features/pwa/` contains the localized
 menu and installation/storage browser adapters. They do not change gesture
 classification, camera capture, rendering or the drawing persistence format.
-No service worker is registered before an explicit preparation request;
-previous registrations are reattached on later launches. Updates use the
-native waiting lifecycle, not forced activation or automatic page reloads.
+Registration starts automatically after the initial document loads; previous
+registrations are reattached on later launches. On activation, a build-identity
+handshake checks every in-scope window before adopting uncontrolled documents.
+Unresponsive or mismatched documents are left alone. Updates still use the
+native waiting lifecycle: no `skipWaiting` or automatic page reloads.
+
+Connectivity is a separate signal from cache readiness. `network-check.json`
+is deliberately excluded from the precache; a bounded, uncached request validates
+its identity on startup, debounced network events and return to the app. Failed
+probes retry once per minute while visible. Nothing uploads drawings, and there
+is no third-party ping or cloud synchronization. Offline asset retries use bounded
+backoff, and restore only missing integrity-checked entries without clearing data.
 
 The optional Vite PWA asset-generator peer is present for upstream public
 types, not shipped at runtime. Version-pinned pnpm patches correct unconfig's

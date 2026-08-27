@@ -2,8 +2,12 @@
 
 ## Unreleased
 
-- Add explicit offline preparation, install guidance and optional persistent
-  storage, with scoped integrity-checked caching of the complete application.
+- Offline resources now download automatically after the first page load, with
+  transparent initial control, connection feedback and automatic retry/repair.
+  The app menu keeps installation optional and moves technical controls into details.
+
+- Add install guidance and optional persistent storage, with scoped
+  integrity-checked caching of the complete application.
 - Defer PWA updates until all old-version windows close; never reload a drawing
   session automatically. Gate Pages deployment on cold-start and A/B browser tests.
 

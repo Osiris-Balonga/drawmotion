@@ -1,4 +1,4 @@
-# ADR 0003: Explicit offline preparation and deferred updates
+# ADR 0003: Automatic offline availability and deferred updates
 
 Status: Accepted
 
@@ -9,18 +9,27 @@ Its model and WebAssembly runtimes are large, and an unexpected reload can
 interrupt a gesture or discard session-only undo history. GitHub Pages serves
 the application under `/drawmotion/`, alongside other projects on the same origin.
 
+The first implementation used explicit preparation to disclose the download
+cost. User testing rejected that workflow: these are required application assets,
+not optional media downloads. The revised decision makes caching automatic and
+keeps storage information available without turning it into an onboarding task.
+
 ## Decision
 
 - Use Vite PWA's `injectManifest` integration and Workbox precaching. Keep the
   service worker disabled during development.
-- Prepare the complete application only after an explicit user action. Include
+- Cache the complete application automatically after the first page load. Include
   every supported MediaPipe runtime, fonts, tutorial images and license notices.
 - Scope registration, routing and cache names to this application. Unknown URLs
   remain 404s. Do not cache camera frames, exports or arbitrary network requests.
 - Verify cached resources before reporting readiness. Installation is not proof
-  of offline readiness; the first preparation requires closing and reopening.
-- Never call `skipWaiting`, claim existing clients or automatically reload.
-  Updates activate after all windows using the old version close.
+  of offline readiness. First-use availability must not require a manual reload.
+- During activation, adopt uncontrolled pages only after every in-scope window
+  answers with the same build identity. Never call `skipWaiting` or automatically
+  reload. Updates activate after all windows using the old version close.
+- Confirm connection changes through an uncached same-origin probe, not solely
+  `navigator.onLine`. Keep drawing controls usable; distinguish connectivity from
+  offline readiness. Automatically retry failed downloads with bounded backoff.
 - Preserve the existing local drawing format. Cache maintenance must never erase
   drawings or another project's caches. Persistent storage is a separate,
   optional browser request, not a durability guarantee.
