@@ -1,8 +1,14 @@
 # Changelog
 
-## 1.0.0-rc.1 — 2026-08-27 (local, unpublished candidate)
+## 1.0.0-rc.1 — 2026-08-27 (public demo candidate)
 
 ### Features
+
+- GitHub Pages deployment gated by CI, with project-subpath assets and document
+  CSP; repository publication does not mark the candidate as stable 1.0.
+
+- Build-time search/social metadata, canonical origin validation, crawl controls,
+  and a production sitemap; preview builds stay out of search.
 
 - English, French, Spanish, Italian, and Simplified Chinese UI selected from browser preferences, including tutorial, camera errors, and accessibility labels.
 

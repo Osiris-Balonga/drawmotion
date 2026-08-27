@@ -1,6 +1,7 @@
 import type { Messages } from "./en"
 
 export const fr = {
+  "app.title": "DrawMotion — Dessinez dans les airs avec votre webcam",
   "app.description":
     "DrawMotion transforme les gestes de votre main en traits sur une toile numérique.",
   "app.tagline": "Toile gestuelle",

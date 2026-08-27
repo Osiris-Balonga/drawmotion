@@ -19,9 +19,13 @@ inference, and a Canvas engine. Version 1 needs no application server or databas
 - Native two-layer Canvas 2D.
 - React hooks for UI state and refs for the imperative video pipeline.
 - Vitest, Testing Library, and Playwright for tests.
-- Vercel for HTTPS previews and production.
+- GitHub Pages for the HTTPS demo and production, deployed by GitHub Actions.
 
 ## Consequences
+
+Hosting amendment dated August 27, 2026: the maintainer selected GitHub Pages
+instead of the original Vercel plan. CI tests the repository subpath and deploys
+only from `main`; see the Pages limitations in [compatibility](../COMPATIBILITY.md#static-host-security).
 
 Amendment dated August 27, 2026: Zustand was planned initially but was not
 introduced. State belongs to the workspace and its gesture, navigation, and

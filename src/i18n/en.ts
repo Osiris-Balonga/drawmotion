@@ -1,4 +1,5 @@
 export const en = {
+  "app.title": "DrawMotion — Draw in the air with your webcam",
   "app.description":
     "DrawMotion turns your hand gestures into strokes on a digital canvas.",
   "app.tagline": "Gesture canvas",

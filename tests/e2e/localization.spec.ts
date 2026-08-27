@@ -100,7 +100,7 @@ for (const language of languages) {
         navigator.mediaDevices.getUserMedia = () =>
           Promise.reject(new DOMException("Denied for test", "NotAllowedError"))
       })
-      await page.goto("/")
+      await page.goto("./")
       await expect(page.locator("html")).toHaveAttribute("lang", language.lang)
       await expect(
         page.getByRole("heading", { name: language.title }),

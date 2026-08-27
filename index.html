@@ -2,15 +2,28 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <meta name="referrer" content="no-referrer" />
     <link rel="icon" type="image/png" href="/brand/drawmotion-symbol-b.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="DrawMotion turns your hand gestures into strokes on a digital canvas."
+      content="Turn hand gestures into 2D drawings in your browser. Pinch to draw, make a fist to erase, and export PNGs. Camera processing stays on your device."
     />
-    <title>DrawMotion</title>
+    <meta name="theme-color" content="#19191f" />
+    <title>DrawMotion — Draw in the air with your webcam</title>
   </head>
   <body>
+    <noscript>
+      <h1>DrawMotion — Draw in the air</h1>
+      <p>
+        Use your webcam to draw with hand gestures, erase with a fist, and
+        export PNG images. Video is processed on your device, not uploaded.
+      </p>
+      <p>
+        Enable JavaScript to open the drawing canvas. A computer or tablet with
+        a webcam is required; desktop Chrome or Edge is recommended.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

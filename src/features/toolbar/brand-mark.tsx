@@ -6,7 +6,7 @@ export function DrawMotionMark(props: HTMLAttributes<HTMLSpanElement>) {
       <img
         aria-hidden="true"
         alt=""
-        src="/brand/drawmotion-symbol-b.png"
+        src={`${import.meta.env.BASE_URL}brand/drawmotion-symbol-b.png`}
         width="64"
         height="64"
       />

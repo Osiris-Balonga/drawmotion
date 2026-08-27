@@ -164,10 +164,13 @@ export function useHandTracking(
         minPresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
         modelAssetUrl: new URL(
-          "/vision/hand_landmarker.task",
+          `${import.meta.env.BASE_URL}vision/hand_landmarker.task`,
           window.location.origin,
         ).href,
-        wasmRootUrl: new URL("/vision/wasm", window.location.origin).href,
+        wasmRootUrl: new URL(
+          `${import.meta.env.BASE_URL}vision/wasm`,
+          window.location.origin,
+        ).href,
       })
       .catch(() => {
         if (active) {

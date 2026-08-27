@@ -54,6 +54,7 @@ export const t = createTranslator(locale)
 
 export function applyDocumentLocale() {
   document.documentElement.lang = locale
+  document.title = t("app.title")
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute("content", t("app.description"))

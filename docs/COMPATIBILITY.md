@@ -73,29 +73,35 @@ approximately 640 KiB raw JS / 200 KiB gzip and 71 KiB CSS. Model/WASM files are
 excluded, checked separately by `pnpm verify:vision-assets`, and loaded when
 tracking starts.
 
-## Production headers
+## Static-host security
 
-`vercel.json` blocks third-party resources, inline scripts, and dynamic
+The production HTML contains a meta CSP from `scripts/security-policy.ts`
+that blocks third-party document resources, inline scripts, and dynamic
 JavaScript evaluation. `wasm-unsafe-eval` allows WASM compilation without
 allowing `unsafe-eval`. Inline styles remain allowed for dynamic Base UI/React
 positions and colors. Images using `data:`/`blob:` and local media are allowed;
-Workers are same-origin. Embedding in an iframe and external forms are blocked.
-Microphone, geolocation, USB, and payment access are disabled by policy.
+Workers are same-origin and external forms are blocked.
 
-`pnpm preview` applies the same headers for local tests, including the Worker
-file. `pnpm dev` retains the development configuration needed for HMR.
+GitHub Pages does not apply `vercel.json` or custom response headers. Meta CSP
+does not cover the Worker's own fetches or provide `frame-ancestors`,
+X-Frame-Options, or Permissions-Policy. Do not claim these protections on Pages.
+The app requests no microphone, location, USB, or payment access, but that is
+application behavior rather than a host-enforced permission restriction.
+Referrer suppression uses HTML metadata. HTTPS is enforced by Pages.
+
+`pnpm preview` serves the same built HTML policy, without invented response
+headers. `pnpm dev` retains the development configuration needed for HMR.
 `security.spec.ts` runs real MediaPipe inference and verifies that CSP blocks
 an external connection; other gesture tests use deterministic landmarks.
 
 After an authorized deployment, check the **actual HTTPS URL**:
 
 ```sh
-pnpm verify:security-headers https://YOUR-PREVIEW-URL
+pnpm verify:deployment https://osiris-balonga.github.io/drawmotion/
 ```
 
-A protected preview may return a 401 or redirect. That is an incomplete check,
-not a reason to disable protection. No deployment was performed for batch 10;
-local verification does not prove CDN headers.
+The verifier checks HTML policy, canonical/sitemap, asset paths, and WASM MIME.
+It does not certify physical gestures or pretend to verify unsupported headers.
 
 ## Troubleshooting
 
@@ -115,10 +121,10 @@ local verification does not prove CDN headers.
 Test on physical Chrome and Edge setups: permissions, denial/recovery, low
 lighting, fist erasing, tracking loss followed by a distant pinched return
 without a connecting stroke, native 200% zoom, tablet touch, export, and
-background pausing. Verify the HTTPS preview and headers too. These remain
+background pausing. Verify the HTTPS demo and its assets too. These remain
 release prerequisites, not assumed successes.
 
 References: [MediaPipe Web](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker/web_js),
 [CSP and WASM](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src),
 [Workers and CSP](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#content_security_policy),
-[Vercel configuration](https://vercel.com/docs/project-configuration/vercel-json).
+[GitHub Pages workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).

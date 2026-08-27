@@ -22,7 +22,7 @@ Complete this section only when targeting `main`:
 
 - [ ] The source branch is exactly `dev`
 - [ ] No release-specific commits were added after validating `dev`
-- [ ] The `Production source policy` check and Vercel deployment are green
+- [ ] The `Production source policy` and CI checks are green; verify Pages after merge
 
 ## Risks and rollback
 
