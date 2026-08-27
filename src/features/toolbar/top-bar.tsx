@@ -114,6 +114,7 @@ export function TopBar({
       </nav>
 
       <Button
+        aria-label="Exporter en PNG"
         className="workspace-topbar__export"
         variant="secondary"
         disabled={!canClear}
