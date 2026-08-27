@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { GestureLessonIllustration } from "@/features/onboarding/gesture-lesson-illustration"
@@ -9,29 +11,24 @@ import {
 
 const content = {
   cursor: {
-    title: "Le point violet est votre curseur",
-    description:
-      "Déplacez l’index sans pincer et visez les trois repères sur la toile.",
+    title: t("tutorial.cursorTitle"),
+    description: t("tutorial.cursorDescription"),
   },
   draw: {
-    title: "Pincez pour poser le stylo",
-    description:
-      "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
+    title: t("tutorial.drawTitle"),
+    description: t("tutorial.drawDescription"),
   },
   style: {
-    title: "Faites le signe paix pour ouvrir les commandes",
-    description:
-      "Tendez l’index et le majeur en signe paix pendant 0,5 seconde, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
+    title: t("tutorial.styleTitle"),
+    description: t("tutorial.styleDescription"),
   },
   shapes: {
-    title: "Transformez un geste en forme nette",
-    description:
-      "Refaites le signe paix, activez Formes, puis dessinez un cercle approximatif.",
+    title: t("tutorial.shapesTitle"),
+    description: t("tutorial.shapesDescription"),
   },
   correct: {
-    title: "Corrigez sans recommencer",
-    description:
-      "Ouvrez les commandes avec le signe paix et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
+    title: t("tutorial.correctTitle"),
+    description: t("tutorial.correctDescription"),
   },
 } as const
 
@@ -58,7 +55,10 @@ export function GestureCoach({ state, onBack, onSkip }: GestureCoachProps) {
           {current.description}
         </p>
         <Progress
-          aria-label={`Progression du tutoriel : mission ${stepIndex + 1} sur ${onboardingSteps.length}`}
+          aria-label={t("tutorial.progress", {
+            current: stepIndex + 1,
+            total: onboardingSteps.length,
+          })}
           value={progress}
           className="mt-3 h-1.5"
         />
@@ -66,11 +66,11 @@ export function GestureCoach({ state, onBack, onSkip }: GestureCoachProps) {
       <div className="gesture-coach__actions">
         {stepIndex > 0 ? (
           <Button className="h-10" variant="ghost" onClick={onBack}>
-            Retour
+            {t("tutorial.back")}
           </Button>
         ) : null}
         <Button className="h-10" variant="ghost" onClick={onSkip}>
-          Passer le tutoriel
+          {t("tutorial.skip")}
         </Button>
       </div>
     </section>
@@ -98,11 +98,15 @@ export function OnboardingPractice({ state }: { state: OnboardingState }) {
   if (state.step === "draw") {
     return (
       <div className="onboarding-draw-practice" aria-hidden="true">
-        <span className="onboarding-draw-practice__label">Départ</span>
+        <span className="onboarding-draw-practice__label">
+          {t("tutorial.start")}
+        </span>
         <svg viewBox="0 0 500 120" preserveAspectRatio="none">
           <path d="M 20 78 C 120 12, 190 112, 290 55 S 415 20, 480 62" />
         </svg>
-        <span className="onboarding-draw-practice__end">Arrivée</span>
+        <span className="onboarding-draw-practice__end">
+          {t("tutorial.finish")}
+        </span>
       </div>
     )
   }

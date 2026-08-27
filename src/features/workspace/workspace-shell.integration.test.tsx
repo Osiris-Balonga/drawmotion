@@ -67,7 +67,7 @@ describe("WorkspaceShell", () => {
 
     expect(eraser).toHaveAttribute("aria-pressed", "true")
     expect(pen).toHaveAttribute("aria-pressed", "false")
-    expect(screen.getByText("Gomme sélectionné, 40 pixels")).toBeInTheDocument()
+    expect(screen.getByText("Outil : Gomme, 40 pixels")).toBeInTheDocument()
   })
 
   it("selects tools with shortcuts except while typing", async () => {

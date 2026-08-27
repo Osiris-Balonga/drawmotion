@@ -31,6 +31,7 @@ pnpm test:e2e workspace.spec.ts
 pnpm test:e2e gestures.spec.ts
 pnpm test:e2e accessibility.spec.ts
 pnpm test:e2e security.spec.ts
+pnpm test:e2e localization.spec.ts
 ```
 
 Playwright already filters by file or title (`--grep`); individual scenarios
@@ -47,6 +48,14 @@ Tests live near the code. Their suffix assigns each file to one group:
 
 Write test descriptions and comments in English. Assertions against localized
 UI content keep the expected application strings.
+
+Existing UI regressions pin French explicitly through `src/test/locale.ts` and
+Playwright's `locale` setting, not the developer's operating-system language.
+`localization.spec.ts` uses isolated browser contexts for all five languages,
+including regional preferences, translated settings, and simulated camera
+denial. It saves screenshots under `.artifacts/test-results/` for reviewing
+long labels and Chinese glyphs. Resolver tests cover preference order, invalid
+tags, English fallback, and catalog completeness/parameter parity.
 
 Core logic and engine integrations run in Node without React or a DOM.
 Components use jsdom and Testing Library cleanup. Adapter tests that need DOM

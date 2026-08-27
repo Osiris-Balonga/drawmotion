@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { useState } from "react"
 
 import {
@@ -67,16 +69,16 @@ export function GestureCommandPalette({
 
   return (
     <section
-      aria-label="Commandes gestuelles"
+      aria-label={t("commands.label")}
       className="gesture-command-palette"
       style={{ left: anchor.x, top: anchor.y }}
     >
       <header className="gesture-command-palette__header">
         {page === "root" ? (
-          <span>Commandes</span>
+          <span>{t("commands.title")}</span>
         ) : (
           <Button
-            aria-label="Retour aux commandes"
+            aria-label={t("commands.back")}
             data-gesture-palette-control=""
             size="icon-sm"
             variant="ghost"
@@ -86,10 +88,10 @@ export function GestureCommandPalette({
           </Button>
         )}
         <span className="gesture-command-palette__hint">
-          Pincez pour choisir
+          {t("commands.hint")}
         </span>
         <Button
-          aria-label="Fermer les commandes"
+          aria-label={t("commands.close")}
           data-gesture-palette-control=""
           size="icon-sm"
           variant="ghost"
@@ -102,22 +104,22 @@ export function GestureCommandPalette({
       {page === "root" ? (
         <div className="gesture-command-palette__grid">
           <PaletteButton
-            label="Couleur"
+            label={t("commands.color")}
             Icon={Palette}
             onClick={() => setPage("color")}
           />
           <PaletteButton
-            label={isEraser ? "Gomme" : "Trait"}
+            label={isEraser ? t("tools.eraser") : t("commands.stroke")}
             Icon={isEraser ? Eraser : PenLine}
             onClick={() => setPage("stroke")}
           />
           <PaletteButton
-            label="Précision"
+            label={t("tools.precision")}
             Icon={Activity}
             onClick={() => setPage("precision")}
           />
           <PaletteButton
-            label="Annuler"
+            label={t("history.undo")}
             Icon={Undo2}
             onClick={() => selectAndClose(onUndo)}
           />
@@ -127,7 +129,7 @@ export function GestureCommandPalette({
       {page === "color" ? (
         <div
           className="gesture-command-palette__choices gesture-command-palette__choices--colors"
-          aria-label="Couleurs"
+          aria-label={t("commands.colors")}
         >
           {drawingColors.map((drawingColor) => (
             <Button
@@ -158,12 +160,14 @@ export function GestureCommandPalette({
         <div className="gesture-command-palette__stroke">
           <div
             className="gesture-command-palette__choices gesture-command-palette__choices--thickness"
-            aria-label={isEraser ? "Taille de la gomme" : "Épaisseur du trait"}
+            aria-label={
+              isEraser ? t("tools.eraserSize") : t("tools.strokeWidth")
+            }
           >
             {thicknesses.map((value) => (
               <Button
                 key={value}
-                aria-label={`${value} pixels`}
+                aria-label={t("tools.pixels", { count: value })}
                 aria-pressed={thickness === value}
                 className="gesture-command-palette__choice"
                 data-gesture-palette-control=""
@@ -182,7 +186,7 @@ export function GestureCommandPalette({
           {!isEraser ? (
             <div
               className="gesture-command-palette__choices"
-              aria-label="Style du trait"
+              aria-label={t("tools.strokeStyle")}
             >
               {drawingStrokePatterns.map((option) => (
                 <Button
@@ -212,7 +216,7 @@ export function GestureCommandPalette({
       {page === "precision" ? (
         <div
           className="gesture-command-palette__choices"
-          aria-label="Précision"
+          aria-label={t("tools.precision")}
         >
           {drawingPrecisionModes.map((mode) => (
             <Button

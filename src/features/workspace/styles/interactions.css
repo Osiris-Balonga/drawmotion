@@ -72,7 +72,7 @@
 
 .gesture-command-palette__header {
   display: grid;
-  grid-template-columns: 2.5rem 1fr 2.5rem;
+  grid-template-columns: auto minmax(0, 1fr) 2.5rem;
   min-height: 2.5rem;
   align-items: center;
   gap: var(--space-sm);

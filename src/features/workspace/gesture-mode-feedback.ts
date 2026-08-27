@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import type { PinchPhase } from "@/core/gestures/pinch-detector"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
@@ -14,23 +16,23 @@ export function resolveGestureModeFeedback(
   pinchPhase: PinchPhase,
 ): GestureModeFeedback {
   if (quality === "lost" || gesture === "tracking-lost") {
-    return { kind: "lost", label: "Main non détectée" }
+    return { kind: "lost", label: t("tracking.lost") }
   }
   if (quality === "uncertain" || gesture === "uncertain") {
     return {
       kind: "uncertain",
-      label: "Geste incertain",
+      label: t("gesture.uncertain"),
       persistent: true,
     }
   }
   if (gesture === "fist") {
-    return { kind: "eraser", label: "Mode gomme" }
+    return { kind: "eraser", label: t("mode.eraser") }
   }
   if (gesture === "menu") {
-    return { kind: "commands", label: "Ouverture des commandes" }
+    return { kind: "commands", label: t("mode.commands") }
   }
   if (gesture === "pinch" || pinchPhase !== "released") {
-    return { kind: "pen", label: "Mode stylo" }
+    return { kind: "pen", label: t("mode.pen") }
   }
-  return { kind: "pointer", label: "Mode pointeur" }
+  return { kind: "pointer", label: t("mode.pointer") }
 }

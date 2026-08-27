@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { useEffect, useState } from "react"
 
 import {
@@ -59,15 +61,15 @@ const compactDockMediaQuery = "(max-width: 80rem)"
 
 const precisionModeDetails = {
   free: {
-    description: "Respecte chaque mouvement sans correction de forme",
+    description: t("tools.freeDescription"),
     Icon: PenLine,
   },
   stabilized: {
-    description: "Réduit les irrégularités sans transformer le dessin",
+    description: t("tools.stabilizedDescription"),
     Icon: Activity,
   },
   shapes: {
-    description: "Régularise les lignes, cercles, ellipses et rectangles",
+    description: t("tools.shapesDescription"),
     Icon: Shapes,
   },
 } as const
@@ -105,23 +107,25 @@ export function ToolRail({
 
   const isEraser = activeTool === "eraser"
   const thicknessPresets = thicknessPresetsForTool(activeTool)
-  const thicknessLabel = isEraser ? "Taille de la gomme" : "Épaisseur du trait"
+  const thicknessLabel = isEraser
+    ? t("tools.eraserSize")
+    : t("tools.strokeWidth")
   const thicknessButtonLabel = isEraser
-    ? `${thicknessLabel} ${thickness} pixels`
-    : `Épaisseur ${thickness} pixels`
+    ? t("tools.eraserSizeLabel", { count: thickness })
+    : t("tools.widthLabel", { count: thickness })
   const thicknessMinimum = isEraser ? 16 : 2
   const thicknessMaximum = isEraser ? 112 : 24
   const thicknessStep = isEraser ? 8 : 2
 
   return (
     <aside
-      aria-label="Outils de dessin"
+      aria-label={t("tools.label")}
       className="tool-rail"
       data-collapsed={collapsed || undefined}
     >
-      <div className="command-dock__group" aria-label="Outil actif">
+      <div className="command-dock__group" aria-label={t("tools.active")}>
         <ToolButton
-          label="Pointeur"
+          label={t("tools.pointer")}
           className="command-dock__tool"
           tooltipSide="top"
           variant={activeTool === "pointer" ? "default" : "ghost"}
@@ -131,7 +135,7 @@ export function ToolRail({
           <MousePointer2 aria-hidden="true" />
         </ToolButton>
         <ToolButton
-          label="Stylo"
+          label={t("tools.pen")}
           className="command-dock__tool"
           shortcut="P"
           tooltipSide="top"
@@ -142,7 +146,7 @@ export function ToolRail({
           <PenLine aria-hidden="true" />
         </ToolButton>
         <ToolButton
-          label="Gomme"
+          label={t("tools.eraser")}
           className="command-dock__tool"
           shortcut="E"
           tooltipSide="top"
@@ -190,7 +194,7 @@ export function ToolRail({
           <PopoverHeader>
             <PopoverTitle>{thicknessLabel}</PopoverTitle>
             <PopoverDescription>
-              {thickness} pixels à la résolution de référence
+              {t("tools.referencePixels", { count: thickness })}
             </PopoverDescription>
           </PopoverHeader>
           <Slider
@@ -209,7 +213,7 @@ export function ToolRail({
           />
           <div
             className="grid grid-cols-4 gap-2"
-            aria-label="Épaisseurs rapides"
+            aria-label={t("tools.widthPresets")}
           >
             {thicknessPresets.map((preset) => (
               <Button
@@ -227,7 +231,7 @@ export function ToolRail({
           {!isEraser ? (
             <div className="stroke-pattern-field">
               <span className="stroke-pattern-field__label">
-                Style du trait
+                {t("tools.strokeStyle")}
               </span>
               <ToggleGroup
                 value={[strokePattern]}
@@ -240,7 +244,7 @@ export function ToolRail({
                 variant="outline"
                 size="sm"
                 spacing={1}
-                aria-label="Style du trait"
+                aria-label={t("tools.strokeStyle")}
                 className="w-full"
               >
                 {drawingStrokePatterns.map((pattern) => (
@@ -285,7 +289,7 @@ export function ToolRail({
             variant="default"
             size="sm"
             spacing={1}
-            aria-label="Mode de précision"
+            aria-label={t("tools.precisionMode")}
             className="command-dock__precision"
           >
             {drawingPrecisionModes.map(({ value, label }) => {
@@ -312,7 +316,10 @@ export function ToolRail({
             orientation="vertical"
             className="command-dock__separator"
           />
-          <div className="command-dock__colors" aria-label="Couleurs du trait">
+          <div
+            className="command-dock__colors"
+            aria-label={t("tools.strokeColors")}
+          >
             {drawingColors.map((drawingColor) => (
               <ToolButton
                 key={drawingColor.value}
@@ -358,7 +365,7 @@ export function ToolRail({
 
       <Separator orientation="vertical" className="command-dock__separator" />
       <ToolButton
-        label="Ouvrir les commandes"
+        label={t("commands.open")}
         shortcut="M"
         tooltipSide="top"
         variant="ghost"
@@ -367,7 +374,7 @@ export function ToolRail({
         <Menu aria-hidden="true" />
       </ToolButton>
       <ToolButton
-        label="Revoir le tutoriel"
+        label={t("tutorial.replay")}
         tooltipSide="top"
         variant="ghost"
         onClick={() => {
@@ -378,7 +385,7 @@ export function ToolRail({
         <BookOpen aria-hidden="true" />
       </ToolButton>
       <ToolButton
-        label={collapsed ? "Déployer la palette" : "Réduire la palette"}
+        label={collapsed ? t("tools.expand") : t("tools.collapse")}
         tooltipSide="top"
         variant="ghost"
         aria-expanded={!collapsed}

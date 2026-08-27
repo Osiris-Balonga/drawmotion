@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { useState } from "react"
 
 import { Download, Redo2, Trash2, Undo2 } from "lucide-react"
@@ -47,17 +49,17 @@ export function TopBar({
             DrawMotion
           </h1>
           <p className="text-muted-foreground truncate text-xs">
-            Toile gestuelle
+            {t("app.tagline")}
           </p>
         </div>
       </div>
 
       <nav
-        aria-label="Historique du dessin"
+        aria-label={t("history.label")}
         className="workspace-topbar__island workspace-topbar__history"
       >
         <ToolButton
-          label="Annuler"
+          label={t("history.undo")}
           shortcut="Ctrl Z"
           tooltipSide="bottom"
           variant="ghost"
@@ -68,7 +70,7 @@ export function TopBar({
           <Undo2 aria-hidden="true" />
         </ToolButton>
         <ToolButton
-          label="Rétablir"
+          label={t("history.redo")}
           shortcut="Ctrl Y"
           tooltipSide="bottom"
           variant="ghost"
@@ -81,7 +83,7 @@ export function TopBar({
           <AlertDialogTrigger
             render={
               <ToolButton
-                label="Effacer la toile"
+                label={t("history.clear")}
                 tooltipSide="bottom"
                 variant="ghost"
                 disabled={!canClear}
@@ -92,13 +94,13 @@ export function TopBar({
           />
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Effacer tout le dessin ?</AlertDialogTitle>
+              <AlertDialogTitle>{t("history.clearTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                La toile sera vidée. Vous pourrez encore annuler cette action.
+                {t("history.clearDescription")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Conserver le dessin</AlertDialogCancel>
+              <AlertDialogCancel>{t("history.keep")}</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 onClick={() => {
@@ -106,7 +108,7 @@ export function TopBar({
                   setClearOpen(false)
                 }}
               >
-                Effacer la toile
+                {t("history.clear")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -114,14 +116,16 @@ export function TopBar({
       </nav>
 
       <Button
-        aria-label="Exporter en PNG"
+        aria-label={t("export.action")}
         className="workspace-topbar__export"
         variant="secondary"
         disabled={!canClear}
         onClick={onExport}
       >
         <Download aria-hidden="true" data-icon="inline-start" />
-        <span className="workspace-topbar__export-label">Exporter en PNG</span>
+        <span className="workspace-topbar__export-label">
+          {t("export.action")}
+        </span>
       </Button>
     </header>
   )

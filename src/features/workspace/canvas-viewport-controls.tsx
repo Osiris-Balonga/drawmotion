@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { Minus, Plus } from "lucide-react"
 
 import { ToolButton } from "@/features/toolbar/tool-button"
@@ -17,11 +19,11 @@ export function CanvasViewportControls({
 }: CanvasViewportControlsProps) {
   return (
     <aside
-      aria-label="Navigation de la toile"
+      aria-label={t("viewport.label")}
       className="canvas-viewport-controls"
     >
       <ToolButton
-        label="Dézoomer"
+        label={t("viewport.zoomOut")}
         shortcut="−"
         tooltipSide="top"
         variant="ghost"
@@ -32,14 +34,14 @@ export function CanvasViewportControls({
       <button
         type="button"
         className="canvas-viewport-controls__value"
-        aria-label="Réinitialiser la vue"
-        title="Réinitialiser la vue"
+        aria-label={t("viewport.reset")}
+        title={t("viewport.reset")}
         onClick={onReset}
       >
         {Math.round(zoom * 100)}%
       </button>
       <ToolButton
-        label="Zoomer"
+        label={t("viewport.zoomIn")}
         shortcut="+"
         tooltipSide="top"
         variant="ghost"

@@ -74,7 +74,13 @@ See [CONTRIBUTING](CONTRIBUTING.md), [architecture](docs/ARCHITECTURE.md), and
 [testing](docs/TESTING.md), including the checks that require a physical webcam.
 
 Repository code and documentation are written in English. User-facing app
-content may be localized; see the [language policy](CONTRIBUTING.md#language).
+content is available in English, French, Spanish, Italian, and Simplified
+Chinese. On page load, DrawMotion selects the first supported language from
+the browser's preferences, falling back to English. Regional variants such as
+`fr-CA` and `es-MX` are supported; Chinese preferences use Simplified Chinese.
+Change your browser's preferred languages and reload to switch languages.
+No location lookup, language cookie, or account is required.
+See the [language policy](CONTRIBUTING.md#language).
 
 ## License and release
 
