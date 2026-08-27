@@ -75,18 +75,6 @@ export function saveOnboardingProgress(
   }
 }
 
-export function saveOnboardingCompletion(storage: Storage = localStorage) {
-  saveOnboardingProgress(
-    { status: "completed", currentStep: "complete" },
-    storage,
-  )
-}
-
-export function loadOnboardingCompletion(storage: Storage = localStorage) {
-  const progress = loadOnboardingProgress(storage)
-  return progress.status === "completed" || progress.status === "skipped"
-}
-
 export function resetOnboardingCompletion(storage: Storage = localStorage) {
   try {
     storage.removeItem(STORAGE_KEY)

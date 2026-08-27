@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AppProviders } from "@/app/providers"
 import { canOpenGestureMenu } from "@/features/workspace/gesture-menu-availability"
 import { WorkspaceShell } from "@/features/workspace/workspace-shell"
-import { saveOnboardingCompletion } from "@/features/onboarding/onboarding-persistence"
+import { saveOnboardingProgress } from "@/features/onboarding/onboarding-persistence"
 
 function renderWorkspace() {
   return render(
@@ -55,7 +55,7 @@ describe("WorkspaceShell", () => {
 
   it("permet de sélectionner un outil au clavier", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
 
     const pen = screen.getByRole("button", { name: "Stylo" })
@@ -72,7 +72,7 @@ describe("WorkspaceShell", () => {
 
   it("sélectionne les outils par raccourci sauf pendant une saisie", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
 
     await user.keyboard("e")
@@ -99,7 +99,7 @@ describe("WorkspaceShell", () => {
 
   it("ouvre les commandes avec le bouton de secours et la touche M", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
 
     await user.click(
@@ -172,7 +172,7 @@ describe("WorkspaceShell", () => {
 
   it("laisse choisir une assistance précise après le tutoriel", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
 
     const stabilized = screen.getByRole("button", {
@@ -194,7 +194,7 @@ describe("WorkspaceShell", () => {
 
   it("permet de zoomer puis de réinitialiser la toile", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
 
     expect(
@@ -213,7 +213,7 @@ describe("WorkspaceShell", () => {
   })
 
   it("gère le zoom à la molette et ignore la molette sur les contrôles", () => {
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
     const stage = screen.getByRole("region", { name: "Toile de dessin vide" })
     const reset = screen.getByRole("button", { name: "Réinitialiser la vue" })
@@ -236,7 +236,7 @@ describe("WorkspaceShell", () => {
 
   it("offre aussi les raccourcis de navigation de la toile", async () => {
     const user = userEvent.setup()
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
     const reset = screen.getByRole("button", { name: "Réinitialiser la vue" })
 
@@ -250,7 +250,7 @@ describe("WorkspaceShell", () => {
   })
 
   it("déplace la vue au bouton central et avec espace", () => {
-    saveOnboardingCompletion()
+    saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
     const stage = screen.getByRole("region", {
       name: "Toile de dessin vide",
