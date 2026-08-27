@@ -2,13 +2,17 @@ import { defineConfig } from "@playwright/test"
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  outputDir: ".artifacts/test-results",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   // Camera inference and accessibility scans compete for the same CPU/GPU.
   // Keep runs reproducible on ordinary laptops and shared CI runners.
   workers: 1,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: [
+    ["list"],
+    ["html", { open: "never", outputFolder: ".artifacts/playwright-report" }],
+  ],
   use: {
     baseURL: "http://127.0.0.1:4175",
     browserName: "chromium",

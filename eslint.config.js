@@ -7,7 +7,15 @@ import globals from "globals"
 import tseslint from "typescript-eslint"
 
 export default tseslint.config(
-  { ignores: ["coverage", "dist", "playwright-report", "test-results"] },
+  {
+    ignores: [
+      ".artifacts",
+      "coverage",
+      "dist",
+      "playwright-report",
+      "test-results",
+    ],
+  },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

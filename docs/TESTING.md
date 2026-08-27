@@ -85,7 +85,11 @@ Tests use fresh isolated Chromium contexts, with no physical camera, account,
 personal profile, or changes to the development server. Playwright builds and
 serves the app at `127.0.0.1:4175`, then stops its server. The port must be free;
 existing servers are not reused. Failure traces/screenshots go to
-`test-results/`; open the report with `pnpm exec playwright show-report`.
+`.artifacts/test-results/`; open the report with
+`pnpm exec playwright show-report .artifacts/playwright-report`.
+Coverage reports live in `.artifacts/coverage/`. All generated test artifacts
+are ignored by Git; they are not test source files. CI uploads these same
+directories as run artifacts, not repository commits.
 
 ### Exact simulation boundary
 
