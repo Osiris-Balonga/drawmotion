@@ -9,6 +9,10 @@ publication open source. Le dépôt reste privé pour le moment ; aucune release
 publique n'est annoncée comme disponible. Le travail est découpé dans
 [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md).
 
+Version candidate locale : `1.0.0-rc.1`. La [checklist de livraison](./docs/qa/v1.0.0.md)
+reste à valider sur une vraie webcam et une preview HTTPS avant la v1.0.0.
+Les [notes de version](./CHANGELOG.md) décrivent les capacités et limites actuelles.
+
 ## Principes
 
 - traitement vidéo local dans le navigateur ;
@@ -62,3 +66,13 @@ Compatibilité, confidentialité, diagnostics et vérifications avant publicatio
 
 Installation navigateur, mode surveillance, conventions et limites :
 [stratégie de tests](./docs/TESTING.md).
+
+## Livraison et licences
+
+La [procédure de livraison](./docs/RELEASE.md) sépare préparation, QA, promotion
+et publication. Aucun push ne publie automatiquement une GitHub Release.
+
+La licence open source de DrawMotion n'est pas encore choisie : ne pas
+présenter le code comme déjà disponible sous licence libre. Les dépendances
+conservent leurs propres licences ; [l'inventaire tiers](./docs/THIRD_PARTY.md)
+documente les vérifications restantes avant redistribution publique.
