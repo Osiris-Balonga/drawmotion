@@ -35,6 +35,10 @@ The PWA suite uses test-only loopback servers and isolated profiles under
 `.artifacts/pwa/`. It tests a full browser restart with the server stopped,
 first offline inference with real MediaPipe and synthetic video, missing or
 corrupt resources, cache isolation, failed updates, and two-window A/B upgrades.
+First-use readiness requires no preparation click or reload. The suite also
+exercises automatic recovery after reconnection and repairs after cache eviction.
+Unit/component tests cover mixed-build adoption guards, bounded retries and
+debounced connectivity feedback, including false-positive network hints.
 Build B is an actual separate Vite build with a test build ID, never a patched
 bundle. CI downloads build A; `E2E_USE_BUILD=1` prevents rebuilding that artifact.
 Only A is eligible for Pages deployment. B, profiles, traces and reports are

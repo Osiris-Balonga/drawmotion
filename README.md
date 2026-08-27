@@ -58,13 +58,15 @@ a replacement for a drawing tablet.
 
 ## Install and use offline
 
-On a production build, open the small menu beside **DrawMotion**, then choose
-**Prepare offline** while connected (about 50 MB). Wait for confirmation, close
-all DrawMotion windows, and reopen. The menu must say **Ready for offline use**
-before disconnecting. Preparation never activates the camera.
+On a production build, DrawMotion automatically saves its offline resources
+after the first page load (about 50 MB), without activating the camera. Keep
+the connection until the small menu beside **DrawMotion** says **Available
+offline**. No preparation button or first-use reload is required.
 
 Install through that menu when the browser offers it, or use the browser's
-installation controls. Installation and offline preparation are separate.
+installation controls. Installing a shortcut is optional, not a requirement
+for offline use. Connection changes are indicated discreetly; drawing and
+PNG export remain local. Interrupted downloads retry automatically.
 Updates wait until all old-version windows close; they never reload a drawing
 session. Export important work: browser storage is not a backup.
 
