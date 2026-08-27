@@ -1,5 +1,9 @@
 export const en = {
   "app.title": "DrawMotion — Draw in the air with your webcam",
+  "draft.restoreFailed":
+    "The saved drawing could not be restored. Local storage may be unavailable or the draft damaged.",
+  "draft.saveFailed":
+    "Your drawing could not be saved on this device. Export a PNG before closing or reloading the page.",
   "app.description":
     "DrawMotion turns your hand gestures into strokes on a digital canvas.",
   "app.tagline": "Gesture canvas",

@@ -79,6 +79,9 @@ machines, coverage settings, or concurrency levels.
   replay, and stable camera geometry.
 - Shared dock/command settings for width, stroke style, color, and eraser,
   including keyboard interaction with the real slider.
+- Local drafts survive reload with real raster output, erasing and zoom intact;
+  clearing persists, unfinished strokes flush on page hide, and quota failures
+  show a warning without disabling export. Enabled controls expose click cursors.
 - Collapsible palette and custom color at 782×600 and 768×1024; camera and
   controls stay in view, and HEX values survive reopening.
 - Fake camera, all five missions completed through the gesture pipeline,
