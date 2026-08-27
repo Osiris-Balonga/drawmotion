@@ -45,6 +45,7 @@ export default defineConfig({
       },
     ],
     coverage: {
+      reportsDirectory: ".artifacts/coverage",
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       thresholds: {

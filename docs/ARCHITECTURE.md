@@ -4,6 +4,27 @@ DrawMotion is a React/TypeScript client application without a server API or
 database. The UI owns settings; the frame pipeline and rendering are imperative
 to avoid a React render for every point.
 
+## Repository layout
+
+| Directory       | Purpose                                                                       | Tracked in Git |
+| --------------- | ----------------------------------------------------------------------------- | -------------- |
+| `src/`          | Application code and colocated unit/component/integration tests               | Yes            |
+| `src/test/`     | Shared test setup, deterministic fixtures, and fakes; not a second test suite | Yes            |
+| `tests/e2e/`    | Browser journeys and browser-specific fixtures                                | Yes            |
+| `public/`       | Shipped model, WASM, images, and license texts                                | Yes            |
+| `scripts/`      | Build, asset, license, and security verification                              | Yes            |
+| `.github/`      | CI, repository policies, and contribution templates                           | Yes            |
+| `docs/`         | Contributor and release documentation                                         | Yes            |
+| `.artifacts/`   | Generated coverage, Playwright reports, screenshots, and traces               | No             |
+| `dist/`         | Generated production build                                                    | No             |
+| `node_modules/` | Installed dependencies and compiler cache                                     | No             |
+
+Keep test sources close to the modules they exercise. Browser tests live
+separately because they run against the built application, not individual
+modules. Generated reports belong in `.artifacts/`, never alongside sources.
+The lockfile and vendored runtime assets are intentionally tracked so a clone
+can reproduce the build without fetching model files from a third-party CDN.
+
 ## Frame pipeline
 
 ```text

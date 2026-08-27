@@ -1,3 +1,4 @@
+.artifacts/
 coverage/
 dist/
 node_modules/
