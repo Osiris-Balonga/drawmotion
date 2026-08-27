@@ -1,6 +1,24 @@
 import type { Messages } from "./en"
 
 export const es = {
+  "pwa.menu": "Instalación y sin conexión",
+  "pwa.title": "Lleva DrawMotion contigo",
+  "pwa.description":
+    "Prepara la app en línea y dibuja sin conexión. La cámara permanece apagada durante la preparación.",
+  "pwa.prepare": "Preparar sin conexión · unos 50 MB",
+  "pwa.unavailable":
+    "La preparación sin conexión no está disponible aquí. Usa un navegador compatible mediante HTTPS.",
+  "pwa.idle": "Aún no está preparada para usarse sin conexión.",
+  "pwa.preparing": "Preparando la app y la detección de gestos…",
+  "pwa.reopen":
+    "Preparación completada. Cierra todas las ventanas de DrawMotion y vuelve a abrir la app para usarla sin conexión.",
+  "pwa.verifying": "Comprobando los recursos sin conexión…",
+  "pwa.ready": "Lista para usarse sin conexión en este dispositivo.",
+  "pwa.failed":
+    "No se pudieron verificar los recursos. Conéctate y reinténtalo. Si el problema persiste, sigue los pasos de recuperación de la documentación del proyecto.",
+  "pwa.retry": "Comprobar de nuevo",
+  "pwa.limits":
+    "El navegador puede borrar el almacenamiento local. Exporta tus dibujos importantes.",
   "draft.restoreFailed":
     "No se pudo restaurar el dibujo guardado. El almacenamiento local puede no estar disponible o el borrador puede estar dañado.",
   "draft.saveFailed":

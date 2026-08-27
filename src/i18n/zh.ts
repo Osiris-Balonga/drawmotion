@@ -1,6 +1,20 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "pwa.menu": "安装与离线",
+  "pwa.title": "随时使用 DrawMotion",
+  "pwa.description": "联网准备一次，即可离线绘画。准备过程中不会开启摄像头。",
+  "pwa.prepare": "准备离线使用 · 约 50 MB",
+  "pwa.unavailable": "此环境无法准备离线使用。请通过 HTTPS 使用兼容的浏览器。",
+  "pwa.idle": "尚未准备好离线使用。",
+  "pwa.preparing": "正在准备应用与手势识别资源…",
+  "pwa.reopen": "准备完成。请关闭所有 DrawMotion 窗口，再重新打开以离线使用。",
+  "pwa.verifying": "正在检查离线资源…",
+  "pwa.ready": "此设备已准备好离线使用。",
+  "pwa.failed":
+    "无法验证离线资源。请联网重试。如果问题持续，请参阅项目文档中的恢复步骤。",
+  "pwa.retry": "重新检查",
+  "pwa.limits": "浏览器可能清除本地存储。请导出重要的绘画。",
   "draft.restoreFailed":
     "无法恢复已保存的绘图。本地存储可能不可用，或草稿已损坏。",
   "draft.saveFailed": "无法在此设备上保存绘图。关闭或刷新页面前，请导出 PNG。",

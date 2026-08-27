@@ -1,6 +1,24 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "pwa.menu": "Installazione e offline",
+  "pwa.title": "Porta DrawMotion con te",
+  "pwa.description":
+    "Prepara l’app online, poi disegna senza connessione. La fotocamera resta spenta durante la preparazione.",
+  "pwa.prepare": "Prepara offline · circa 50 MB",
+  "pwa.unavailable":
+    "La preparazione offline non è disponibile qui. Usa un browser compatibile tramite HTTPS.",
+  "pwa.idle": "Non ancora pronta per l’uso offline.",
+  "pwa.preparing": "Preparazione dell’app e del rilevamento dei gesti…",
+  "pwa.reopen":
+    "Preparazione completata. Chiudi tutte le finestre di DrawMotion, poi riapri l’app per usarla offline.",
+  "pwa.verifying": "Verifica delle risorse offline…",
+  "pwa.ready": "Pronta per l’uso offline su questo dispositivo.",
+  "pwa.failed":
+    "Impossibile verificare le risorse offline. Connettiti e riprova. Se il problema persiste, segui le istruzioni di ripristino nella documentazione del progetto.",
+  "pwa.retry": "Verifica di nuovo",
+  "pwa.limits":
+    "Il browser può cancellare i dati locali. Esporta i disegni importanti.",
   "draft.restoreFailed":
     "Impossibile ripristinare il disegno salvato. L’archiviazione locale potrebbe non essere disponibile o la bozza potrebbe essere danneggiata.",
   "draft.saveFailed":
