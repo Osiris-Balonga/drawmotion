@@ -1,4 +1,5 @@
 import type { CameraState } from "@/features/camera/camera-state"
+import { t } from "@/i18n"
 
 export type CameraFailureState = Extract<
   CameraState,
@@ -86,7 +87,7 @@ export class MediaStreamCameraAdapter {
       cameraNumber += 1
       return {
         id: device.deviceId,
-        label: device.label || `Caméra ${cameraNumber}`,
+        label: device.label || t("camera.device", { number: cameraNumber }),
       }
     })
   }

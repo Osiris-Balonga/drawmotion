@@ -1,25 +1,27 @@
+import { t } from "@/i18n"
+
 import type { ActiveOnboardingStep } from "@/features/onboarding/onboarding-machine"
 
 const illustrations = {
   cursor: {
     src: "/onboarding/gesture-cursor.png",
-    caption: "Index tendu",
+    caption: t("tutorial.indexCaption"),
   },
   draw: {
     src: "/onboarding/gesture-pinch.png",
-    caption: "Pouce + index",
+    caption: t("tutorial.pinchCaption"),
   },
   style: {
     src: "/onboarding/gesture-menu.png",
-    caption: "Signe paix · 0,5 s",
+    caption: t("tutorial.peaceCaption"),
   },
   shapes: {
     src: "/onboarding/gesture-shapes.png",
-    caption: "Cercle assisté",
+    caption: t("tutorial.shapeCaption"),
   },
   correct: {
     src: "/onboarding/gesture-correct.png",
-    caption: "Poing pour gommer",
+    caption: t("tutorial.fistCaption"),
   },
 } satisfies Record<ActiveOnboardingStep, { src: string; caption: string }>
 

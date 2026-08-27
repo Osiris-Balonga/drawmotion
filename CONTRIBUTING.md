@@ -15,6 +15,13 @@ accessibility announcements, and error messages. Tests may quote localized UI
 strings when asserting that content; those strings are not documentation.
 Do not translate app content as part of a repository documentation change.
 
+App messages live in `src/i18n/`. Add a descriptive English key to `en.ts`,
+then supply French, Spanish, Italian, and Simplified Chinese translations with
+the same interpolation parameters. Translate complete messages rather than
+concatenating sentence fragments. Do not translate identifiers, shortcuts,
+device names supplied by the browser, or user-entered color codes. Check narrow
+layouts and accessible names as well as visible labels.
+
 ## Setup
 
 Use Node.js 24 and pnpm 11.19.0, then:

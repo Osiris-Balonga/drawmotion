@@ -14,6 +14,7 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: ".artifacts/playwright-report" }],
   ],
   use: {
+    locale: "fr-FR",
     baseURL: "http://127.0.0.1:4175",
     browserName: "chromium",
     channel: process.env.E2E_BROWSER_CHANNEL || undefined,

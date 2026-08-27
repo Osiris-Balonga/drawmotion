@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import {
   useState,
   type CSSProperties,
@@ -120,7 +122,7 @@ export function CustomColorPicker({
       <PopoverTrigger
         render={
           <ToolButton
-            label="Couleur personnalisée"
+            label={t("colors.custom")}
             tooltipSide="top"
             variant="ghost"
             aria-pressed={customActive}
@@ -146,20 +148,21 @@ export function CustomColorPicker({
       />
       <PopoverContent side="top" align="end" className="custom-color-picker">
         <PopoverHeader>
-          <PopoverTitle>Couleur personnalisée</PopoverTitle>
-          <PopoverDescription>
-            Choisissez dans la roue ou saisissez une valeur précise.
-          </PopoverDescription>
+          <PopoverTitle>{t("colors.custom")}</PopoverTitle>
+          <PopoverDescription>{t("colors.description")}</PopoverDescription>
         </PopoverHeader>
 
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Teinte et saturation"
+          aria-label={t("colors.hueSaturation")}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(hsl.s)}
-          aria-valuetext={`Teinte ${Math.round(hsl.h)} degrés, saturation ${Math.round(hsl.s)} pour cent`}
+          aria-valuetext={t("colors.wheelValue", {
+            hue: Math.round(hsl.h),
+            saturation: Math.round(hsl.s),
+          })}
           className="custom-color-picker__wheel"
           onKeyDown={handleWheelKeyDown}
           onPointerDown={(event) => {
@@ -186,12 +189,10 @@ export function CustomColorPicker({
             style={wheelCursorStyle}
           />
         </div>
-        <p className="custom-color-picker__help">
-          Flèches gauche/droite : teinte · haut/bas : saturation
-        </p>
+        <p className="custom-color-picker__help">{t("colors.keyboardHelp")}</p>
 
         <label className="custom-color-picker__lightness">
-          <span>Luminosité</span>
+          <span>{t("colors.lightness")}</span>
           <input
             type="range"
             min={5}
@@ -225,6 +226,15 @@ export function CustomColorPicker({
               <span>{channel.toUpperCase()}</span>
               <input
                 type="number"
+                aria-label={t(
+                  (
+                    {
+                      r: "colors.redChannel",
+                      g: "colors.greenChannel",
+                      b: "colors.blueChannel",
+                    } as const
+                  )[channel],
+                )}
                 min={0}
                 max={255}
                 value={rgb[channel]}
@@ -251,7 +261,7 @@ export function CustomColorPicker({
             className="custom-color-picker__preview"
             style={{ backgroundColor: hex }}
           />
-          Appliquer {normalizeHex(hex) ?? ""}
+          {t("colors.apply", { color: normalizeHex(hex) ?? "" })}
         </Button>
       </PopoverContent>
     </Popover>

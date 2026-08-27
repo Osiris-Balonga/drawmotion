@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { useCallback, useRef, useState } from "react"
 import { toast } from "sonner"
 import type { DrawingIntention } from "@/core/gestures/drawing-intentions"
@@ -80,8 +82,8 @@ export function useWorkspaceOnboarding(
         currentStep: next.step,
       })
       if (next.step === "complete") {
-        toast.success("Vous êtes prêt à dessiner", {
-          description: "Le tutoriel reste accessible depuis la toile.",
+        toast.success(t("tutorial.complete"), {
+          description: t("tutorial.replayHint"),
         })
       }
     },

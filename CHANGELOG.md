@@ -4,6 +4,8 @@
 
 ### Features
 
+- English, French, Spanish, Italian, and Simplified Chinese UI selected from browser preferences, including tutorial, camera errors, and accessibility labels.
+
 - Webcam-based 2D drawing: aim with the index finger, pinch to draw, make a fist to erase.
 - Contextual commands opened with a peace sign; settings synchronized with the dock.
 - Freehand, stabilized, and shape modes; restore original strokes after shape correction.

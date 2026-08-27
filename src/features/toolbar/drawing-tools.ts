@@ -1,8 +1,14 @@
+import { t } from "@/i18n"
+
 export const drawingColors = [
-  { name: "Encre", value: "#17171c", className: "text-canvas-foreground" },
-  { name: "Violet", value: "#7c3aed", className: "text-primary" },
-  { name: "Vert", value: "#238554", className: "text-success" },
-  { name: "Orange", value: "#a46c1f", className: "text-warning" },
+  {
+    name: t("colors.ink"),
+    value: "#17171c",
+    className: "text-canvas-foreground",
+  },
+  { name: t("colors.purple"), value: "#7c3aed", className: "text-primary" },
+  { name: t("colors.green"), value: "#238554", className: "text-success" },
+  { name: t("colors.orange"), value: "#a46c1f", className: "text-warning" },
 ] as const
 
 export type DrawingColor = string

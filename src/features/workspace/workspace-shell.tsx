@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { useCallback, useMemo, useRef, useState } from "react"
 import { MonitorUp, Undo2 } from "lucide-react"
 import { toast } from "sonner"
@@ -39,16 +41,16 @@ import { useWorkspaceNavigation } from "./use-workspace-navigation"
 import "./workspace.css"
 
 const toolNames: Record<DrawingTool, string> = {
-  pointer: "Pointeur",
-  pen: "Stylo",
-  eraser: "Gomme",
+  pointer: t("tools.pointer"),
+  pen: t("tools.pen"),
+  eraser: t("tools.eraser"),
 }
 
 const primitiveNames: Record<AssistedPrimitive, string> = {
-  line: "Ligne",
-  circle: "Cercle",
-  ellipse: "Ellipse",
-  rectangle: "Rectangle",
+  line: t("shape.line"),
+  circle: t("shape.circle"),
+  ellipse: t("shape.ellipse"),
+  rectangle: t("shape.rectangle"),
 }
 
 const emptyHistoryAvailability: DrawingHistoryAvailability = {
@@ -184,10 +186,10 @@ export function WorkspaceShell() {
       if (!blob) throw new Error("Canvas unavailable")
       const filename = createPngFilename()
       downloadPng(blob, filename)
-      toast.success("Dessin exporté", { description: filename })
+      toast.success(t("export.success"), { description: filename })
     } catch {
-      toast.error("L’export PNG a échoué", {
-        description: "Réessayez après avoir terminé votre trait.",
+      toast.error(t("export.failure"), {
+        description: t("export.retry"),
       })
     }
   }, [])
@@ -219,7 +221,7 @@ export function WorkspaceShell() {
       }
     >
       <a className="skip-link" href="#drawing-canvas">
-        Aller à la toile
+        {t("app.skipToCanvas")}
       </a>
       <section
         className="mobile-workspace-notice"
@@ -227,12 +229,8 @@ export function WorkspaceShell() {
       >
         <MonitorUp aria-hidden="true" />
         <div>
-          <h1 id="mobile-title">Un écran plus large est nécessaire</h1>
-          <p>
-            DrawMotion est conçu pour ordinateur et tablette. Agrandissez la
-            fenêtre ou passez la tablette en paysage. Sur téléphone, ouvrez
-            cette même adresse sur un ordinateur équipé d’une webcam.
-          </p>
+          <h1 id="mobile-title">{t("app.screenTitle")}</h1>
+          <p>{t("app.screenDescription")}</p>
         </div>
       </section>
       <TopBar
@@ -262,7 +260,7 @@ export function WorkspaceShell() {
           ref={stageRef}
           id="drawing-canvas"
           tabIndex={-1}
-          aria-label="Toile de dessin vide"
+          aria-label={t("app.canvas")}
           className="drawing-stage"
           onPointerDown={handleStagePointerDown}
           onPointerMove={handleStagePointerMove}
@@ -280,7 +278,10 @@ export function WorkspaceShell() {
             onHistoryChange={setHistoryAvailability}
           />
           <div className="sr-only" aria-live="polite">
-            {toolNames[activeTool]} sélectionné, {activeThickness} pixels
+            {t("tools.selected", {
+              tool: toolNames[activeTool],
+              count: activeThickness,
+            })}
           </div>
           <CameraPreview
             calibrating={onboardingState.step === "cursor"}
@@ -310,10 +311,14 @@ export function WorkspaceShell() {
               role="status"
               aria-live="polite"
             >
-              <span>{primitiveNames[lastAssistance.primitive]} régularisé</span>
+              <span>
+                {t("shape.corrected", {
+                  shape: primitiveNames[lastAssistance.primitive],
+                })}
+              </span>
               <Button size="sm" variant="ghost" onClick={revertLastAssistance}>
                 <Undo2 aria-hidden="true" />
-                Garder mon tracé
+                {t("shape.keepOriginal")}
               </Button>
             </div>
           ) : null}

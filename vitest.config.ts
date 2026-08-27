@@ -20,6 +20,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
+          setupFiles: ["./src/test/locale.ts"],
           environment: "node",
           include: ["src/**/*.test.ts"],
           exclude: ["src/**/*.integration.test.ts"],
@@ -30,7 +31,7 @@ export default defineConfig({
         test: {
           name: "components",
           environment: "jsdom",
-          setupFiles: ["./src/test/setup.ts"],
+          setupFiles: ["./src/test/locale.ts", "./src/test/setup.ts"],
           include: ["src/**/*.test.tsx"],
           exclude: ["src/**/*.integration.test.tsx"],
         },
@@ -39,6 +40,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "integration",
+          setupFiles: ["./src/test/locale.ts"],
           environment: "node",
           include: ["src/**/*.integration.test.{ts,tsx}"],
         },

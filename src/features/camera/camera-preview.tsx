@@ -1,3 +1,5 @@
+import { t } from "@/i18n"
+
 import { forwardRef, useImperativeHandle } from "react"
 
 import {
@@ -37,44 +39,43 @@ export type CameraPreviewHandle = {
 }
 
 const trackingContent = {
-  idle: { label: "Suivi en pause", tone: "neutral" },
-  initializing: { label: "Analyse de la main…", tone: "neutral" },
-  reliable: { label: "Main détectée", tone: "success" },
-  uncertain: { label: "Suivi hésitant", tone: "warning" },
-  lost: { label: "Main non détectée", tone: "neutral" },
-  error: { label: "Suivi indisponible", tone: "error" },
+  idle: { label: t("tracking.paused"), tone: "neutral" },
+  initializing: { label: t("tracking.starting"), tone: "neutral" },
+  reliable: { label: t("tracking.reliable"), tone: "success" },
+  uncertain: { label: t("tracking.uncertain"), tone: "warning" },
+  lost: { label: t("tracking.lost"), tone: "neutral" },
+  error: { label: t("tracking.error"), tone: "error" },
 } as const
 
 const gestureLabels = {
-  pinch: "Pincement",
-  "open-hand": "Main ouverte",
-  fist: "Poing",
-  menu: "Commandes",
-  uncertain: "Geste incertain",
-  "tracking-lost": "Aucun geste",
+  pinch: t("gesture.pinch"),
+  "open-hand": t("gesture.open"),
+  fist: t("gesture.fist"),
+  menu: t("commands.title"),
+  uncertain: t("gesture.uncertain"),
+  "tracking-lost": t("gesture.none"),
 } as const
 
 const errorContent = {
   denied: {
-    title: "Accès caméra refusé",
-    description:
-      "Autorisez la caméra dans les réglages du navigateur, puis réessayez.",
-    action: "Réessayer",
+    title: t("camera.deniedTitle"),
+    description: t("camera.deniedDescription"),
+    action: t("camera.retry"),
   },
   missing: {
-    title: "Aucune caméra détectée",
-    description: "Branchez une caméra, puis lancez une nouvelle recherche.",
-    action: "Rechercher une caméra",
+    title: t("camera.missingTitle"),
+    description: t("camera.missingDescription"),
+    action: t("camera.search"),
   },
   busy: {
-    title: "Caméra déjà utilisée",
-    description: "Fermez l’application qui utilise la caméra, puis réessayez.",
-    action: "Réessayer",
+    title: t("camera.busyTitle"),
+    description: t("camera.busyDescription"),
+    action: t("camera.retry"),
   },
   failed: {
-    title: "Impossible de démarrer la caméra",
-    description: "Vérifiez votre caméra ou rechargez la page, puis réessayez.",
-    action: "Réessayer",
+    title: t("camera.failedTitle"),
+    description: t("camera.failedDescription"),
+    action: t("camera.retry"),
   },
 } as const
 
@@ -124,11 +125,11 @@ export const CameraPreview = forwardRef<
   const visibleTrackingLabel =
     trackingState === "reliable"
       ? pinchPhase === "pending-entry"
-        ? "Pincement…"
+        ? t("gesture.pinching")
         : pinchPhase === "active"
-          ? "Pincement actif"
+          ? t("gesture.active")
           : pinchPhase === "pending-release"
-            ? "Relâchement…"
+            ? t("gesture.releasing")
             : gesture === "fist"
               ? gestureLabels.fist
               : gesture === "menu"
@@ -144,18 +145,18 @@ export const CameraPreview = forwardRef<
   }))
 
   return (
-    <section aria-label="Aperçu caméra" className="camera-preview">
+    <section aria-label={t("camera.preview")} className="camera-preview">
       <button
         type="button"
         className="camera-preview__viewport"
         aria-label={
           state === "ready"
-            ? "Mettre la caméra en pause"
+            ? t("camera.pause")
             : state === "stopped"
-              ? "Reprendre la caméra"
+              ? t("camera.resume")
               : state === "idle"
-                ? "Activer ma caméra"
-                : "Aperçu caméra"
+                ? t("camera.start")
+                : t("camera.preview")
         }
         disabled={!canToggleFromPreview}
         onClick={() => {
@@ -166,7 +167,7 @@ export const CameraPreview = forwardRef<
         <video
           ref={videoRef}
           className="camera-preview__video"
-          aria-label="Flux vidéo local"
+          aria-label={t("camera.video")}
           autoPlay
           muted
           playsInline
@@ -175,7 +176,7 @@ export const CameraPreview = forwardRef<
         <canvas
           ref={canvasRef}
           className="camera-preview__landmarks"
-          aria-label="Repères de la main détectée"
+          aria-label={t("camera.landmarks")}
           hidden={state !== "ready"}
         />
         {calibrating ? (
@@ -226,16 +227,16 @@ export const CameraPreview = forwardRef<
 
       <div className="camera-preview__controls" aria-live="polite">
         {state === "requesting" ? (
-          <span className="sr-only">Activation de la caméra…</span>
+          <span className="sr-only">{t("camera.starting")}</span>
         ) : null}
 
         {state === "ready" ? (
           <>
-            <span className="sr-only">Caméra active</span>
+            <span className="sr-only">{t("camera.active")}</span>
             <span className="sr-only">{visibleTrackingLabel}</span>
             {devices.length > 1 ? (
               <label className="camera-preview__device-field">
-                <span>Caméra utilisée</span>
+                <span>{t("camera.selected")}</span>
                 <select
                   value={selectedDeviceId}
                   onChange={(event) => selectDevice(event.target.value)}
@@ -252,7 +253,7 @@ export const CameraPreview = forwardRef<
         ) : null}
 
         {state === "stopped" ? (
-          <span className="sr-only">Caméra en pause</span>
+          <span className="sr-only">{t("camera.paused")}</span>
         ) : null}
 
         {error ? (
@@ -274,17 +275,12 @@ export const CameraPreview = forwardRef<
             <div className="camera-preview__message">
               <CircleAlert aria-hidden="true" />
               <div>
-                <p className="font-medium">
-                  Le suivi de la main est indisponible
-                </p>
-                <p>
-                  Essayez une version récente de Chrome ou Edge. Si le problème
-                  persiste, rechargez la page après avoir exporté votre dessin.
-                </p>
+                <p className="font-medium">{t("tracking.errorTitle")}</p>
+                <p>{t("tracking.errorDescription")}</p>
               </div>
             </div>
             <Button className="h-11 w-full" onClick={stop}>
-              Mettre la caméra en pause
+              {t("camera.pause")}
             </Button>
           </div>
         ) : null}

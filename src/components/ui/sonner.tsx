@@ -1,6 +1,7 @@
 "use client"
 
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { t } from "@/i18n"
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -9,7 +10,7 @@ import {
   Loader2Icon,
 } from "lucide-react"
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
   return (
     <Sonner
       theme="dark"
@@ -30,8 +31,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       toastOptions={{
+        closeButtonAriaLabel: t("app.closeNotification"),
+        ...toastOptions,
         classNames: {
           toast: "cn-toast",
+          ...toastOptions?.classNames,
         },
       }}
       {...props}

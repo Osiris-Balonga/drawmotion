@@ -103,7 +103,7 @@ export const DrawingCanvas = forwardRef<
       exportPng() {
         return (
           controllerRef.current?.exportPng() ??
-          Promise.reject(new Error("La toile n’est pas encore prête"))
+          Promise.reject(new Error("The canvas is not ready yet"))
         )
       },
     }),

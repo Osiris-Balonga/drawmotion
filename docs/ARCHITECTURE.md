@@ -93,6 +93,30 @@ Responsive overrides stay last. Tokens live in `src/styles/globals.css`.
   schema. Missing, old, invalid, or inaccessible data falls back to a first
   visit without blocking use. Drawings are not saved.
 
+## Localization
+
+`src/i18n/` contains five small, bundled message catalogs and the browser-locale
+resolver. English defines the typed message keys and interpolation parameters;
+other catalogs must provide the same keys. The translator uses `Intl.NumberFormat`
+for numeric values and returns plain text, never HTML.
+
+The first supported `navigator.languages` preference wins, with
+`navigator.language` as a fallback when the list is empty. Unsupported or invalid
+preferences fall back to English. Regional variants map to their base language;
+all Chinese variants currently use the `zh-Hans` catalog. This is not Traditional
+Chinese localization. The selected language is fixed for the page session:
+reload after changing browser preferences. There is no location lookup, extra
+storage, or effect that restarts tracking when rendering translated text.
+
+Before React renders, the entry point updates the document's `lang` attribute
+and description. UI labels, tutorial guidance, tooltips, camera errors, and
+screen-reader announcements use these catalogs. Developer diagnostics and
+repository documentation remain English. Translations are maintained in source;
+there is no runtime translation service.
+
+References: [browser language preferences](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages)
+and [document language](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/lang).
+
 ## Tests and decisions
 
 The [testing guide](TESTING.md) separates core logic, components, integrations,
