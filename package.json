@@ -25,6 +25,8 @@
     "test:e2e": "playwright test",
     "test:all": "pnpm test && pnpm test:e2e",
     "verify:vision-assets": "node scripts/verify-vision-assets.mjs",
+    "verify:security-headers": "node scripts/verify-security-headers.mjs",
+    "verify:bundle": "node scripts/check-bundle-budget.mjs",
     "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:all"
   },
   "dependencies": {

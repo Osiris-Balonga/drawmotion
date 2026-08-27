@@ -112,7 +112,7 @@ export class WorkerHandTracker implements HandTrackerPort {
       this.pendingFrames.set(frameId, {
         resolve,
         reject,
-        startedAt: performance.now(),
+        startedAt: import.meta.env.DEV ? performance.now() : 0,
       })
       this.queuedFrame = { frame, frameId, timestampMs }
       this.dispatchNextFrame()
@@ -184,7 +184,7 @@ export class WorkerHandTracker implements HandTrackerPort {
         break
       case "RESULT": {
         const pending = this.pendingFrames.get(value.result.frameId)
-        if (pending && this.diagnostics) {
+        if (import.meta.env.DEV && pending && this.diagnostics) {
           const now = performance.now()
           const summary = this.diagnostics.record(now, now - pending.startedAt)
           if (summary)
