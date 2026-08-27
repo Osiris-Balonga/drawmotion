@@ -31,6 +31,8 @@
     "test:integration": "vitest run --project integration",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --project=chromium",
+    "test:pwa": "playwright test --project=pwa",
     "test:all": "pnpm test && pnpm test:e2e",
     "verify:vision-assets": "node scripts/verify-vision-assets.mjs",
     "verify:deployment": "node scripts/verify-deployment.mjs",
