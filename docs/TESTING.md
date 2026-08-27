@@ -36,10 +36,6 @@ Pas besoin de nouveaux alias pour chaque scénario : Playwright filtre déjà
 par fichier, ou par titre via `--grep`. Les trois projets Vitest ne collectent
 aucun de ces fichiers navigateur.
 
-**Changement de sens** : auparavant `test:unit` lançait toute la suite et
-`test` restait en surveillance. Utiliser désormais `test` pour l'ensemble de
-Vitest, `test:watch` pour la surveillance et `test:all` pour tout, navigateur inclus.
-
 ## Répartition et conventions
 
 Les tests restent près du code ; leur suffixe définit un groupe sans doublon :
@@ -140,38 +136,6 @@ de l'effacement gestuel et de l'export d'un vrai dessin. Il ne couvre pas encore
 Safari/Firefox ni toutes les tailles d'écran. Ne pas présenter des tests DOM
 ou des appels Canvas simulés comme une validation visuelle de l'application.
 
-## Nettoyage effectué
-
-- Suppression du test isolé du titre, déjà vérifié dans le workspace et
-  désormais dans le parcours de première visite.
-- Suppression de l'assertion qui comparait une constante définie par le test
-  à ses propres valeurs ; validation des coordonnées conservée.
-- Retrait des six contrôles de formes statiques des fixtures ; les cinq gestes
-  restent vérifiés par le classifieur. Les quatre tests mathématiques du
-  générateur de ratios sont conservés près des fixtures : ils sécurisent les
-  données utilisées aux frontières du pincement.
-- Remplacement des anciennes vérifications CSS du parent Export et de classes
-  caméra obsolètes ; la stabilité géométrique caméra est vérifiée dans Chromium.
-- Remplacement de contrôles internes de bibliothèque/d'attributs de présentation
-  par les états accessibles et les légendes réellement présentés à l'utilisateur.
-- Aucun changement au moteur de dessin ou à ses seuils ; aucune baisse des
-  seuils de couverture (80 % lignes/fonctions/instructions, 75 % branches).
-- Les tests navigateur ont révélé que le bouton Export perdait son nom
-  accessible quand son texte était masqué sur tablette : ajout d'un
-  `aria-label` permanent, sans changement visuel.
-
-## Défauts révélés par le complément du lot 9
-
-- Après une perte de suivi prolongée, le filtre autorisait un déplacement
-  important selon le temps écoulé, puis lissait depuis l'ancienne position.
-  Une reprise pincée pouvait donc produire un trait oblique parasite. Le
-  retour distant est désormais confirmé et réancré, sans changer les seuils
-  de pincement ni supprimer la continuité des petits décrochages proches.
-  Une régression unitaire ciblée et le scénario navigateur protègent ce cas.
-- Le nom accessible passé au composant Slider était affecté au groupe,
-  pas à son vrai contrôle range. Il est désormais transmis au Thumb Base UI,
-  qui nomme l'input pour les lecteurs d'écran. Le scan axe couvre ce défaut.
-
 ## Règle pour chaque ajout
 
 Avant d'ajouter un test : **quel bug concret détecterait-il que les autres ne
@@ -203,20 +167,7 @@ Références : [projets Vitest](https://v4.vitest.dev/guide/projects),
 [duplication des tests](https://martinfowler.com/articles/practical-test-pyramid.html#AvoidTestDuplication),
 [accessibilité avec Playwright](https://playwright.dev/docs/accessibility-testing).
 
-## Compléments du lot 10
-
-- File bornée **avant** l'envoi au Worker synchrone : une image en vol, une
-  remplaçante, fermeture des bitmaps abandonnés ; regression unitaire ciblée.
-- Statistiques roulantes de latence/FPS, bornées et uniquement en développement.
-- Le même parcours de réglage couvre aussi 720×450 et 640×400, équivalents
-  de fenêtres de bureau à 200 %. Il vérifie le panneau complet et l'absence
-  de déplacement de la page après focus, pas seulement la présence de la roue.
-- Réduction de mouvement : feedback de mode encore visible ; échec du Worker :
-  message de récupération et bouton de pause utilisables.
-- Message petit écran vérifié avec axe ; les scans de popover attendent la
-  fin des animations finies avant de mesurer les contrastes (aucune exclusion).
-- `pnpm verify:bundle`, `pnpm verify:vision-assets` et audit des dépendances
-  complètent les tests. Les en-têtes réels sont à vérifier séparément sur HTTPS.
+## Exécution sur machine limitée ou navigateur installé
 
 Pour une machine occupée, `pnpm test:e2e --workers=1` exécute exactement les
 mêmes tests en série, sans retry ni augmentation des délais.

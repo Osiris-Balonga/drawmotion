@@ -72,7 +72,7 @@ Les retours directs durent `120ms` et les transitions d'état `200ms`, avec `cub
 
 ## Elevation
 
-Le système est plat par défaut. La profondeur provient d'abord des différences de tons entre coque, rail et panneau. Une ombre courte peut détacher une instruction contextuelle ou un popover, jamais habiller chaque conteneur.
+Le système est plat par défaut. La profondeur provient d'abord des différences de tons entre coque, rail et panneau. Une ombre détache les îlots flottants, le dock et les panneaux de la toile blanche ; éviter les surfaces et ombres imbriquées sans fonction.
 
 **The State-Only Elevation Rule.** Une ombre signale une superposition ou une réponse à l'interaction ; elle n'est jamais décorative.
 

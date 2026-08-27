@@ -1,82 +1,84 @@
 # DrawMotion
 
-DrawMotion est une démonstration technologique web de dessin 2D contrôlé par les gestes de la main devant une webcam.
+Dessinez dans les airs, directement dans votre navigateur. DrawMotion transforme
+les mouvements d'une main devant une webcam en dessin 2D : pincez pour tracer,
+relâchez pour lever le stylo, fermez le poing pour gommer.
 
-## Statut
+Prototype en préparation pour une démo publique, version `1.0.0-rc.1`.
+La démo n'est pas encore publiée. [Capacités et limites](CHANGELOG.md).
 
-Prototype fonctionnel en cours de préparation pour une démo publique et une
-publication open source. Le dépôt reste privé pour le moment ; aucune release
-publique n'est annoncée comme disponible. Le travail est découpé dans
-[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md).
+## Démarrer
 
-Version candidate locale : `1.0.0-rc.1`. La [checklist de livraison](./docs/qa/v1.0.0.md)
-reste à valider sur une vraie webcam et une preview HTTPS avant la v1.0.0.
-Les [notes de version](./CHANGELOG.md) décrivent les capacités et limites actuelles.
-
-## Principes
-
-- traitement vidéo local dans le navigateur ;
-- tutoriel illustré en cinq missions, rejouable, progression validée par les gestes ;
-- réglages et commandes utilisables aussi à la souris et au clavier ;
-- aucune donnée biométrique, vidéo ou télémétrie distante ;
-- chaque capacité est livrée par une pull request dédiée.
-
-## Stack utilisée
-
-React 19, TypeScript strict, Vite 8, Tailwind CSS 4.3, shadcn/ui Base Nova avec
-Base UI, MediaPipe Tasks Vision dans un Worker, Canvas 2D, Vitest, Playwright
-et axe-core. L'état d'interface utilise les hooks React ; les ressources vidéo
-et le rendu restent impératifs.
-
-## Lancer en local
-
-Avec Node 24 et pnpm 11 :
+Prérequis : **Node.js 24** et **pnpm 11.19.0**.
 
 ```sh
+git clone https://github.com/Osiris-Balonga/drawmotion.git
+cd drawmotion
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Ouvrir l'adresse affichée par Vite, puis activer la caméra en cliquant sur son
-aperçu. Pour dessiner : déplacer l'index, pincer pour tracer, relâcher pour
-lever le stylo, fermer le poing pour gommer. Le signe paix (index et majeur
-levés) maintenu ouvre les commandes près de la main, hors missions de dessin
-du tutoriel. Les petits boutons du dock ne se pilotent pas par pincement.
+Le dépôt est encore privé : le clonage nécessite actuellement un accès.
+Ouvrez l'URL affichée par Vite, cliquez sur l'aperçu caméra et suivez le tutoriel.
+Aucune clé API ni serveur Python n'est nécessaire. Chrome et Edge sur ordinateur
+sont les cibles initiales ; consultez les [limites de compatibilité](docs/COMPATIBILITY.md).
 
-Le dock et les commandes partagent couleurs, épaisseurs, styles de trait et
-précision. La couleur personnalisée HEX/RGB est réservée au dock. La navigation
-de toile propose zoom et déplacement avec Espace + glisser. Les commandes
-restent disponibles à la souris et au clavier, mais le tracé actuel nécessite
-une main détectée : ce n'est pas encore un mode complet de dessin à la souris.
+## Utilisation
 
-Le PNG exporte la zone visible de la toile au zoom courant. Dézoomer et
-recentrer pour inclure tout le dessin ; les traits hors champ ne sont pas
-automatiquement inclus. Le document n'est pas sauvegardé au rechargement.
+- **Viser** : déplacez l'index ; le point violet indique la position.
+- **Dessiner** : rapprochez le pouce et l'index. Relâchez pour terminer le trait.
+- **Gommer** : fermez le poing et passez sur le dessin.
+- **Commandes gestuelles** : maintenez index et majeur levés, signe paix.
+  Choisissez ensuite une grande cible en pinçant. Ce geste est désactivé pendant
+  les premières missions du tutoriel pour ne pas les interrompre.
+- **Réglages** : le dock et les commandes partagent couleur, épaisseur et style.
+  La roue HEX/RGB du dock s'utilise à la souris, au tactile ou au clavier.
+- **Précision** : Libre suit le mouvement, Stabilisé atténue les irrégularités,
+  Formes peut régulariser lignes, cercles, ellipses et rectangles. « Garder mon
+  tracé » permet de refuser une correction.
+- **Navigation** : boutons de zoom, `+` / `-` / `0`, Espace + glisser pour déplacer
+  la toile. `M` ouvre les commandes ; Ctrl/Cmd + Z annule.
+- **Export** : le PNG contient la zone visible au zoom courant, pas automatiquement
+  tout le document. Dézoomez/recentrez avant d'exporter.
 
-## Tests
+Le dessin reste en mémoire : **exportez avant de recharger ou de fermer**.
+Les réglages fonctionnent sans caméra, mais le tracé libre nécessite encore une
+main détectée. La précision dépend du cadrage, de l'éclairage et du matériel ;
+DrawMotion ne remplace pas une tablette graphique.
 
-`pnpm test` lance les tests unitaires, de composants et d'intégration.
-Chaque groupe peut être exécuté séparément avec `pnpm test:unit`,
-`pnpm test:components` ou `pnpm test:integration`.
-`pnpm test:e2e` lance les parcours Chromium ; `pnpm test:all` lance tout.
-Les contrôles d'accessibilité se lancent seuls avec
-`pnpm test:e2e accessibility.spec.ts`, les parcours gestuels avec
-`pnpm test:e2e gestures.spec.ts`.
-Le smoke test de vraie inférence sous CSP se lance avec
-`pnpm test:e2e security.spec.ts` (vidéo factice, modèle/WASM réels).
+## Traitement local
 
-Compatibilité, confidentialité, diagnostics et vérifications avant publication :
-[guide de compatibilité](./docs/COMPATIBILITY.md) et [sécurité](./SECURITY.md).
+MediaPipe Hand Landmarker s'exécute dans un Web Worker. Le modèle, WASM, les
+polices et les illustrations sont servis avec le site. DrawMotion n'enregistre
+ni ne téléverse la vidéo ; le micro n'est pas demandé. Seule la progression du
+tutoriel est conservée dans le stockage local.
 
-Installation navigateur, mode surveillance, conventions et limites :
-[stratégie de tests](./docs/TESTING.md).
+La [documentation de confidentialité](docs/COMPATIBILITY.md#confidentialité)
+distingue les données en mémoire, les requêtes normales de fichiers et les
+contrôles réseau. Pour une vulnérabilité, voir [SECURITY.md](SECURITY.md).
 
-## Livraison et licences
+## Contribuer et tester
 
-La [procédure de livraison](./docs/RELEASE.md) sépare préparation, QA, promotion
-et publication. Aucun push ne publie automatiquement une GitHub Release.
+React, TypeScript, Vite, Tailwind CSS, shadcn/ui **Base UI**, MediaPipe et Canvas
+2D. Pas de Three.js, backend ou store global.
 
-La licence open source de DrawMotion n'est pas encore choisie : ne pas
-présenter le code comme déjà disponible sous licence libre. Les dépendances
-conservent leurs propres licences ; [l'inventaire tiers](./docs/THIRD_PARTY.md)
-documente les vérifications restantes avant redistribution publique.
+```sh
+pnpm test                       # unitaires + composants + intégration
+pnpm exec playwright install chromium
+pnpm test:e2e                   # parcours navigateur sur un build de production
+```
+
+Les groupes se lancent séparément : `test:unit`, `test:components`,
+`test:integration`. `test:all` lance tous les tests.
+Voir [CONTRIBUTING](CONTRIBUTING.md), [l'architecture](docs/ARCHITECTURE.md) et
+[la stratégie de tests](docs/TESTING.md), notamment ce qui exige une vraie webcam.
+
+## Licence et livraison
+
+Le code original est sous [licence MIT](LICENSE). Les dépendances, la police et
+le modèle conservent leurs licences : [notices tierces](docs/THIRD_PARTY.md).
+`pnpm build` inclut les textes requis dans `dist/licenses/`.
+
+La publication reste conditionnée à la [QA manuelle](docs/qa/v1.0.0.md) et à la
+[procédure de livraison](docs/RELEASE.md). Les anciens plans sont conservés dans
+[les archives](docs/archive/README.md), pas utilisés comme instructions actuelles.

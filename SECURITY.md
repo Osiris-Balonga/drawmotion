@@ -2,9 +2,15 @@
 
 DrawMotion est un prototype, sans version publique maintenue pour le moment.
 Ne publiez pas de données de webcam ou d'informations sensibles dans une issue.
-Pour signaler une vulnérabilité, contactez le mainteneur par un canal privé
-déjà convenu ; après ouverture du dépôt, utilisez « Report a vulnerability »
-si cette fonction est activée. Aucun délai de correction n'est garanti.
+Le canal prévu est [Report a vulnerability](https://github.com/Osiris-Balonga/drawmotion/security/advisories/new),
+qui envoie un signalement privé au mainteneur. Son activation doit être
+vérifiée avant l'ouverture du dépôt : le contrôle API du 27 août 2026 renvoie
+404 et ne permet pas de la confirmer. Si le lien n'est pas disponible,
+demandez au mainteneur d'activer le canal, sans divulguer la faille dans une
+issue publique. Aucun délai de correction n'est garanti.
+
+Un signalement utile précise le commit, le navigateur, les étapes et l'impact,
+avec des données synthétiques. Ne joignez pas de vidéo personnelle ni de secret.
 
 ## Contrôles prévus dans GitHub
 
@@ -26,8 +32,8 @@ permettent leur exécution. Ne pas configurer simultanément CodeQL default
 setup et ce workflow advanced setup sans suivre la procédure GitHub.
 
 Les fichiers de workflows ne constituent pas une preuve d'exécution sur
-GitHub. Les résultats distants et checks obligatoires seront vérifiés après
-un push autorisé, sans modifier ici abonnement ou visibilité.
+GitHub. Vérifier les runs distants et les contrôles obligatoires sur le commit
+candidat avant chaque publication.
 
 Les timings locaux, données traitées et exceptions CSP nécessaires sont
 décrits dans [COMPATIBILITY.md](./docs/COMPATIBILITY.md).

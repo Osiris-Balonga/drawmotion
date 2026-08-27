@@ -19,6 +19,9 @@
 - Réglages adaptatifs, navigation clavier, réduction des animations et tests d'accessibilité ciblés.
 - CSP et en-têtes de sécurité, vérification des assets et budgets de bundle, audit des dépendances.
 - Tests séparés par catégorie et parcours navigateur ; préparation de la QA et du workflow de release.
+- Taille de gomme sélectionnée respectée lors de l'effacement au poing, y compris sous 40 pixels.
+- Workspace séparé en composition, gestes, navigation et tutoriel ; anciennes interfaces inutilisées retirées.
+- Licence MIT, notices tierces incluses dans le build et guide de contribution.
 
 ### Limites connues
 
@@ -27,7 +30,7 @@
 - Les contrôles fonctionnent au clavier et à la souris, mais le dessin libre nécessite actuellement une main détectée.
 - Pas de sauvegarde de document ni de collaboration ; exporter avant de fermer la page.
 - Le PNG capture la zone visible de la toile : dézoomer/recentrer avant d'exporter pour inclure les traits hors champ.
-- Démo publique, licence du projet et publication open source encore en attente.
+- Démo publique et publication open source encore en attente.
 
 Les résultats automatiques datés du [lot 10](./docs/qa/lot10-local.md) ne
 remplacent pas la [QA finale](./docs/qa/v1.0.0.md).
