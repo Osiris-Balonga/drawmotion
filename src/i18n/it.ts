@@ -1,6 +1,44 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "pwa.reconnected": "Connessione ripristinata.",
+  "pwa.disconnectedIncomplete":
+    "Sei offline. Mancano ancora alcune risorse; il download riprenderà con la connessione.",
+  "pwa.disconnectedReady": "Sei offline. Puoi continuare a disegnare.",
+  "pwa.disconnected": "Offline",
+  "pwa.details": "Archiviazione e aggiornamenti",
+  "pwa.local": "I tuoi disegni restano su questo dispositivo.",
+  "pwa.updatePolicy":
+    "Gli aggiornamenti attendono la chiusura di tutte le finestre di DrawMotion. La sessione di disegno non viene mai ricaricata.",
+  "pwa.updateChecking": "Ricerca di aggiornamenti…",
+  "pwa.updateDownloading":
+    "Download di un aggiornamento. Puoi continuare a disegnare.",
+  "pwa.updateWaiting":
+    "Un aggiornamento è pronto per il prossimo avvio. Puoi continuare a disegnare.",
+  "pwa.updateFailed":
+    "Impossibile scaricare l’aggiornamento. La versione attuale resta disponibile.",
+  "pwa.checkUpdate": "Cerca aggiornamenti",
+  "pwa.installed": "Aperta come applicazione installata.",
+  "pwa.install": "Installa DrawMotion",
+  "pwa.installHelp":
+    "Installa l’app dal menu del browser. Su iPad: Safari → Condividi → Aggiungi alla schermata Home.",
+  "pwa.persist": "Richiedi archiviazione locale persistente",
+  "pwa.storageGranted": "Archiviazione persistente autorizzata",
+  "pwa.storageDenied":
+    "Il browser non ha autorizzato l’archiviazione persistente. Puoi continuare a disegnare; esporta i disegni importanti.",
+  "pwa.menu": "Installazione e offline",
+  "pwa.title": "Porta DrawMotion con te",
+  "pwa.description":
+    "L’app salva automaticamente le risorse offline (circa 50 MB) dopo il caricamento, senza attivare la fotocamera.",
+  "pwa.unavailable":
+    "La preparazione offline non è disponibile qui. Usa un browser compatibile tramite HTTPS.",
+  "pwa.preparing": "Salvataggio dell’app per l’uso offline… Puoi disegnare.",
+  "pwa.reopen": "Le risorse offline sono salvate per la prossima visita.",
+  "pwa.ready": "Disponibile offline su questo dispositivo.",
+  "pwa.failed":
+    "L’accesso offline non è ancora completo. I download vengono ritentati automaticamente quando la connessione è disponibile.",
+  "pwa.limits":
+    "Il browser può cancellare i dati locali. Esporta i disegni importanti.",
   "draft.restoreFailed":
     "Impossibile ripristinare il disegno salvato. L’archiviazione locale potrebbe non essere disponibile o la bozza potrebbe essere danneggiata.",
   "draft.saveFailed":

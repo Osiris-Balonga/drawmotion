@@ -33,7 +33,7 @@ async function tabTo(page: Page, locator: Locator) {
 test("WCAG checks on onboarding, stroke settings, custom color and commands", async ({
   page,
 }, testInfo) => {
-  // Four full-page axe scans, including open popovers, share this journey.
+  // Full-page axe scans, including open popovers, share this journey.
   test.setTimeout(60_000)
   await page.goto("./")
   const scan = async (state: string) =>
@@ -60,6 +60,14 @@ test("WCAG checks on onboarding, stroke settings, custom color and commands", as
       expect(results.violations).toEqual([])
     })
   await scan("onboarding")
+  await page.getByRole("button", { name: "Installation et hors ligne" }).click()
+  await scan("offline-menu")
+  await page.getByText("Stockage et mises à jour", { exact: true }).click()
+  await scan("offline-details")
+  await page.keyboard.press("Escape")
+  await expect(
+    page.getByRole("button", { name: "Installation et hors ligne" }),
+  ).toBeFocused()
   await page.getByRole("button", { name: "Passer le tutoriel" }).click()
   await page.getByRole("button", { name: "Épaisseur 8 pixels" }).click()
   await scan("stroke")

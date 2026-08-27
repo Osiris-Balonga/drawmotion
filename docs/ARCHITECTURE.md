@@ -25,6 +25,42 @@ modules. Generated reports belong in `.artifacts/`, never alongside sources.
 The lockfile and vendored runtime assets are intentionally tracked so a clone
 can reproduce the build without fetching model files from a third-party CDN.
 
+## Offline boundary
+
+`src/workers/sw.ts` is separate from the MediaPipe inference worker and has
+its own WebWorker-only TypeScript project. `scripts/pwa-config.ts` generates
+the manifest, build identity, dependency notices and complete revisioned
+precache with SHA-256 integrity. The manifest is emitted explicitly so it is
+also integrity-checked, rather than appended after Workbox's transforms.
+`scripts/verify-pwa.mjs` rejects missing resources, incorrect icon dimensions,
+scope mistakes and size-budget overruns.
+
+`src/infrastructure/pwa/` observes registration and verifies readiness through
+a bounded MessageChannel protocol. `src/features/pwa/` contains the localized
+menu and installation/storage browser adapters. They do not change gesture
+classification, camera capture, rendering or the drawing persistence format.
+Registration starts automatically after the initial document loads; previous
+registrations are reattached on later launches. On activation, a build-identity
+handshake checks every in-scope window before adopting uncontrolled documents.
+Unresponsive or mismatched documents are left alone. Updates still use the
+native waiting lifecycle: no `skipWaiting` or automatic page reloads.
+
+Connectivity is a separate signal from cache readiness. `network-check.json`
+is deliberately excluded from the precache; a bounded, uncached request validates
+its identity on startup, debounced network events and return to the app. Failed
+probes retry once per minute while visible. Nothing uploads drawings, and there
+is no third-party ping or cloud synchronization. Offline asset retries use bounded
+backoff, and restore only missing integrity-checked entries without clearing data.
+
+The optional Vite PWA asset-generator peer is present for upstream public
+types, not shipped at runtime. Version-pinned pnpm patches correct unconfig's
+emitted `Args[0]` type to its actual boolean `force` argument and adapt the
+generator's declarations to sharp's named type exports. The sharp override
+keeps this optional development dependency on a security-patched release.
+Remove these compatibility patches when upstream declarations catch up;
+type checking remains enabled for third-party declarations. Installation
+icons are generated with the existing Playwright browser, not native scripts.
+
 ## Frame pipeline
 
 ```text

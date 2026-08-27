@@ -1,6 +1,37 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "pwa.reconnected": "连接已恢复。",
+  "pwa.disconnectedIncomplete":
+    "当前已离线，部分资源尚未下载；恢复连接后将重试。",
+  "pwa.disconnectedReady": "当前已离线，你可以继续绘画。",
+  "pwa.disconnected": "离线",
+  "pwa.details": "存储与更新",
+  "pwa.local": "绘画保存在此设备上。",
+  "pwa.updatePolicy":
+    "更新会等待所有 DrawMotion 窗口关闭后再应用，不会重新加载你的绘画会话。",
+  "pwa.updateChecking": "正在检查更新…",
+  "pwa.updateDownloading": "正在下载更新，你可以继续绘画。",
+  "pwa.updateWaiting": "更新已准备好，将在下次启动时生效。你可以继续绘画。",
+  "pwa.updateFailed": "无法下载更新，当前版本仍然可用。",
+  "pwa.checkUpdate": "检查更新",
+  "pwa.installed": "已作为安装的应用打开。",
+  "pwa.install": "安装 DrawMotion",
+  "pwa.installHelp":
+    "通过浏览器菜单安装。在 iPad 上：Safari → 分享 → 添加到主屏幕。",
+  "pwa.persist": "请求保留本地存储",
+  "pwa.storageGranted": "已获准持久存储",
+  "pwa.storageDenied": "浏览器未批准持久存储。你仍可继续绘画，请导出重要作品。",
+  "pwa.menu": "安装与离线",
+  "pwa.title": "随时使用 DrawMotion",
+  "pwa.description":
+    "应用加载后会自动保存离线资源（约 50 MB），不会开启摄像头。",
+  "pwa.unavailable": "此环境无法准备离线使用。请通过 HTTPS 使用兼容的浏览器。",
+  "pwa.preparing": "正在保存离线资源…你可以继续绘画。",
+  "pwa.reopen": "离线资源已保存，下次访问时即可使用。",
+  "pwa.ready": "此设备可离线使用。",
+  "pwa.failed": "离线资源尚未完整保存。连接可用时将自动重试下载。",
+  "pwa.limits": "浏览器可能清除本地存储。请导出重要的绘画。",
   "draft.restoreFailed":
     "无法恢复已保存的绘图。本地存储可能不可用，或草稿已损坏。",
   "draft.saveFailed": "无法在此设备上保存绘图。关闭或刷新页面前，请导出 PNG。",

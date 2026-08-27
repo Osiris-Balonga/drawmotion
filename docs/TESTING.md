@@ -26,6 +26,31 @@ List files without running: `pnpm exec vitest list --filesOnly`.
 
 Browser subsets are all included in `test:e2e` and `test:all`:
 
+`pnpm test:e2e:ui` runs existing UI/gesture/security journeys with service
+workers blocked. `pnpm test:pwa` runs the PWA project with service workers
+enabled. Both projects are included exactly once in `pnpm test:e2e` and
+`pnpm test:all`. `pnpm verify:pwa` checks the already-built distribution.
+
+The PWA suite uses test-only loopback servers and isolated profiles under
+`.artifacts/pwa/`. It tests a full browser restart with the server stopped,
+first offline inference with real MediaPipe and synthetic video, missing or
+corrupt resources, cache isolation, failed updates, and two-window A/B upgrades.
+First-use readiness requires no preparation click or reload. The suite also
+exercises automatic recovery after reconnection and repairs after cache eviction.
+Unit/component tests cover mixed-build adoption guards, bounded retries and
+debounced connectivity feedback, including false-positive network hints.
+Build B is an actual separate Vite build with a test build ID, never a patched
+bundle. CI downloads build A; `E2E_USE_BUILD=1` prevents rebuilding that artifact.
+Only A is eligible for Pages deployment. B, profiles, traces and reports are
+ignored outputs, not repository source.
+
+Saved-drawing fixtures exercise restoration/export, not physical gesture
+accuracy. Browser tests do not validate installed-app OS integration, a real
+hand, touch or Safari/iPad behavior. Follow the manual offline release checks.
+To test Pages locally, build and run with `SITE_URL` set to the full Pages URL;
+unset it and repeat for origin-root hosting. The suite derives its scope from
+the built manifest, while the B build uses the same environment as A.
+
 ```sh
 pnpm test:e2e workspace.spec.ts
 pnpm test:e2e gestures.spec.ts

@@ -43,6 +43,11 @@ Dated results: [batch 10 local validation](qa/lot10-local.md).
   Private browsing, storage limits and denied storage may prevent retention;
   export important drawings. Failed saves display an export warning.
 - Pausing or moving the tab into the background stops the camera.
+- Offline preparation stores static application resources in an app-scoped
+  Cache Storage cache. It never caches camera frames, exports or landmarks.
+  An installed service worker checks its origin for updates on later visits
+  and occasionally when returning to the app. A small uncached same-origin
+  `network-check.json` request confirms connectivity; there is no telemetry endpoint.
 - Development diagnostics contain only timings and counters and are excluded
   from the production build.
 
@@ -75,8 +80,65 @@ video and a physical device.
 `pnpm verify:bundle` checks the local application and Worker build against total
 budgets of 800 KiB raw JS, 250 KiB gzip JS, and 100 KiB raw CSS. The prototype is
 approximately 640 KiB raw JS / 200 KiB gzip and 71 KiB CSS. Model/WASM files are
-excluded, checked separately by `pnpm verify:vision-assets`, and loaded when
-tracking starts.
+excluded, checked separately by `pnpm verify:vision-assets`, and cached
+automatically after the first production page load. Tracking reuses those files.
+The offline cache is budgeted at 60 MiB total, with a 16 MiB per-file ceiling.
+The service worker has separate limits of 100 KiB raw and 35 KiB gzip.
+
+## Offline use and recovery
+
+Offline mode is available in production builds on supported secure browsers,
+not in the Vite development server. Caching starts automatically after the first
+page load. It downloads approximately 50 MB, including every supported
+MediaPipe runtime, fonts, tutorial illustrations and license notices. It does
+not turn on the camera or save a video.
+
+There is no preparation button or normal first-use reload. **Available offline**
+in the app menu means the controlling worker
+verified that all its resources exist in its cache. That state is rechecked
+on later launches and when returning to the app. Initial control is automatic
+only when all in-scope documents identify the same build. A mismatched or older
+document remains usable and gets the new version on a later visit.
+A network icon or `navigator.onLine` is not proof of readiness. Brief connection
+messages use a same-origin uncached probe; they never disable drawing or imply
+cloud synchronization. A first visit interrupted before caching finishes cannot
+guarantee a complete offline launch.
+
+Installing an app icon is separate from preparing offline resources. If an
+install button is unavailable, use browser controls; Safari on iPad provides
+Share → Add to Home Screen. These instructions do not certify physical iPad
+camera compatibility. Installed apps may use different storage from a browser
+tab on some platforms: let the automatic download finish inside the installed app too.
+
+Browser eviction, private browsing, clearing site data and low disk space can
+remove resources. Optional persistent storage is a browser decision, applies
+to the origin and is not a backup. Declining it does not disable drawing.
+Export important drawings. A first-ever visit without any connection cannot
+prepare the application.
+
+Updates download in the background but never reload a drawing session. A ready
+update waits until every old-version tab or installed window closes. Refreshing
+one of two open windows intentionally keeps the old version. Closing one app
+window does not close other copies. A failed update leaves the old version
+usable; the update state is separate from current offline readiness.
+
+Interrupted installation retries automatically (up to five attempts per session,
+30 seconds to 5 minutes apart). A confirmed reconnection or return to the app
+can retry again. Missing cache entries are restored from that worker's manifest,
+with integrity verification, without deleting existing resources. If this still
+fails (for example because the browser denies storage or old assets are no longer
+served), use the following last-resort recovery:
+
+1. Export the drawing while the canvas is still open. Close other DrawMotion
+   windows. Do not use the browser's **Clear all site data** action.
+2. In developer tools, unregister only the service worker whose scope is this
+   DrawMotion URL (normally `/drawmotion/`). Delete only its cache, named
+   `drawmotion-precache-v2-%2Fdrawmotion%2F` for that scope. On root hosting the
+   suffix is `%2F`. Leave other projects' registrations and caches alone.
+3. Preserve Local Storage, especially `drawmotion:drawing` and tutorial state.
+   Reopen online and let the automatic caching finish.
+
+DrawMotion never automatically erases caches or drafts as a repair attempt.
 
 ## Static-host security
 

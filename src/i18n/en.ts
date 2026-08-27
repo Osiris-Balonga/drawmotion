@@ -1,4 +1,41 @@
 export const en = {
+  "pwa.reconnected": "Connection restored.",
+  "pwa.disconnectedIncomplete":
+    "You’re offline. Some resources are still missing; downloads will retry when connected.",
+  "pwa.disconnectedReady": "You’re offline. You can keep drawing.",
+  "pwa.disconnected": "Offline",
+  "pwa.details": "Storage & updates",
+  "pwa.local": "Your drawings stay on this device.",
+  "pwa.updatePolicy":
+    "Updates wait until every DrawMotion window is closed. Your drawing session is never reloaded.",
+  "pwa.updateChecking": "Checking for updates…",
+  "pwa.updateDownloading": "Downloading an update. You can keep drawing.",
+  "pwa.updateWaiting":
+    "An update is ready for your next launch. You can keep drawing.",
+  "pwa.updateFailed":
+    "The update could not be downloaded. Your current version is still available.",
+  "pwa.checkUpdate": "Check for updates",
+  "pwa.installed": "Opened as an installed app.",
+  "pwa.install": "Install DrawMotion",
+  "pwa.installHelp":
+    "Install from your browser menu. On iPad: Safari → Share → Add to Home Screen.",
+  "pwa.persist": "Request protected local storage",
+  "pwa.storageGranted": "Storage persistence granted",
+  "pwa.storageDenied":
+    "The browser did not grant persistence. You can keep drawing; export important work.",
+  "pwa.menu": "Install & offline",
+  "pwa.title": "Keep DrawMotion with you",
+  "pwa.description":
+    "The app automatically saves its offline resources (about 50 MB) after loading. This never activates your camera.",
+  "pwa.unavailable":
+    "Offline preparation is unavailable here. Use a supported browser over HTTPS.",
+  "pwa.preparing": "Saving the app for offline use… You can keep drawing.",
+  "pwa.reopen": "Offline resources are saved for your next visit.",
+  "pwa.ready": "Available offline on this device.",
+  "pwa.failed":
+    "Offline access is not complete yet. Downloads retry automatically when the connection is available.",
+  "pwa.limits":
+    "Browser storage can be cleared or evicted. Export important drawings.",
   "app.title": "DrawMotion — Draw in the air with your webcam",
   "draft.restoreFailed":
     "The saved drawing could not be restored. Local storage may be unavailable or the draft damaged.",

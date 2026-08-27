@@ -8,16 +8,17 @@ Checked on August 27, 2026 against the current lockfile.
 `pnpm build` produces `dist/licenses/` and verifies its presence and contents.
 Use `pnpm verify:licenses` to check an existing build.
 
-| Resource                                      | License and distributed text              | Provenance                                  |
-| --------------------------------------------- | ----------------------------------------- | ------------------------------------------- |
-| Application JavaScript and transitive modules | Full texts in Vite-generated `bundled.md` | Packages actually included in chunks        |
-| MediaPipe Worker, JS, and WASM                | Apache-2.0, `mediapipe-Apache-2.0.txt`    | `@mediapipe/tasks-vision@1.0.1`             |
-| Hand Landmarker full, float16, version 1      | Apache-2.0, same text                     | Unmodified official model; references below |
-| Geist Variable 5.3.0                          | OFL-1.1, `geist-OFL.txt`                  | `@fontsource-variable/geist`                |
-| Adapted shadcn/ui components and CSS 4.19.0   | MIT, `shadcn-MIT.txt`                     | shadcn/ui with Base UI primitives           |
-| Tailwind CSS 4.3.3                            | MIT, `tailwindcss-MIT.txt`                | `tailwindcss`                               |
-| tw-animate-css 1.4.0                          | MIT, `tw-animate-css-MIT.txt`             | `tw-animate-css`                            |
-| Original DrawMotion code                      | MIT, `drawmotion-MIT.txt`                 | Copied from the root LICENSE by Vite        |
+| Resource                                      | License and distributed text              | Provenance                                                                           |
+| --------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| Application JavaScript and transitive modules | Full texts in Vite-generated `bundled.md` | Packages actually included in chunks                                                 |
+| MediaPipe Worker, JS, and WASM                | Apache-2.0, `mediapipe-Apache-2.0.txt`    | `@mediapipe/tasks-vision@1.0.1`                                                      |
+| Hand Landmarker full, float16, version 1      | Apache-2.0, same text                     | Unmodified official model; references below                                          |
+| Geist Variable 5.3.0                          | OFL-1.1, `geist-OFL.txt`                  | `@fontsource-variable/geist`                                                         |
+| Adapted shadcn/ui components and CSS 4.19.0   | MIT, `shadcn-MIT.txt`                     | shadcn/ui with Base UI primitives                                                    |
+| Tailwind CSS 4.3.3                            | MIT, `tailwindcss-MIT.txt`                | `tailwindcss`                                                                        |
+| tw-animate-css 1.4.0                          | MIT, `tw-animate-css-MIT.txt`             | `tw-animate-css`                                                                     |
+| Original DrawMotion code                      | MIT, `drawmotion-MIT.txt`                 | Copied from the root LICENSE by Vite                                                 |
+| Offline service worker                        | MIT, `service-worker.md`                  | Workbox 7.4.1 core, precaching, routing and strategies; full installed package texts |
 
 Vite's report covers JavaScript modules in the application bundle, not assets
 copied from `public/` or automatically the separate Worker build.
@@ -50,6 +51,10 @@ DrawMotion by the maintainer. They are not MediaPipe illustrations or Lucide
 icons. MIT covers the maintainer's rights in these assets; it does not guarantee
 exclusivity over generated content or trademark clearance. No personal webcam
 recordings are required by the repository or tests.
+
+`public/pwa/*.png` are deterministic resized/padded versions of the approved
+symbol, generated with `scripts/generate-pwa-icons.mjs`. The maskable icon keeps
+the mark inside the safe region. These are not new logo designs.
 
 `docs/assets/drawmotion-preview.png` is the maintainer-provided application
 screenshot, explicitly approved for the public README on August 27, 2026.
