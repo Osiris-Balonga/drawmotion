@@ -89,9 +89,16 @@ Responsive overrides stay last. Tokens live in `src/styles/globals.css`.
   points so users can reject a shape correction.
 - **Export the visible persistent layer**, without the camera, controls, or
   pointer. Fitting the whole document is not automatic.
-- **Tutorial-only persistence** under `drawmotion:onboarding`, with a versioned
-  schema. Missing, old, invalid, or inaccessible data falls back to a first
-  visit without blocking use. Drawings are not saved.
+- **Local persistence** uses two versioned keys: `drawmotion:onboarding` for
+  tutorial progress and `drawmotion:drawing` for strokes and the viewport.
+  The storage adapter validates restored data before it reaches the renderer.
+  Completed edits save immediately; view changes debounce for 250 ms. Page hide
+  and backgrounding finish any active stroke and flush pending changes.
+  No per-frame writes, undo-history snapshots, video or landmarks are stored.
+  The draft is capped at two million characters to bound synchronous storage
+  work; quota/permission errors keep drawing available and show an export warning.
+  Invalid drafts are not overwritten merely by loading the page. Each tab has
+  its own session; the latest saved edit wins, without cross-tab merging.
 
 ## Localization
 

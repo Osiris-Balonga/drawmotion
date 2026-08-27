@@ -35,8 +35,13 @@ Dated results: [batch 10 local validation](qa/lot10-local.md).
   upload video and does not request microphone access.
 - The model, WASM, fonts, and illustrations are served from the application's
   origin. The browser/host receives normal asset requests, not video frames.
-- Tutorial state is stored in `localStorage`; clearing site data resets it.
-  Drawings do not survive a reload: export a PNG before leaving.
+- Tutorial state, drawing strokes and the canvas view are stored in
+  `localStorage`. Reload restores the latest saved draft, but not undo/redo
+  history or tool settings. Clearing the canvas saves an empty draft.
+  Clearing site data removes both the draft and tutorial progress. Localhost
+  and the public demo have separate storage; there is no cloud sync or backup.
+  Private browsing, storage limits and denied storage may prevent retention;
+  export important drawings. Failed saves display an export warning.
 - Pausing or moving the tab into the background stops the camera.
 - Development diagnostics contain only timings and counters and are excluded
   from the production build.

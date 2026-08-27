@@ -1,4 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
+import { toast } from "sonner"
+import { t } from "@/i18n"
+import type { DrawingDocument } from "@/core/drawing/drawing-model"
+import { saveDrawingDraft } from "@/infrastructure/storage/drawing-draft"
 
 import {
   CanvasDrawingController,
@@ -23,6 +27,7 @@ export type DrawingCanvasHandle = {
 }
 
 type DrawingCanvasProps = {
+  initialDocument: DrawingDocument
   assistanceMode: StrokeAssistanceMode
   drawingStyle: DrawingStyle
   renderPointer?: boolean
@@ -36,6 +41,7 @@ export const DrawingCanvas = forwardRef<
   DrawingCanvasProps
 >(function DrawingCanvas(
   {
+    initialDocument,
     assistanceMode,
     drawingStyle,
     renderPointer = true,
@@ -54,6 +60,8 @@ export const DrawingCanvas = forwardRef<
   const assistanceModeRef = useRef(assistanceMode)
   const drawingStyleRef = useRef(drawingStyle)
   const viewportRef = useRef(viewport)
+  const initialDocumentRef = useRef(initialDocument)
+  const saveRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     onAssistanceRef.current = onAssistance
@@ -76,6 +84,9 @@ export const DrawingCanvas = forwardRef<
   useEffect(() => {
     viewportRef.current = viewport
     controllerRef.current?.setViewport(viewport)
+    // Avoid serializing a whole drawing for every wheel or pan event.
+    const timer = window.setTimeout(() => saveRef.current?.(), 250)
+    return () => window.clearTimeout(timer)
   }, [viewport])
 
   useImperativeHandle(
@@ -120,16 +131,44 @@ export const DrawingCanvas = forwardRef<
 
     const renderer = new TwoLayerCanvasRenderer(persistent, interaction)
     renderer.setPointerVisible(renderPointer)
-    const controller = new CanvasDrawingController(renderer)
+    const controller = new CanvasDrawingController(
+      renderer,
+      50,
+      initialDocumentRef.current,
+    )
     controller.setViewport(viewportRef.current)
+    let savedDocument = controller.document
+    let savedViewport = viewportRef.current
+    const save = () => {
+      const viewport = viewportRef.current
+      if (
+        controller.document === savedDocument &&
+        viewport.zoom === savedViewport.zoom &&
+        viewport.offsetX === savedViewport.offsetX &&
+        viewport.offsetY === savedViewport.offsetY
+      )
+        return
+      if (saveDrawingDraft({ document: controller.document, viewport })) {
+        savedDocument = controller.document
+        savedViewport = viewport
+        toast.dismiss("drawing-save")
+      } else {
+        toast.error(t("draft.saveFailed"), {
+          id: "drawing-save",
+          duration: Infinity,
+        })
+      }
+    }
+    saveRef.current = save
     controller.setAssistanceMode(assistanceModeRef.current)
     controller.setStyle(drawingStyleRef.current)
     controller.setAssistanceListener((feedback) =>
       onAssistanceRef.current(feedback),
     )
-    controller.setHistoryListener((availability) =>
-      onHistoryChangeRef.current(availability),
-    )
+    controller.setHistoryListener((availability) => {
+      onHistoryChangeRef.current(availability)
+      save()
+    })
     controllerRef.current = controller
     const observer = new ResizeObserver(([entry]) => {
       if (!entry) return
@@ -143,7 +182,26 @@ export const DrawingCanvas = forwardRef<
     })
     observer.observe(root)
 
+    const flush = () => {
+      controller.handle({
+        type: "PAUSE",
+        version: 1,
+        timestampMs: performance.now(),
+      })
+      save()
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flush()
+    }
+    window.addEventListener("pagehide", flush)
+    document.addEventListener("visibilitychange", onVisibilityChange)
+
     return () => {
+      window.removeEventListener("pagehide", flush)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+      flush()
+      initialDocumentRef.current = controller.document
+      saveRef.current = null
       observer.disconnect()
       controllerRef.current = null
       renderer.dispose()

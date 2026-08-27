@@ -37,11 +37,9 @@ function isStoredProgress(
   return value.version === STORAGE_VERSION && validStatus && validStep
 }
 
-export function loadOnboardingProgress(
-  storage: Storage = localStorage,
-): OnboardingProgress {
+export function loadOnboardingProgress(storage?: Storage): OnboardingProgress {
   try {
-    const value = storage.getItem(STORAGE_KEY)
+    const value = (storage ?? localStorage).getItem(STORAGE_KEY)
     if (!value) return { status: "new", currentStep: "cursor" }
     const parsed = JSON.parse(value) as Partial<StoredOnboardingProgress>
     if (!isStoredProgress(parsed)) {
@@ -61,7 +59,7 @@ export function loadOnboardingProgress(
 
 export function saveOnboardingProgress(
   progress: OnboardingProgress,
-  storage: Storage = localStorage,
+  storage?: Storage,
 ) {
   const preference: StoredOnboardingProgress = {
     version: STORAGE_VERSION,
@@ -69,15 +67,17 @@ export function saveOnboardingProgress(
     currentStep: progress.currentStep,
   }
   try {
-    storage.setItem(STORAGE_KEY, JSON.stringify(preference))
+    const target = storage ?? localStorage
+    target.setItem(STORAGE_KEY, JSON.stringify(preference))
   } catch {
     // Drawing remains available when private storage is unavailable.
   }
 }
 
-export function resetOnboardingCompletion(storage: Storage = localStorage) {
+export function resetOnboardingCompletion(storage?: Storage) {
   try {
-    storage.removeItem(STORAGE_KEY)
+    const target = storage ?? localStorage
+    target.removeItem(STORAGE_KEY)
   } catch {
     // Reset is best-effort and never blocks the camera experience.
   }

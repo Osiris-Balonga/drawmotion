@@ -46,10 +46,9 @@ export function useWorkspaceNavigation(
     closeGesturePalette,
     openGesturePaletteFromDock,
   }: NavigationCommands,
+  initialViewport: CanvasViewport = initialCanvasViewport,
 ) {
-  const [viewport, setViewport] = useState<CanvasViewport>(
-    initialCanvasViewport,
-  )
+  const [viewport, setViewport] = useState<CanvasViewport>(initialViewport)
   const panSessionRef = useRef<{
     pointerId: number
     x: number

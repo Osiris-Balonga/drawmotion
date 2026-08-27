@@ -101,19 +101,21 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
   await expect(
     page.getByRole("button", { name: "Passer le tutoriel" }),
   ).toBeHidden()
+  const inkBeforeReload = await inkIn(page, middle)
   await page.reload()
   await expect(
     page.getByRole("button", { name: "Passer le tutoriel" }),
   ).toBeHidden()
 
-  // Reload intentionally starts a fresh canvas; recreate one known stroke.
+  await expect.poll(() => inkIn(page, middle)).toBe(inkBeforeReload)
+  await expect(
+    page.getByRole("button", { name: "Exporter en PNG" }),
+  ).toBeEnabled()
+  await expect(
+    page.getByRole("button", { name: "Annuler", exact: true }),
+  ).toBeDisabled()
+  // Restored strokes remain erasable, while camera access is still explicit.
   await activateCamera(page)
-  await aimAt(page, start)
-  await playHands(page, [
-    ...hold("pinch", start, 4),
-    ...move("pinch", start, end),
-    ...hold("open", end),
-  ])
   const originalInk = await inkIn(page, middle)
   expect(originalInk).toBeGreaterThan(40)
   await aimAt(page, { x: middle.x, y: 0.3 })
@@ -127,6 +129,9 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
   await expect.poll(() => inkIn(page, middle)).toBe(originalInk)
   await page.getByRole("button", { name: "Rétablir", exact: true }).click()
   await expect.poll(() => inkIn(page, middle)).toBe(0)
+  await page.reload()
+  await expect.poll(() => inkIn(page, middle)).toBe(0)
+  await expect.poll(() => inkIn(page, { x: 0.36, y: 0.4 })).toBeGreaterThan(40)
 
   const downloadPromise = page.waitForEvent("download")
   await page.getByRole("button", { name: "Exporter en PNG" }).click()
@@ -170,7 +175,75 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
   expect(raster.ink[3]).toBe(255)
   expect(raster.erased).toEqual([255, 255, 255, 255])
   expect(raster.background).toEqual([255, 255, 255, 255])
+  await page.getByRole("button", { name: "Zoomer", exact: true }).click()
+  await page.reload()
+  await expect(
+    page.getByRole("button", { name: "Réinitialiser la vue" }),
+  ).toHaveText("120%")
+  await page
+    .getByRole("button", { name: "Effacer la toile", exact: true })
+    .click()
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Effacer la toile", exact: true })
+    .click()
+  await page.reload()
+  await expect(
+    page.getByRole("button", { name: "Exporter en PNG" }),
+  ).toBeDisabled()
+  await expect.poll(() => inkIn(page, { x: 0.36, y: 0.4 })).toBe(0)
   expect(errors).toEqual([])
+})
+
+test("reload retains an unfinished stroke and storage errors preserve drawing and export", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Passer le tutoriel" }).click()
+  await activateCamera(page)
+  const start = { x: 0.3, y: 0.4 }
+  const end = { x: 0.7, y: 0.4 }
+  await aimAt(page, start)
+  await playHands(page, [
+    ...hold("pinch", start, 4),
+    ...move("pinch", start, end),
+  ])
+  // No release event: pagehide must finish the live stroke before navigation.
+  await page.reload()
+  await expect.poll(() => inkIn(page, { x: 0.5, y: 0.4 })).toBeGreaterThan(40)
+  await expect(
+    page.getByRole("button", { name: "Activer ma caméra" }),
+  ).toBeVisible()
+  await page.evaluate(() => {
+    const originalSetItem = Storage.prototype.setItem.bind(localStorage)
+    Storage.prototype.setItem = function (key: string, value: string) {
+      if (key === "drawmotion:drawing")
+        throw new DOMException("Full", "QuotaExceededError")
+      originalSetItem(key, value)
+    }
+  })
+  await page.getByRole("button", { name: "Zoomer", exact: true }).click()
+  await expect(
+    page.getByText(/Le dessin n’a pas pu être sauvegardé/),
+  ).toBeVisible()
+  const download = page.waitForEvent("download")
+  await page.getByRole("button", { name: "Exporter en PNG" }).click()
+  expect((await download).suggestedFilename()).toMatch(/\.png$/)
+  // Some privacy settings deny access to the storage property itself.
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", {
+      get() {
+        throw new DOMException("Blocked", "SecurityError")
+      },
+    })
+  })
+  await page.reload()
+  await expect(
+    page.getByText(/Le dessin sauvegardé n’a pas pu être restauré/),
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Passer le tutoriel" }).click()
+  await expect(
+    page.getByRole("button", { name: "Activer ma caméra" }),
+  ).toBeEnabled()
 })
 
 test("fist eraser respects the selected 24px size instead of the old 40px minimum", async ({

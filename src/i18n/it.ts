@@ -1,6 +1,10 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "draft.restoreFailed":
+    "Impossibile ripristinare il disegno salvato. L’archiviazione locale potrebbe non essere disponibile o la bozza potrebbe essere danneggiata.",
+  "draft.saveFailed":
+    "Impossibile salvare il disegno su questo dispositivo. Esporta un PNG prima di chiudere o ricaricare la pagina.",
   "app.title": "DrawMotion — Disegna in aria con la tua webcam",
   "app.description":
     "DrawMotion trasforma i gesti della mano in tratti su una tela digitale.",

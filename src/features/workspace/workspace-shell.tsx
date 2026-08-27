@@ -1,6 +1,6 @@
 import { t } from "@/i18n"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { MonitorUp, Undo2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,7 @@ import {
 } from "@/features/toolbar/drawing-tools"
 import { ToolRail } from "@/features/toolbar/tool-rail"
 import { TopBar } from "@/features/toolbar/top-bar"
+import { loadDrawingDraft } from "@/infrastructure/storage/drawing-draft"
 import { CanvasViewportControls } from "./canvas-viewport-controls"
 import { DrawingCanvas, type DrawingCanvasHandle } from "./drawing-canvas"
 import { GestureCommandPalette } from "./gesture-command-palette"
@@ -60,6 +61,11 @@ const emptyHistoryAvailability: DrawingHistoryAvailability = {
 }
 
 export function WorkspaceShell() {
+  const [savedDraft] = useState(() => loadDrawingDraft())
+  useEffect(() => {
+    if (savedDraft.failed)
+      toast.error(t("draft.restoreFailed"), { id: "draft-restore" })
+  }, [savedDraft])
   const [initialState] = useState<OnboardingState>(() => {
     const progress = loadOnboardingProgress()
     return createOnboardingState(progress.currentStep)
@@ -202,15 +208,19 @@ export function WorkspaceShell() {
     handleStagePointerMove,
     finishStagePan,
     handleStageWheel,
-  } = useWorkspaceNavigation(stageRef, {
-    changeTool,
-    historyAvailability,
-    undo,
-    redo,
-    isGesturePaletteOpen,
-    closeGesturePalette,
-    openGesturePaletteFromDock,
-  })
+  } = useWorkspaceNavigation(
+    stageRef,
+    {
+      changeTool,
+      historyAvailability,
+      undo,
+      redo,
+      isGesturePaletteOpen,
+      closeGesturePalette,
+      openGesturePaletteFromDock,
+    },
+    savedDraft.draft.viewport,
+  )
 
   return (
     <div
@@ -270,6 +280,7 @@ export function WorkspaceShell() {
         >
           <DrawingCanvas
             ref={drawingRef}
+            initialDocument={savedDraft.draft.document}
             assistanceMode={assistanceMode}
             drawingStyle={drawingStyle}
             renderPointer={false}
