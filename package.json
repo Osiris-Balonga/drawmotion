@@ -2,6 +2,14 @@
   "name": "drawmotion",
   "private": true,
   "version": "1.0.0-rc.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Osiris-Balonga/drawmotion.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Osiris-Balonga/drawmotion/issues"
+  },
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "engines": {
@@ -10,7 +18,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/verify-licenses.mjs",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
@@ -27,6 +35,7 @@
     "verify:vision-assets": "node scripts/verify-vision-assets.mjs",
     "verify:security-headers": "node scripts/verify-security-headers.mjs",
     "verify:bundle": "node scripts/check-bundle-budget.mjs",
+    "verify:licenses": "node scripts/verify-licenses.mjs",
     "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:all"
   },
   "dependencies": {

@@ -16,7 +16,23 @@ const deployment = JSON.parse(
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: "drawmotion-license",
+      generateBundle() {
+        this.emitFile({
+          type: "asset",
+          fileName: "licenses/drawmotion-MIT.txt",
+          source: readFileSync(path.join(projectRoot, "LICENSE"), "utf8"),
+        })
+      },
+    },
+  ],
+  build: {
+    license: { fileName: "licenses/bundled.md" },
+  },
   preview: {
     headers: Object.fromEntries(
       deployment.headers.flatMap((rule) =>
