@@ -49,6 +49,10 @@ de toile propose zoom et déplacement avec Espace + glisser. Les commandes
 restent disponibles à la souris et au clavier, mais le tracé actuel nécessite
 une main détectée : ce n'est pas encore un mode complet de dessin à la souris.
 
+Le PNG exporte la zone visible de la toile au zoom courant. Dézoomer et
+recentrer pour inclure tout le dessin ; les traits hors champ ne sont pas
+automatiquement inclus. Le document n'est pas sauvegardé au rechargement.
+
 ## Tests
 
 `pnpm test` lance les tests unitaires, de composants et d'intégration.
