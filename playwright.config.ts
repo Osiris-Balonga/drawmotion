@@ -1,5 +1,10 @@
 import { defineConfig } from "@playwright/test"
 
+const sitePath = process.env.SITE_URL
+  ? new URL(process.env.SITE_URL).pathname
+  : "/"
+const baseURL = `http://127.0.0.1:4175${sitePath}`
+
 export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: ".artifacts/test-results",
@@ -15,7 +20,7 @@ export default defineConfig({
   ],
   use: {
     locale: "fr-FR",
-    baseURL: "http://127.0.0.1:4175",
+    baseURL,
     browserName: "chromium",
     channel: process.env.E2E_BROWSER_CHANNEL || undefined,
     viewport: { width: 1440, height: 900 },
@@ -27,7 +32,7 @@ export default defineConfig({
       process.env.E2E_USE_BUILD === "1"
         ? "pnpm preview --host 127.0.0.1 --port 4175 --strictPort"
         : "pnpm build && pnpm preview --host 127.0.0.1 --port 4175 --strictPort",
-    url: "http://127.0.0.1:4175",
+    url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
   },

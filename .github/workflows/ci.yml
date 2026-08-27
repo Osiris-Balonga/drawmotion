@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: [dev, main]
   push:
-    branches: [dev]
+    branches: [dev, main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -15,6 +16,8 @@ permissions:
 
 env:
   CI: true
+  SITE_URL: https://osiris-balonga.github.io/drawmotion/
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
 
 jobs:
   quality:
@@ -114,6 +117,12 @@ jobs:
           path: dist/
           retention-days: 7
 
+      - name: Package GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/
+
   e2e-chromium:
     name: e2e-chromium
     needs: build
@@ -159,3 +168,25 @@ jobs:
             .artifacts/test-results/
           include-hidden-files: true
           retention-days: 7
+
+  deploy-pages:
+    name: deploy-pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [quality, unit-tests, build, e2e-chromium]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - name: Deploy tested artifact
+        id: deployment
+        uses: actions/deploy-pages@v5

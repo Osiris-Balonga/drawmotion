@@ -1,6 +1,7 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "app.title": "DrawMotion — 用摄像头在空中绘画",
   "app.description": "DrawMotion 将手势转换为数字画布上的笔画。",
   "app.tagline": "手势画布",
   "app.skipToCanvas": "跳至画布",

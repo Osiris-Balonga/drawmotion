@@ -32,6 +32,7 @@ pnpm test:e2e gestures.spec.ts
 pnpm test:e2e accessibility.spec.ts
 pnpm test:e2e security.spec.ts
 pnpm test:e2e localization.spec.ts
+pnpm test:e2e seo.spec.ts
 ```
 
 Playwright already filters by file or title (`--grep`); individual scenarios
@@ -41,7 +42,7 @@ do not need additional aliases. Vitest does not collect browser test files.
 
 Tests live near the code. Their suffix assigns each file to one group:
 
-- `src/**/*.test.ts`: unit tests, except `.integration.test.ts`.
+- `src/**/*.test.ts` and `scripts/**/*.test.ts`: unit tests, except `.integration.test.ts`.
 - `src/**/*.test.tsx`: components, except `.integration.test.tsx`.
 - `src/**/*.integration.test.{ts,tsx}`: integrations of multiple real modules.
 - `tests/e2e/**/*.spec.ts`: browser journeys, outside Vitest.
@@ -92,7 +93,9 @@ machines, coverage settings, or concurrency levels.
 
 Tests use fresh isolated Chromium contexts, with no physical camera, account,
 personal profile, or changes to the development server. Playwright builds and
-serves the app at `127.0.0.1:4175`, then stops its server. The port must be free;
+serves the app at `127.0.0.1:4175`, using the path in `SITE_URL` when configured,
+then stops its server. CI exercises `/drawmotion/`, including actual Worker/model
+loading. The port must be free;
 existing servers are not reused. Failure traces/screenshots go to
 `.artifacts/test-results/`; open the report with
 `pnpm exec playwright show-report .artifacts/playwright-report`.
@@ -117,7 +120,7 @@ No E2E hooks or personal videos ship with the app. Tests do not directly mutate
 React state.
 
 The separate `security.spec.ts` loads and executes the actual local Worker,
-model, and WASM under production CSP using fake video. It also checks headers
+model, and WASM under the production document CSP using fake video. It also checks deployed assets
 and a blocked external connection. Inference is real, but the input is still
 not a real hand.
 

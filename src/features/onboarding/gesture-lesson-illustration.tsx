@@ -34,7 +34,11 @@ export function GestureLessonIllustration({
 
   return (
     <figure className="gesture-lesson" data-lesson-step={step}>
-      <img aria-hidden="true" alt="" src={illustration.src} />
+      <img
+        aria-hidden="true"
+        alt=""
+        src={`${import.meta.env.BASE_URL}${illustration.src.slice(1)}`}
+      />
       <figcaption className="gesture-lesson__caption">
         {illustration.caption}
       </figcaption>

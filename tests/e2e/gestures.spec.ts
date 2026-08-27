@@ -24,7 +24,7 @@ test.use({
 
 test.beforeEach(async ({ page }) => {
   await installGestureCamera(page)
-  await page.goto("/")
+  await page.goto("./")
 })
 
 test("camera, five tutorial missions, fist eraser, history and downloaded PNG", async ({

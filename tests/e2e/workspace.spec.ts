@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test"
 
 async function enterWorkspace(page: Page) {
-  await page.goto("/")
+  await page.goto("./")
   await page.getByRole("button", { name: "Passer le tutoriel" }).click()
 }
 
@@ -36,7 +36,7 @@ test("first visit, loaded illustration, saved skip and tutorial replay", async (
 }) => {
   const errors: string[] = []
   page.on("pageerror", (error) => errors.push(error.message))
-  await page.goto("/")
+  await page.goto("./")
 
   await expect(
     page.getByRole("heading", { name: "DrawMotion", exact: true }),

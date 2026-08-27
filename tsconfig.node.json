@@ -21,6 +21,7 @@
     "vite.config.ts",
     "vitest.config.ts",
     "playwright.config.ts",
-    "tests/e2e/**/*.ts"
+    "tests/e2e/**/*.ts",
+    "scripts/**/*.ts"
   ]
 }

@@ -4,8 +4,9 @@ Draw in the air, directly in your browser. DrawMotion turns hand movements
 captured by a webcam into 2D drawings: pinch to draw, release to lift the pen,
 and make a fist to erase.
 
-Prototype being prepared for a public demo, version `1.0.0-rc.1`.
-The demo is not published yet. See [features and limitations](CHANGELOG.md).
+Public demo candidate, version `1.0.0-rc.1`.
+[GitHub Pages demo](https://osiris-balonga.github.io/drawmotion/) is deployed
+from `main` after CI passes. See [features and limitations](CHANGELOG.md).
 
 ## Getting started
 
@@ -18,7 +19,6 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-The repository is still private, so cloning currently requires access.
 Open the URL printed by Vite, click the camera preview, and follow the tutorial.
 No API key or Python server is needed. Desktop Chrome and Edge are the initial
 targets; see [compatibility limitations](docs/COMPATIBILITY.md).

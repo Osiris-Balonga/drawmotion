@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises"
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
 import { expect, test } from "@playwright/test"
+import { documentCsp } from "../../scripts/security-policy"
 
 test.use({
   launchOptions: {
@@ -13,16 +13,13 @@ test.use({
   },
 })
 
-test("production headers allow the real local MediaPipe Worker and block external connections", async ({
+test("document CSP allows real local MediaPipe inference and blocks page connections", async ({
   page,
   context,
   request,
   baseURL,
 }) => {
   test.setTimeout(60_000)
-  const config = JSON.parse(await readFile("vercel.json", "utf8")) as {
-    headers: { headers: { key: string; value: string }[] }[]
-  }
   const requested: string[] = []
   const errors: string[] = []
   context.on("request", (request) => requested.push(request.url()))
@@ -30,13 +27,14 @@ test("production headers allow the real local MediaPipe Worker and block externa
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text())
   })
-  const response = await page.goto("/")
+  await page.goto("./")
   await promisify(execFile)(process.execPath, [
-    "scripts/verify-security-headers.mjs",
+    "scripts/verify-deployment.mjs",
     baseURL!,
   ])
-  for (const { key, value } of config.headers[0].headers)
-    expect(response?.headers()[key.toLowerCase()]).toBe(value)
+  await expect(
+    page.locator('meta[http-equiv="Content-Security-Policy"]'),
+  ).toHaveAttribute("content", documentCsp)
   await page.getByRole("button", { name: "Passer le tutoriel" }).click()
   await page.getByRole("button", { name: "Activer ma caméra" }).click()
   // No routed fake Worker: this assertion requires actual WASM inference on the fake video.
@@ -47,14 +45,21 @@ test("production headers allow the real local MediaPipe Worker and block externa
   expect(requested.some((url) => url.endsWith("hand_landmarker.task"))).toBe(
     true,
   )
-  expect(requested.filter((url) => new URL(url).origin !== baseURL)).toEqual([])
+  expect(
+    requested.filter((url) => new URL(url).origin !== new URL(baseURL!).origin),
+  ).toEqual([])
+  expect(
+    requested.filter(
+      (url) => !new URL(url).pathname.startsWith(new URL(baseURL!).pathname),
+    ),
+  ).toEqual([])
   const workerUrl = requested.find((url) =>
     /hand-tracking\.worker-.*\.js$/.test(url),
   )!
   const workerResponse = await request.head(workerUrl)
-  expect(workerResponse.headers()["content-security-policy"]).toBe(
-    response?.headers()["content-security-policy"],
-  )
+  expect(workerResponse.status()).toBe(200)
+  // Meta CSP does not set response policy on a Worker; do not claim otherwise.
+  expect(workerResponse.headers()["content-security-policy"]).toBeUndefined()
   await page.getByRole("button", { name: "Mettre la caméra en pause" }).click()
   expect(errors).toEqual([])
 

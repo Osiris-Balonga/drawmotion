@@ -5,7 +5,7 @@ test("small touch screens get a readable compatibility message", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto("/")
+  await page.goto("./")
   await expect(
     page.getByRole("heading", { name: "Un écran plus large est nécessaire" }),
   ).toBeVisible()
@@ -35,7 +35,7 @@ test("WCAG checks on onboarding, stroke settings, custom color and commands", as
 }, testInfo) => {
   // Four full-page axe scans, including open popovers, share this journey.
   test.setTimeout(60_000)
-  await page.goto("/")
+  await page.goto("./")
   const scan = async (state: string) =>
     test.step(`axe: ${state}`, async () => {
       // Measure settled colors, not the translucent middle of a popover entrance.
@@ -76,7 +76,7 @@ test("WCAG checks on onboarding, stroke settings, custom color and commands", as
 test("keyboard opens, changes and closes stroke settings with restored focus", async ({
   page,
 }) => {
-  await page.goto("/")
+  await page.goto("./")
   const skip = page.getByRole("button", { name: "Passer le tutoriel" })
   await tabTo(page, skip)
   await page.keyboard.press("Enter")
