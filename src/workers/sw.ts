@@ -2,6 +2,9 @@ import { setCacheNameDetails } from "workbox-core/setCacheNameDetails"
 import { matchPrecache } from "workbox-precaching/matchPrecache"
 import { precacheAndRoute } from "workbox-precaching/precacheAndRoute"
 import type { PrecacheEntry } from "workbox-precaching/_types"
+import { getCacheKeyForURL } from "workbox-precaching/getCacheKeyForURL"
+import { cacheNames } from "workbox-core/cacheNames"
+import { clientsMatchBuild } from "../infrastructure/pwa/initial-control"
 import {
   OFFLINE_PROTOCOL,
   OFFLINE_STATUS_REQUEST,
@@ -26,8 +29,23 @@ precacheAndRoute(entries, {
   ignoreURLParametersMatching: [/^utm_/, /^fbclid$/],
 })
 
-// Workbox removes obsolete revisions on activation. No forced activation, client
-// claiming, catch-all navigation fallback, runtime caching or cache-wide deletion.
+// Updates still wait for old controlled windows to close: never skipWaiting.
+// On first use, matching documents can go offline without a reload ceremony.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const clients = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      })
+      if (await clientsMatchBuild(clients, scope, __BUILD_ID__))
+        await self.clients.claim()
+    })(),
+  )
+})
+
+// Workbox removes obsolete revisions on activation. Repairs below only restore
+// missing entries from this worker's immutable, integrity-checked inventory.
 self.addEventListener("message", (event: ExtendableMessageEvent) => {
   const data: unknown = event.data
   if (
@@ -51,8 +69,27 @@ self.addEventListener("message", (event: ExtendableMessageEvent) => {
       const client = await self.clients.get(source.id)
       if (!client || !client.url.startsWith(scope)) return
       let missing = 0
+      let canRepair = "repair" in data && data.repair === true
       for (const entry of entries) {
-        if (!(await matchPrecache(entry.url))) missing++
+        if (await matchPrecache(entry.url)) continue
+        if (canRepair && entry.integrity) {
+          try {
+            const key = getCacheKeyForURL(entry.url)
+            const response = await fetch(new URL(entry.url, scope), {
+              integrity: entry.integrity,
+              cache: "reload",
+              signal: AbortSignal.timeout(10_000),
+            })
+            if (key && response.ok) {
+              await (await caches.open(cacheNames.precache)).put(key, response)
+              continue
+            }
+          } catch {
+            /* Keep reporting incomplete; retry after connectivity returns. */
+          }
+          canRepair = false
+        }
+        missing++
       }
       port.postMessage({
         protocol: OFFLINE_PROTOCOL,

@@ -65,6 +65,11 @@ export function verifyPwa(
   )
   for (const name of required)
     assert(urls.has(name), `Missing offline asset: ${name}`)
+  assert(
+    !urls.has("network-check.json"),
+    "Connectivity probe must never be precached",
+  )
+  assert.equal(JSON.parse(read("network-check.json")).application, "drawmotion")
   assert.equal(
     required.filter((name) => /^vision\//.test(name)).length,
     7,
@@ -80,7 +85,7 @@ export function verifyPwa(
     "Service worker exceeds 35 KiB gzip",
   )
   assert(
-    !/\.skipWaiting\(|\.claim\(/.test(worker),
+    !/\.skipWaiting\(/.test(worker),
     "Updates must not replace active drawing sessions",
   )
   for (const icon of [

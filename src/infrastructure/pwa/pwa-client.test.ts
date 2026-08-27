@@ -48,11 +48,31 @@ afterEach(() => {
 })
 
 describe("offline lifecycle", () => {
-  it("does not register until asked and distinguishes prepared from controlled", async () => {
+  it("bounds automatic retries and resumes after a confirmed reconnection", async () => {
+    vi.useFakeTimers()
+    const { client, workers, registration } = fixture()
+    workers.register.mockRejectedValue(new Error("offline"))
+    await client.prepare()
+    await vi.advanceTimersByTimeAsync(
+      30_000 + 60_000 + 120_000 + 240_000 + 300_000,
+    )
+    expect(workers.register).toHaveBeenCalledTimes(6)
+    await vi.advanceTimersByTimeAsync(300_000)
+    expect(workers.register).toHaveBeenCalledTimes(6)
+    workers.register.mockResolvedValue(registration)
+    client.onVisible(true)
+    await Promise.resolve()
+    await client.verify()
+    expect(client.getSnapshot().offline).toBe("prepared-reopen")
+    client.dispose()
+  })
+  it("registers automatically and distinguishes cached from controlled", async () => {
     const { client, workers, worker } = fixture()
     await Promise.resolve()
-    expect(workers.register).not.toHaveBeenCalled()
-    await client.prepare()
+    expect(workers.register).toHaveBeenCalledTimes(1)
+    await vi.waitFor(() =>
+      expect(client.getSnapshot().offline).toBe("prepared-reopen"),
+    )
     expect(workers.register).toHaveBeenCalledWith(`${scope}sw.js`, {
       scope,
       updateViaCache: "none",

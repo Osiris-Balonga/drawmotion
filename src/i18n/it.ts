@@ -1,20 +1,27 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "pwa.reconnected": "Connessione ripristinata.",
+  "pwa.disconnectedIncomplete":
+    "Sei offline. Mancano ancora alcune risorse; il download riprenderà con la connessione.",
+  "pwa.disconnectedReady": "Sei offline. Puoi continuare a disegnare.",
+  "pwa.disconnected": "Offline",
+  "pwa.details": "Archiviazione e aggiornamenti",
+  "pwa.local": "I tuoi disegni restano su questo dispositivo.",
   "pwa.updatePolicy":
     "Gli aggiornamenti attendono la chiusura di tutte le finestre di DrawMotion. La sessione di disegno non viene mai ricaricata.",
   "pwa.updateChecking": "Ricerca di aggiornamenti…",
   "pwa.updateDownloading":
     "Download di un aggiornamento. Puoi continuare a disegnare.",
   "pwa.updateWaiting":
-    "Un aggiornamento è pronto. Quando hai finito, chiudi tutte le finestre di DrawMotion e riapri l’app. Non serve ricaricare ora.",
+    "Un aggiornamento è pronto per il prossimo avvio. Puoi continuare a disegnare.",
   "pwa.updateFailed":
     "Impossibile scaricare l’aggiornamento. La versione attuale resta disponibile.",
   "pwa.checkUpdate": "Cerca aggiornamenti",
   "pwa.installed": "Aperta come applicazione installata.",
   "pwa.install": "Installa DrawMotion",
   "pwa.installHelp":
-    "Usa «Installa app» nel browser. Su iPad: Safari → Condividi → Aggiungi alla schermata Home. L’installazione da sola non prepara le risorse offline.",
+    "Installa l’app dal menu del browser. Su iPad: Safari → Condividi → Aggiungi alla schermata Home.",
   "pwa.persist": "Richiedi archiviazione locale persistente",
   "pwa.storageGranted": "Archiviazione persistente autorizzata",
   "pwa.storageDenied":
@@ -22,19 +29,14 @@ export const it = {
   "pwa.menu": "Installazione e offline",
   "pwa.title": "Porta DrawMotion con te",
   "pwa.description":
-    "Prepara l’app online, poi disegna senza connessione. La preparazione non attiva mai la fotocamera.",
-  "pwa.prepare": "Prepara offline · circa 50 MB",
+    "L’app salva automaticamente le risorse offline (circa 50 MB) dopo il caricamento, senza attivare la fotocamera.",
   "pwa.unavailable":
     "La preparazione offline non è disponibile qui. Usa un browser compatibile tramite HTTPS.",
-  "pwa.idle": "Non ancora pronta per l’uso offline.",
-  "pwa.preparing": "Preparazione dell’app e del rilevamento dei gesti…",
-  "pwa.reopen":
-    "Preparazione completata. Chiudi tutte le finestre di DrawMotion, poi riapri l’app per usarla offline.",
-  "pwa.verifying": "Verifica delle risorse offline…",
-  "pwa.ready": "Pronta per l’uso offline su questo dispositivo.",
+  "pwa.preparing": "Salvataggio dell’app per l’uso offline… Puoi disegnare.",
+  "pwa.reopen": "Le risorse offline sono salvate per la prossima visita.",
+  "pwa.ready": "Disponibile offline su questo dispositivo.",
   "pwa.failed":
-    "Impossibile verificare le risorse offline. Connettiti e riprova. Se il problema persiste, segui le istruzioni di ripristino nella documentazione del progetto.",
-  "pwa.retry": "Verifica di nuovo",
+    "L’accesso offline non è ancora completo. I download vengono ritentati automaticamente quando la connessione è disponibile.",
   "pwa.limits":
     "Il browser può cancellare i dati locali. Esporta i disegni importanti.",
   "draft.restoreFailed":
