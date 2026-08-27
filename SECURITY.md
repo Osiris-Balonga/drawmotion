@@ -1,43 +1,43 @@
-# Sécurité
+# Security
 
-DrawMotion est un prototype, sans version publique maintenue pour le moment.
-Ne publiez pas de données de webcam ou d'informations sensibles dans une issue.
-Le canal prévu est [Report a vulnerability](https://github.com/Osiris-Balonga/drawmotion/security/advisories/new),
-qui envoie un signalement privé au mainteneur. Son activation doit être
-vérifiée avant l'ouverture du dépôt : le contrôle API du 27 août 2026 renvoie
-404 et ne permet pas de la confirmer. Si le lien n'est pas disponible,
-demandez au mainteneur d'activer le canal, sans divulguer la faille dans une
-issue publique. Aucun délai de correction n'est garanti.
+DrawMotion is a prototype without a maintained public release yet.
+Do not post webcam data or sensitive information in an issue.
 
-Un signalement utile précise le commit, le navigateur, les étapes et l'impact,
-avec des données synthétiques. Ne joignez pas de vidéo personnelle ni de secret.
+The intended private channel is [Report a vulnerability](https://github.com/Osiris-Balonga/drawmotion/security/advisories/new).
+Its activation must be verified before the repository becomes public: the API
+check on August 27, 2026 returned 404 and did not confirm availability. If the
+link is unavailable, ask the maintainer to enable private reporting without
+disclosing the vulnerability in a public issue. No response or fix deadline
+is guaranteed.
 
-## Contrôles prévus dans GitHub
+A useful report includes the commit, browser, reproduction steps, and impact,
+using synthetic data. Do not attach personal recordings or secrets.
 
-- CI existante : format, lint, TypeScript, tests/couverture, assets locaux,
-  build, budgets JS/CSS, parcours Chromium incluant vraie inférence sous CSP.
-- `security.yml` : audit des dépendances de production **et** développement,
-  bloquant sur les vulnérabilités connues high/critical. Une erreur réseau
-  n'est pas ignorée et ne signifie pas que le dépôt est sain.
-- Dependabot existe déjà pour npm et GitHub Actions, chaque semaine vers `dev`.
-- CodeQL JavaScript/TypeScript et dependency review sont préparés avec des
-  actions épinglées par SHA, permissions minimales et sans `pull_request_target`.
+## GitHub checks
 
-Sur un dépôt privé, ces deux derniers outils nécessitent une éligibilité
-GitHub Code Security et leur activation. Ils sont **désactivés par défaut**,
-avec un avis explicite dans le workflow. Le mainteneur ne doit définir la
-variable de dépôt `CODE_SECURITY_ENABLED=true` qu'après vérification de
-l'offre et activation des fonctionnalités. Sur dépôt public, les conditions
-permettent leur exécution. Ne pas configurer simultanément CodeQL default
-setup et ce workflow advanced setup sans suivre la procédure GitHub.
+- CI covers formatting, linting, TypeScript, tests/coverage, local assets,
+  builds, JS/CSS budgets, and Chromium journeys including real inference under CSP.
+- `security.yml` audits production **and** development dependencies, blocking
+  on known high/critical vulnerabilities. Network errors are not ignored and
+  do not mean the repository is safe.
+- Dependabot checks npm and GitHub Actions weekly, targeting `dev`.
+- CodeQL JavaScript/TypeScript analysis and dependency review use SHA-pinned
+  actions, minimal permissions, and no `pull_request_target`.
 
-Les fichiers de workflows ne constituent pas une preuve d'exécution sur
-GitHub. Vérifier les runs distants et les contrôles obligatoires sur le commit
-candidat avant chaque publication.
+For a private repository, CodeQL and dependency review require GitHub Code
+Security eligibility and activation. They are **disabled by default**, with an
+explicit workflow notice. Set the repository variable
+`CODE_SECURITY_ENABLED=true` only after confirming eligibility and enabling
+the features. The workflow allows them on public repositories. Do not enable
+CodeQL default setup alongside this advanced workflow without following
+GitHub's migration procedure.
 
-Les timings locaux, données traitées et exceptions CSP nécessaires sont
-décrits dans [COMPATIBILITY.md](./docs/COMPATIBILITY.md).
+Workflow files are not evidence of successful GitHub execution. Check remote
+runs and required checks on the candidate commit before publication.
 
-Sources : [éligibilité CodeQL privé](https://docs.github.com/en/code-security/reference/code-scanning/troubleshoot-analysis-errors/private-repository-enablement),
+See [COMPATIBILITY.md](docs/COMPATIBILITY.md) for local timings, processed data,
+and required CSP exceptions.
+
+References: [private CodeQL eligibility](https://docs.github.com/en/code-security/reference/code-scanning/troubleshoot-analysis-errors/private-repository-enablement),
 [dependency review](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependency-review),
-[licence CodeQL Action](https://github.com/github/codeql-action#license).
+[CodeQL Action license](https://github.com/github/codeql-action#license).

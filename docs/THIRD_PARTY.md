@@ -1,68 +1,67 @@
-# Licences et provenance
+# Licenses and provenance
 
-Vérification du 27 août 2026 pour le lockfile courant. La licence MIT de
-[DrawMotion](../LICENSE) ne remplace pas celle des composants tiers.
+Checked on August 27, 2026 against the current lockfile.
+[DrawMotion's MIT license](../LICENSE) does not replace third-party licenses.
 
-## Ce que le build distribue
+## What the build distributes
 
-`pnpm build` produit `dist/licenses/` et vérifie sa présence et son contenu.
-`pnpm verify:licenses` permet de refaire ce contrôle sur un build existant.
+`pnpm build` produces `dist/licenses/` and verifies its presence and contents.
+Use `pnpm verify:licenses` to check an existing build.
 
-| Ressource                                  | Licence et texte distribué                          | Provenance                                       |
-| ------------------------------------------ | --------------------------------------------------- | ------------------------------------------------ |
-| JavaScript applicatif et transitifs        | Textes complets dans `bundled.md`, générés par Vite | Paquets effectivement inclus dans les chunks     |
-| Worker MediaPipe, JS et WASM               | Apache-2.0, `mediapipe-Apache-2.0.txt`              | `@mediapipe/tasks-vision@1.0.1`                  |
-| Hand Landmarker full, float16, version 1   | Apache-2.0, même texte                              | Modèle officiel inchangé ; références ci-dessous |
-| Geist Variable 5.3.0                       | OFL-1.1, `geist-OFL.txt`                            | `@fontsource-variable/geist`                     |
-| Composants shadcn/ui adaptés et CSS 4.19.0 | MIT, `shadcn-MIT.txt`                               | shadcn/ui, primitives Base UI                    |
-| Tailwind CSS 4.3.3                         | MIT, `tailwindcss-MIT.txt`                          | `tailwindcss`                                    |
-| tw-animate-css 1.4.0                       | MIT, `tw-animate-css-MIT.txt`                       | `tw-animate-css`                                 |
-| Code original DrawMotion                   | MIT, `drawmotion-MIT.txt`                           | Copié depuis le LICENSE racine par Vite          |
+| Resource                                      | License and distributed text              | Provenance                                  |
+| --------------------------------------------- | ----------------------------------------- | ------------------------------------------- |
+| Application JavaScript and transitive modules | Full texts in Vite-generated `bundled.md` | Packages actually included in chunks        |
+| MediaPipe Worker, JS, and WASM                | Apache-2.0, `mediapipe-Apache-2.0.txt`    | `@mediapipe/tasks-vision@1.0.1`             |
+| Hand Landmarker full, float16, version 1      | Apache-2.0, same text                     | Unmodified official model; references below |
+| Geist Variable 5.3.0                          | OFL-1.1, `geist-OFL.txt`                  | `@fontsource-variable/geist`                |
+| Adapted shadcn/ui components and CSS 4.19.0   | MIT, `shadcn-MIT.txt`                     | shadcn/ui with Base UI primitives           |
+| Tailwind CSS 4.3.3                            | MIT, `tailwindcss-MIT.txt`                | `tailwindcss`                               |
+| tw-animate-css 1.4.0                          | MIT, `tw-animate-css-MIT.txt`             | `tw-animate-css`                            |
+| Original DrawMotion code                      | MIT, `drawmotion-MIT.txt`                 | Copied from the root LICENSE by Vite        |
 
-Le rapport Vite couvre les modules JavaScript du bundle applicatif, pas les
-assets copiés depuis `public/` ni automatiquement le build Worker séparé.
-Les textes statiques complémentaires sont conservés dans
-[public/licenses](../public/licenses/README.md). Les notices mixtes des icônes
-Lucide sont conservées dans le texte complet de son paquet, pas réduites à « ISC ».
+Vite's report covers JavaScript modules in the application bundle, not assets
+copied from `public/` or automatically the separate Worker build.
+Complementary static texts live in [public/licenses](../public/licenses/README.md).
+Lucide's mixed notices are preserved in its full package license, not reduced
+to an ISC label.
 
-Le contrôle de packaging n'est pas une analyse juridique automatique. Après
-mise à jour d'une dépendance, relire son texte, ses éventuels fichiers NOTICE et
-l'artefact final ; la présence d'un identifiant SPDX ne suffit pas.
+Packaging verification is not automated legal analysis. After updating a
+dependency, review its license, any NOTICE files, and the final artifact.
+An SPDX identifier alone is not enough.
 
-## Modèle et runtime MediaPipe
+## MediaPipe model and runtime
 
-La [documentation officielle Hand Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker)
-relie le modèle full au
-[Model Card Hand Tracking Lite/Full](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Hand%20Tracking%20%28Lite_Full%29%20with%20Fairness%20Oct%202021.pdf).
-La page 2 comporte « LICENSED UNDER — Apache License, Version 2.0 ».
-C'est la référence de licence du modèle, distincte de celle du paquet JavaScript.
+The [official Hand Landmarker documentation](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker)
+links the full model to the
+[Hand Tracking Lite/Full model card](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Hand%20Tracking%20%28Lite_Full%29%20with%20Fairness%20Oct%202021.pdf).
+Page 2 identifies the model as licensed under Apache License, Version 2.0.
+This establishes the model's license separately from the JavaScript package.
 
-Les URLs versionnées, dates de récupération et SHA-256 du modèle et des six
-fichiers runtime figurent dans [public/vision/README.md](../public/vision/README.md).
-`pnpm verify:vision-assets` contrôle leur intégrité. Le texte Apache provient
-du [LICENSE MediaPipe](https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE).
+Versioned URLs, retrieval dates, and SHA-256 hashes for the model and six runtime
+files are in [public/vision/README.md](../public/vision/README.md).
+`pnpm verify:vision-assets` checks their integrity. The Apache text comes from
+[MediaPipe's LICENSE](https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE).
 
-## Visuels du projet
+## Project visuals
 
-`public/brand/drawmotion-symbol-b.png` et `public/onboarding/*.png` sont des
-visuels générés avec l'outil de génération d'images OpenAI, puis sélectionnés
-et adaptés pour DrawMotion par le mainteneur. Ce ne sont pas des illustrations
-MediaPipe ni des icônes Lucide. La licence MIT couvre les droits du mainteneur
-sur ces assets ; elle ne garantit ni exclusivité sur un contenu généré, ni
-disponibilité d'une marque. Aucune vidéo de webcam personnelle n'est nécessaire
-au dépôt ni aux tests.
+`public/brand/drawmotion-symbol-b.png` and `public/onboarding/*.png` were
+generated with OpenAI's image-generation tool, then selected and adapted for
+DrawMotion by the maintainer. They are not MediaPipe illustrations or Lucide
+icons. MIT covers the maintainer's rights in these assets; it does not guarantee
+exclusivity over generated content or trademark clearance. No personal webcam
+recordings are required by the repository or tests.
 
-## Mettre à jour les notices
+## Updating notices
 
-1. Mettre à jour le paquet et le lockfile dans la même PR.
-2. Relire la licence et la provenance des nouveaux fichiers. Pour CSS, polices,
-   modèles, WASM et code copié, actualiser le texte dans `public/licenses/`.
-3. Exécuter `pnpm build`, `pnpm verify:vision-assets` et inspecter
-   `dist/licenses/`, y compris les mentions de copyright.
-4. Vérifier que le site déployé sert ces fichiers. Ne pas retirer ce dossier
-   de l'artefact statique.
-5. Pour auditer aussi les outils de développement : `pnpm licenses list --json`.
-   Sa sortie contient des chemins locaux ; ne pas publier la sortie brute.
+1. Update the package and lockfile in the same PR.
+2. Review new files' licenses and provenance. For CSS, fonts, models, WASM, and
+   copied code, update the corresponding text in `public/licenses/`.
+3. Run `pnpm build` and `pnpm verify:vision-assets`; inspect
+   `dist/licenses/`, including copyright notices.
+4. Verify that the deployed site serves these files. Do not strip this directory
+   from the static artifact.
+5. To audit development tools too, use `pnpm licenses list --json`.
+   Its output includes local paths; do not publish it raw.
 
-Les dépendances de développement ne sont pas toutes redistribuées avec le site.
-Leur licence reste disponible dans chaque paquet installé depuis le lockfile.
+Not all development dependencies ship with the site. Their licenses remain
+available in the packages installed from the lockfile.

@@ -35,7 +35,7 @@ describe("WorkspaceShell", () => {
     },
   )
 
-  it("expose une structure et des états techniques compréhensibles", () => {
+  it("exposes an understandable structure and technical states", () => {
     renderWorkspace()
 
     expect(
@@ -53,7 +53,7 @@ describe("WorkspaceShell", () => {
     ).toBeDisabled()
   })
 
-  it("permet de sélectionner un outil au clavier", async () => {
+  it("supports selecting a tool with the keyboard", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -70,7 +70,7 @@ describe("WorkspaceShell", () => {
     expect(screen.getByText("Gomme sélectionné, 40 pixels")).toBeInTheDocument()
   })
 
-  it("sélectionne les outils par raccourci sauf pendant une saisie", async () => {
+  it("selects tools with shortcuts except while typing", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -97,7 +97,7 @@ describe("WorkspaceShell", () => {
     input.remove()
   })
 
-  it("ouvre les commandes avec le bouton de secours et la touche M", async () => {
+  it("opens commands with the fallback button and M key", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -119,7 +119,7 @@ describe("WorkspaceShell", () => {
     ).toBeInTheDocument()
   })
 
-  it("présente une première mission qui explique le curseur", () => {
+  it("starts with a mission explaining the pointer", () => {
     renderWorkspace()
 
     expect(
@@ -142,7 +142,7 @@ describe("WorkspaceShell", () => {
     )
   })
 
-  it("permet de passer puis de rejouer le tutoriel", async () => {
+  it("supports skipping and replaying the tutorial", async () => {
     const user = userEvent.setup()
     renderWorkspace()
 
@@ -161,7 +161,7 @@ describe("WorkspaceShell", () => {
     ).toBeInTheDocument()
   })
 
-  it("propose un lien d’évitement comme premier arrêt clavier", async () => {
+  it("places the skip link first in the tab order", async () => {
     const user = userEvent.setup()
     renderWorkspace()
 
@@ -170,7 +170,7 @@ describe("WorkspaceShell", () => {
     expect(screen.getByRole("link", { name: "Aller à la toile" })).toHaveFocus()
   })
 
-  it("laisse choisir une assistance précise après le tutoriel", async () => {
+  it("supports choosing drawing assistance after the tutorial", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -192,7 +192,7 @@ describe("WorkspaceShell", () => {
     expect(stabilized).toHaveAttribute("aria-pressed", "false")
   })
 
-  it("permet de zoomer puis de réinitialiser la toile", async () => {
+  it("supports zooming and resetting the canvas", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -212,7 +212,7 @@ describe("WorkspaceShell", () => {
     ).toHaveTextContent("100%")
   })
 
-  it("gère le zoom à la molette et ignore la molette sur les contrôles", () => {
+  it("handles wheel zoom and ignores wheel events over controls", () => {
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
     const stage = screen.getByRole("region", { name: "Toile de dessin vide" })
@@ -234,7 +234,7 @@ describe("WorkspaceShell", () => {
     expect(reset).toHaveTextContent(zoomedValue ?? "")
   })
 
-  it("offre aussi les raccourcis de navigation de la toile", async () => {
+  it("supports canvas navigation shortcuts", async () => {
     const user = userEvent.setup()
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
@@ -249,7 +249,7 @@ describe("WorkspaceShell", () => {
     expect(reset).toHaveTextContent("100%")
   })
 
-  it("déplace la vue au bouton central et avec espace", () => {
+  it("pans with the middle button and Space", () => {
     saveOnboardingProgress({ status: "completed", currentStep: "complete" })
     renderWorkspace()
     const stage = screen.getByRole("region", {

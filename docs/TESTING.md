@@ -1,190 +1,182 @@
-# Stratégie de tests
+# Testing
 
-## Commandes
+## Commands
 
-Prérequis : Node 24, pnpm 11 et `pnpm install --frozen-lockfile`.
-Pour les parcours navigateur, installer Chromium une fois :
-`pnpm exec playwright install chromium` (Linux/CI : ajouter `--with-deps`).
+Requirements: Node 24, pnpm 11, and `pnpm install --frozen-lockfile`.
+For browser journeys, install Chromium once:
+`pnpm exec playwright install chromium` (add `--with-deps` on Linux/CI).
 
-| Commande                         | Périmètre                                                         |
-| -------------------------------- | ----------------------------------------------------------------- |
-| `pnpm test:unit`                 | Logique, géométrie, adaptateurs et contrats isolés                |
-| `pnpm test:components`           | Composants React isolés, interactions et accessibilité sémantique |
-| `pnpm test:integration`          | Pipelines de gestes/dessin, workspace et cycle de vie caméra      |
-| `pnpm test`                      | Les trois groupes Vitest, une seule exécution puis sortie         |
-| `pnpm test:watch`                | Les trois groupes Vitest en surveillance                          |
-| `pnpm test:watch --project unit` | Surveillance d'un seul groupe                                     |
-| `pnpm test:coverage`             | Les trois groupes, rapport et seuils de couverture communs        |
-| `pnpm test:e2e`                  | Parcours Chromium sur le build de production                      |
-| `pnpm test:all`                  | Tous les tests Vitest puis Chromium, arrêt au premier échec       |
-| `pnpm validate`                  | Formatage, lint, types et tous les tests, build inclus via E2E    |
+| Command                          | Scope                                                               |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `pnpm test:unit`                 | Isolated logic, geometry, adapters, and contracts                   |
+| `pnpm test:components`           | Isolated React components, interactions, and semantic accessibility |
+| `pnpm test:integration`          | Gesture/drawing pipelines, workspace, and camera lifecycle          |
+| `pnpm test`                      | All three Vitest groups, once, then exit                            |
+| `pnpm test:watch`                | All three Vitest groups in watch mode                               |
+| `pnpm test:watch --project unit` | One group in watch mode                                             |
+| `pnpm test:coverage`             | All three groups with shared coverage reporting and thresholds      |
+| `pnpm test:e2e`                  | Chromium journeys against the production build                      |
+| `pnpm test:all`                  | Vitest followed by Chromium, stopping on failure                    |
+| `pnpm validate`                  | Formatting, lint, types, and all tests; E2E includes the build      |
 
-Sélectionner plusieurs groupes :
+Select multiple groups:
 `pnpm exec vitest run --project unit --project integration`.
-Sélectionner un fichier : `pnpm test:unit pinch-detector`.
-Inventorier sans exécuter : `pnpm exec vitest list --filesOnly`.
+Filter by file: `pnpm test:unit pinch-detector`.
+List files without running: `pnpm exec vitest list --filesOnly`.
 
-Sous-ensembles navigateur (tous inclus dans `test:e2e` et `test:all`) :
+Browser subsets are all included in `test:e2e` and `test:all`:
 
 ```sh
 pnpm test:e2e workspace.spec.ts
 pnpm test:e2e gestures.spec.ts
 pnpm test:e2e accessibility.spec.ts
+pnpm test:e2e security.spec.ts
 ```
 
-Pas besoin de nouveaux alias pour chaque scénario : Playwright filtre déjà
-par fichier, ou par titre via `--grep`. Les trois projets Vitest ne collectent
-aucun de ces fichiers navigateur.
+Playwright already filters by file or title (`--grep`); individual scenarios
+do not need additional aliases. Vitest does not collect browser test files.
 
-## Répartition et conventions
+## Grouping and conventions
 
-Les tests restent près du code ; leur suffixe définit un groupe sans doublon :
+Tests live near the code. Their suffix assigns each file to one group:
 
-- `src/**/*.test.ts` : unitaires, sauf suffixe `.integration.test.ts` ;
-- `src/**/*.test.tsx` : composants, sauf suffixe `.integration.test.tsx` ;
-- `src/**/*.integration.test.{ts,tsx}` : intégrations de plusieurs modules réels ;
-- `tests/e2e/**/*.spec.ts` : vrais parcours navigateur, hors Vitest.
+- `src/**/*.test.ts`: unit tests, except `.integration.test.ts`.
+- `src/**/*.test.tsx`: components, except `.integration.test.tsx`.
+- `src/**/*.integration.test.{ts,tsx}`: integrations of multiple real modules.
+- `tests/e2e/**/*.spec.ts`: browser journeys, outside Vitest.
 
-La logique et les intégrations du moteur s'exécutent dans Node sans React ni
-DOM. Les composants utilisent jsdom et le nettoyage Testing Library.
-Les tests d'adaptateurs qui ont réellement besoin des API DOM portent
-`// @vitest-environment jsdom`. Les intégrations React portent aussi cette
-annotation et importent `@/test/setup` pour le nettoyage entre tests.
-Ne pas ajouter un DOM global pour faire fonctionner un seul fichier.
+Write test descriptions and comments in English. Assertions against localized
+UI content keep the expected application strings.
 
-Les quatre intégrations actuelles couvrent la chaîne des gestes, le contrôleur
-avec le rendu Canvas, le workspace et la caméra avec son hook de cycle de vie.
-Les limites matérielles (caméra, worker, encodeur Canvas) restent simulées dans
-Vitest ; ces tests ne valident pas le modèle MediaPipe sur une vraie webcam.
+Core logic and engine integrations run in Node without React or a DOM.
+Components use jsdom and Testing Library cleanup. Adapter tests that need DOM
+APIs declare `// @vitest-environment jsdom`. React integrations also declare
+that environment and import `@/test/setup` for cleanup. Do not enable a global
+DOM environment to accommodate one file.
 
-Deux workers limitent la concurrence sur les PC modestes ; on peut ajuster
-localement avec `pnpm test --maxWorkers=4`. Ne pas comparer des durées mesurées
-avec des machines, couvertures ou niveaux de concurrence différents.
+The four integration suites cover the gesture pipeline, the controller with
+Canvas rendering, the workspace, and the camera lifecycle hook. Hardware
+boundaries (camera, Worker, Canvas encoder) remain mocked in Vitest; these tests
+do not validate MediaPipe against a physical webcam.
 
-## Parcours navigateur volontairement restreints
+Vitest uses two workers to limit contention on modest computers. Override
+locally with `pnpm test --maxWorkers=4`. Do not compare timings across different
+machines, coverage settings, or concurrency levels.
 
-- Première visite, illustration réellement chargée, tutoriel ignoré mémorisé
-  après rechargement et possibilité de le rejouer ; géométrie caméra stable.
-- Synchronisation dock/commandes des épaisseurs, styles, couleurs et gomme,
-  avec une interaction clavier sur le vrai slider.
-- Palette repliable et couleur personnalisée utilisables à 782×600 et 768×1024,
-  caméra et contrôles dans la fenêtre, HEX conservé après réouverture.
-- Caméra simulée, cinq missions réellement validées par la chaîne gestuelle,
-  sélection de couleur/épaisseur par pincement, mémorisation de la réussite,
-  gomme au poing, annuler/rétablir et téléchargement du PNG. Assertions sur
-  les pixels dessinés, les zones gommées, les dimensions et le fond blanc
-  du fichier décodé : un export vide ne suffit pas à faire passer le test.
-- Perte de suivi pendant un trait et retour pincé à distance : deux traits
-  distincts, sans trait parasite entre eux. Refus de permission puis nouvelle
-  tentative réussie, et mise en pause de la caméra.
-- Axe sur le tutoriel, le popover d'épaisseur/style, la couleur personnalisée
-  et les commandes ; parcours clavier réel avec Tab, flèches, Espace et Échap,
-  état sélectionné et restitution du focus au déclencheur.
+## Deliberately focused browser coverage
 
-Ces tests utilisent de nouveaux contextes Chromium isolés, sans caméra réelle,
-sans compte, sans accès au profil personnel et sans changer le serveur de
-développement. Playwright construit et sert l'app sur `127.0.0.1:4175` puis
-arrête son serveur. Le port doit être libre : aucun serveur existant n'est réutilisé.
-Les traces et captures d'échec sont dans `test-results/` ; le rapport se consulte
-avec `pnpm exec playwright show-report`.
+- First visit, loaded tutorial illustration, persisted dismissal after reload,
+  replay, and stable camera geometry.
+- Shared dock/command settings for width, stroke style, color, and eraser,
+  including keyboard interaction with the real slider.
+- Collapsible palette and custom color at 782×600 and 768×1024; camera and
+  controls stay in view, and HEX values survive reopening.
+- Fake camera, all five missions completed through the gesture pipeline,
+  pinched color/width selection, persisted completion, fist erasing, undo/redo,
+  and PNG download. Assertions inspect drawn and erased pixels, dimensions,
+  and the decoded file's white background; an empty export does not pass.
+- Tracking loss mid-stroke followed by a distant pinched return: separate
+  strokes with no connecting line. Permission denial/retry and camera pausing.
+- Axe scans of the tutorial, width/style popover, custom color, and commands.
+  Keyboard journeys use Tab, arrows, Space, and Escape, checking selection and
+  focus restoration.
 
-### Frontière exacte de simulation
+Tests use fresh isolated Chromium contexts, with no physical camera, account,
+personal profile, or changes to the development server. Playwright builds and
+serves the app at `127.0.0.1:4175`, then stops its server. The port must be free;
+existing servers are not reused. Failure traces/screenshots go to
+`test-results/`; open the report with `pnpm exec playwright show-report`.
 
-Dans `gestures.spec.ts`, Chromium fournit un faux périphérique vidéo intégré :
-le navigateur produit un vrai `MediaStream`, lit la vidéo et transfère de vrais
-`ImageBitmap`. Une route Playwright remplace seulement le script Worker de
-MediaPipe par `tests/e2e/fixtures/hand-tracking.worker.js`. Ce Worker respecte
-le protocole INIT/FRAME/RESULT/DISPOSE et reçoit les poses synthétiques via un
-`BroadcastChannel` réservé au test. Les coordonnées de poses viennent des
-fixtures existantes ; les positions attendues et assertions de pixels sont
-définies dans le scénario.
+### Exact simulation boundary
 
-Le classifieur, l'hystérésis du pincement, le filtrage du pointeur, la machine
-de gestes, le tutoriel, l'historique, Canvas et l'encodeur PNG sont réels.
-Le test de refus simule seulement la première erreur `getUserMedia`, puis
-délègue à l'API native. Aucun hook E2E ni asset vidéo personnel n'est livré
-dans l'application. Les tests n'écrivent pas directement dans son état React.
+In `gestures.spec.ts`, Chromium provides its built-in fake video device.
+The browser creates a real `MediaStream`, plays video, and transfers real
+`ImageBitmap` objects. A Playwright route replaces only the MediaPipe Worker
+script with `tests/e2e/fixtures/hand-tracking.worker.js`. This Worker follows
+the INIT/FRAME/RESULT/DISPOSE protocol and receives synthetic poses through a
+test-only `BroadcastChannel`. Poses come from existing fixtures; expected
+positions and pixel assertions are defined in each scenario.
 
-Le test distinct `security.spec.ts` charge et exécute réellement le Worker,
-le modèle et WASM locaux sous la CSP de production, sur une caméra factice.
-Il vérifie aussi les en-têtes et le blocage d'une connexion externe. Ce n'est
-pas une simulation de l'inférence, mais ce n'est toujours pas une vraie main.
+The classifier, pinch hysteresis, pointer filter, gesture state machine,
+tutorial, history, Canvas, and PNG encoder are real. The permission-denial test
+mocks only the first `getUserMedia` failure, then delegates to the native API.
+No E2E hooks or personal videos ship with the app. Tests do not directly mutate
+React state.
 
-**Ne sont pas validés par ce dispositif** : reconnaissance d'une vraie main, luminosité/occlusion,
-latence matérielle, permission réelle dans chaque navigateur ou compatibilité
-Safari/Firefox. Les invariants du Worker de production sont couverts dans
-Vitest ; les assets ont leur vérification `pnpm verify:vision-assets`.
-Une validation physique reste indispensable avant la démo publique.
+The separate `security.spec.ts` loads and executes the actual local Worker,
+model, and WASM under production CSP using fake video. It also checks headers
+and a blocked external connection. Inference is real, but the input is still
+not a real hand.
 
-### Accessibilité : portée et vérification manuelle
+**Not validated by this setup:** real-hand recognition, lighting/occlusion,
+hardware latency, actual permissions in every browser, or Safari/Firefox
+compatibility. Production Worker invariants are covered in Vitest, and
+`pnpm verify:vision-assets` checks assets. Physical validation remains
+essential before the public demo.
 
-Les scans utilisent `@axe-core/playwright` (dépendance de développement), avec
-les tags WCAG A/AA 2.0, AA 2.1 et AA 2.2. Ils n'excluent aucun élément et ne
-désactivent aucune règle de ces tags. Les rapports JSON, y compris les
-contrôles à examiner manuellement (`incomplete`), sont attachés au rapport
-Playwright. Zéro violation automatique ne constitue pas une certification.
+### Accessibility scope and manual checks
 
-Avant livraison, vérifier aussi avec clavier/lecteur d'écran : nom et valeur
-du slider de stylo/gomme, navigation des groupes par flèches, focus toujours
-visible, annonces caméra compréhensibles, popovers à 200 % de zoom navigateur
-et réduction des animations. L'outil gestuel ne fournit pas encore un mode
-complet de tracé à la souris/clavier ; ne pas présenter le dessin comme
-entièrement accessible sans suivi de la main.
+Scans use the development dependency `@axe-core/playwright`, with WCAG 2.0
+A/AA, 2.1 AA, and 2.2 AA tags. No elements or rules within those tags are
+excluded. JSON results, including `incomplete` checks requiring manual review,
+are attached to the Playwright report. Zero automated violations is not
+certification.
 
-Ce socle ne remplace pas les essais manuels du pincement, de la fluidité,
-de l'effacement gestuel et de l'export d'un vrai dessin. Il ne couvre pas encore
-Safari/Firefox ni toutes les tailles d'écran. Ne pas présenter des tests DOM
-ou des appels Canvas simulés comme une validation visuelle de l'application.
+Before release, also check with keyboard and screen reader: pen/eraser slider
+names and values, arrow navigation within groups, visible focus, understandable
+camera announcements, popovers at native 200% browser zoom, and reduced motion.
+The app does not yet provide full mouse/keyboard drawing; do not describe
+drawing as entirely accessible without hand tracking.
 
-## Règle pour chaque ajout
+Automated checks do not replace manual pinching, fluidity, gesture erasing, and
+real-drawing export checks. They do not cover Safari/Firefox or every screen
+size. DOM tests and mocked Canvas calls are not visual validation.
 
-Avant d'ajouter un test : **quel bug concret détecterait-il que les autres ne
-détectent pas ?** Tester un comportement, pas recopier une implémentation.
+## When to add a test
 
-Conserver les cas limites distincts et les régressions connues, même paramétrés.
-Ne pas fusionner artificiellement des scénarios pour faire baisser le compteur.
-Simuler les limites externes, pas la logique qu'on prétend vérifier.
-Un contrôle navigateur doit prouver ce que Node/jsdom ne peuvent pas prouver,
-sans répéter toutes leurs combinaisons de paramètres. Une assertion CSS n'est
-pertinente que pour un contrat visuel explicite, au niveau adapté.
+Ask: **what concrete bug would this catch that existing tests would miss?**
+Test behavior rather than copying the implementation.
 
-## CI et revue
+Keep distinct boundary cases and known regressions, even when parameterized.
+Do not combine scenarios merely to reduce the count. Mock external boundaries,
+not the logic under test. Browser checks should establish behavior that
+Node/jsdom cannot prove, without repeating every unit-test parameter
+combination. CSS assertions need an explicit visual contract at the right level.
 
-Le job existant `unit-tests` conserve son nom pour ne pas casser les contrôles
-GitHub déjà requis. Il exécute les trois projets Vitest **une seule fois** avec
-une couverture globale. Les rapports identifient chaque projet.
-Le job `e2e-chromium` réutilise l'artefact du job `build` via
-`E2E_USE_BUILD=1` : pas de deuxième compilation en CI. Cette variable suppose
-un dossier `dist` vérifié ; ne pas l'utiliser localement avec un build périmé.
-Pas de relance automatique masquant un test instable.
+## CI and review
 
-Avant revue : `pnpm validate`, `pnpm test:coverage` et vérifier qu'aucun fichier
-de test n'est oublié ou collecté deux fois. Ne pas fusionner ni publier sans
-l'accord du mainteneur.
+The existing `unit-tests` job keeps its name to preserve required GitHub checks.
+It runs all three Vitest projects **once** with global coverage; reports identify
+each project. The `e2e-chromium` job reuses the `build` artifact through
+`E2E_USE_BUILD=1`, avoiding a second CI build. This requires a verified `dist`
+directory; do not use it locally with a stale build. Automatic retries do not
+hide unstable tests.
 
-Références : [projets Vitest](https://v4.vitest.dev/guide/projects),
-[principes Testing Library](https://testing-library.com/docs/guiding-principles/),
-[duplication des tests](https://martinfowler.com/articles/practical-test-pyramid.html#AvoidTestDuplication),
-[accessibilité avec Playwright](https://playwright.dev/docs/accessibility-testing).
+Before review, run `pnpm validate` and `pnpm test:coverage`, and check that no
+test files are omitted or collected twice. Merging and publishing require
+maintainer approval.
 
-## Exécution sur machine limitée ou navigateur installé
+References: [Vitest projects](https://v4.vitest.dev/guide/projects),
+[Testing Library principles](https://testing-library.com/docs/guiding-principles/),
+[avoiding test duplication](https://martinfowler.com/articles/practical-test-pyramid.html#AvoidTestDuplication),
+[Playwright accessibility](https://playwright.dev/docs/accessibility-testing).
 
-Les parcours navigateur utilisent un seul worker par défaut, en local et en
-CI, pour ne pas faire concurrencer l'inférence et les scans d'accessibilité.
-Les tests et délais sont inchangés, sans retry. C'est aussi la
-[recommandation Playwright pour la CI](https://playwright.dev/docs/ci#workers).
-Sur une machine suffisamment puissante, `pnpm test:e2e --workers=2` reste
-possible ; vérifier la stabilité avant de généraliser la concurrence.
+## Limited hardware and installed browsers
 
-Pour vérifier un navigateur déjà installé, dans PowerShell :
+Browser journeys use one worker by default, locally and in CI, so inference and
+accessibility scans do not compete. Tests and timeouts are unchanged, with no
+retries. This also follows [Playwright's CI recommendation](https://playwright.dev/docs/ci#workers).
+On a sufficiently powerful machine, `pnpm test:e2e --workers=2` is available;
+verify stability before increasing concurrency.
+
+To check an installed browser in PowerShell:
 
 ```powershell
-$env:E2E_BROWSER_CHANNEL = 'msedge' # ou 'chrome'
+$env:E2E_BROWSER_CHANNEL = 'msedge' # or 'chrome'
 pnpm test:e2e security.spec.ts --workers=1
 Remove-Item Env:E2E_BROWSER_CHANNEL
 ```
 
-Le navigateur démarre dans un profil de test isolé ; le profil de l'utilisateur
-et sa webcam ne sont pas utilisés (flux vidéo factice). Sans cette variable,
-la CI utilise le Chromium fourni par Playwright. Ces essais n'attestent pas
-la fluidité du geste réel sur le matériel de l'utilisateur.
+The browser uses an isolated test profile and fake video, not the user's
+profile or webcam. Without this variable, CI uses Playwright's Chromium.
+These checks do not establish real-gesture fluidity on the user's hardware.

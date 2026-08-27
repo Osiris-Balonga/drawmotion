@@ -1,85 +1,82 @@
-# Livrer DrawMotion
+# Releasing DrawMotion
 
-## État de la candidate
+## Candidate status
 
-`1.0.0-rc.1` est une version **locale non publiée**. Elle identifie la préparation
-de la livraison, sans promettre que la QA finale est terminée. Ne pas ajouter de tag
-ou passer en `1.0.0` avant validation du mainteneur.
+`1.0.0-rc.1` is a **local, unpublished** candidate. It identifies release
+preparation, not completed final QA. Do not tag it or change the version to
+`1.0.0` before maintainer approval.
 
-La branche de release doit partir d'un `dev` intégrant les changements validés.
-Si des travaux sont encore sur une branche de fonctionnalité, les intégrer par
-PR avant de préparer la release. Ne pas publier depuis un `dev` périmé ni
-réécrire l'historique. Voir [l'ADR Git](./adr/0002-git-and-release-strategy.md).
+Create the release branch from `dev` after validated changes have been
+integrated. If work remains on a feature branch, integrate it through a PR
+first. Do not release from a stale `dev` or rewrite history.
+See the [Git ADR](adr/0002-git-and-release-strategy.md).
 
-## 1. Préparer et tester
+## 1. Prepare and test
 
-1. Installer les dépendances avec `pnpm install --frozen-lockfile` et Chromium
-   avec `pnpm exec playwright install chromium`.
-2. Exécuter `pnpm validate`, `pnpm test:coverage`, `pnpm verify:vision-assets`,
-   `pnpm build`, `pnpm verify:bundle` et `pnpm audit --audit-level high`.
-   Le build inclut la génération et la vérification des notices de licences.
-   Garder les opérations lourdes séquentielles sur une machine limitée.
-3. Après autorisation de push, ouvrir les PR vers `dev` dans l'ordre ; attendre
-   la CI distante et la preview HTTPS. Conserver les commits atomiques.
-4. Renseigner [la QA v1](./qa/v1.0.0.md) sur le SHA exact de la preview avec
-   webcam réelle. Un échec est corrigé dans un commit `fix(release): ...`
-   référant l'ID QA, puis retesté. Ne pas retoucher les gestes sans anomalie.
-5. Finaliser [les licences et notices](./THIRD_PARTY.md). Ne pas distribuer
-   publiquement les assets avant ce contrôle.
+1. Run `pnpm install --frozen-lockfile` and
+   `pnpm exec playwright install chromium`.
+2. Run `pnpm validate`, `pnpm test:coverage`, `pnpm verify:vision-assets`,
+   `pnpm build`, `pnpm verify:bundle`, and `pnpm audit --audit-level high`.
+   The build generates and verifies license notices. Keep heavy operations
+   sequential on limited hardware.
+3. Once a push is authorized, open PRs toward `dev` in order and wait for
+   remote CI and the HTTPS preview. Preserve atomic commits.
+4. Complete [v1 QA](qa/v1.0.0.md) against the preview's exact SHA using a
+   physical webcam. Fix failures in targeted `fix(release): ...` commits
+   referencing the QA ID, then retest. Do not retune gestures without a defect.
+5. Review [licenses and notices](THIRD_PARTY.md) before publicly distributing
+   assets.
 
-## 2. Préparer la promotion
+## 2. Prepare promotion
 
-Après QA et accord explicite du mainteneur :
+After QA and explicit maintainer approval:
 
-1. Sur la branche de release issue du `dev` intégré, passer la version à
-   `1.0.0`, ajouter l'entrée datée correspondante au changelog et actualiser le
-   statut README. Commit `chore(release): prepare version 1.0.0`.
-2. Joindre les liens CI/QA/preview à la PR vers `dev`, faire relire, attendre
-   l'accord de fusion. La version finale doit elle aussi passer la CI.
-3. Geler les modifications pendant la promotion. Ouvrir la PR `dev -> main`,
-   attendre les checks, puis fusionner uniquement avec l'accord du mainteneur.
-4. Vérifier le déploiement de production du SHA promu : ouverture, caméra,
-   tracé, PNG, et `pnpm verify:security-headers <URL-HTTPS>`.
+1. On the release branch from the integrated `dev`, set version `1.0.0`,
+   add its dated changelog entry, and update README status.
+   Commit: `chore(release): prepare version 1.0.0`.
+2. Attach CI, QA, and preview links to the PR toward `dev`; obtain review and
+   merge approval. The final version must also pass CI.
+3. Freeze changes during promotion. Open `dev -> main`, wait for checks, and
+   merge only with maintainer approval.
+4. Verify the promoted SHA's production deployment: page loading, camera,
+   drawing, PNG, and `pnpm verify:security-headers <HTTPS-URL>`.
 
-L'intégration Git Vercel est la voie prévue ; ne pas ajouter un deuxième
-déploiement CI concurrent. Pas de token dans les fichiers ou les commandes
-copiées dans un compte rendu. Ne pas confondre Vite preview local et Vercel.
+The intended deployment path is Vercel's Git integration, not a second
+concurrent CI deployment. Keep tokens out of files and commands copied into
+reports. Local Vite preview is not a Vercel deployment.
 
-## 3. Retour arrière
+## 3. Rollback
 
-Avant livraison, relever l'URL/ID du déploiement de production précédent connu
-comme sain et le SHA courant. Si c'est la première production, il n'y a pas
-encore de version saine précédente : consigner cette limite, préparer et
-tester le scénario sur un environnement de recette avant de le dire validé.
+Before release, record the previous known-good production deployment URL/ID and
+the current SHA. A first production release has no previous known-good version:
+record that limitation and exercise the scenario in staging before claiming
+rollback has been validated.
 
-Avec l'autorisation du mainteneur, utiliser l'action de rollback de Vercel
-vers ce déploiement identifié. Vérifier à nouveau la page, la caméra, le PNG
-et les en-têtes. Consigner date, URLs, SHA, résultat et retour éventuel à la
-candidate. Une procédure écrite n'est pas un essai de rollback effectué.
-Ne pas déplacer un tag publié ni faire de force-push pour annuler une release.
+With maintainer approval, use Vercel's rollback action to restore the identified
+deployment. Recheck the page, camera, PNG, and headers. Record the date, URLs,
+SHAs, result, and any return to the candidate. A written procedure is not an
+executed rollback test. Do not move published tags or force-push to undo a release.
 
-## 4. Tag et brouillon GitHub Release
+## 4. Tag and draft GitHub Release
 
-Une fois production et QA approuvées, le mainteneur crée et pousse un tag
-**annoté** `v1.0.0` sur le HEAD validé de `main`. Ne pas exécuter cette étape
-depuis la branche de travail. Le workflow `release.yml` :
+After production and QA approval, the maintainer creates and pushes an
+**annotated** `v1.0.0` tag on the validated `main` HEAD, not the working branch.
+The `release.yml` workflow:
 
-- ne réagit qu'aux tags `v*`, puis refuse une version non stable ;
-- exige un tag annoté, égal au HEAD de `main`, et une version package identique ;
-- vérifie la présence du changelog de cette version et des documents de livraison ;
-- crée uniquement un **brouillon** GitHub Release, avec tag préexistant et checklist jointe ;
-- ne déploie rien, ne publie rien et ne modifie pas la visibilité du dépôt.
+- Responds to `v*` tags, then rejects non-stable versions.
+- Requires an annotated tag equal to `main` HEAD and matching the package version.
+- Checks for that version's changelog entry and release documents.
+- Creates only a **draft** GitHub Release, using the existing tag and an attached checklist.
+- Does not deploy, publish, or change repository visibility.
 
-La présence de documents n'atteste pas leur validation : les checks CI, les
-cases QA, les notices et l'accord du mainteneur restent à contrôler avant le
-tag et avant publication du brouillon. Un relancement n'écrase pas une release
-existante. Si `main` a avancé, ne pas retagger : examiner la situation avec le
-mainteneur avant de relancer.
+Document existence does not prove validation. Check CI, QA results, notices,
+and maintainer approval before tagging and before publishing the draft.
+Reruns do not overwrite an existing release. If `main` has advanced, do not
+retag; discuss the situation with the maintainer before rerunning.
 
-Dans le brouillon, remplacer les notes préparatoires par celles de la version
-finale, joindre les liens de déploiement/QA, puis publier **sur instruction
-explicite**. Rendre le dépôt public est une décision distincte, jamais un
-effet secondaire de ce workflow.
+Replace preparatory draft notes with final release notes and deployment/QA
+links, then publish **only on explicit instruction**. Making the repository
+public is a separate decision, never a workflow side effect.
 
-Référence : [GitHub CLI — création de release](https://cli.github.com/manual/gh_release_create)
+Reference: [GitHub CLI release creation](https://cli.github.com/manual/gh_release_create)
 (`--draft`, `--verify-tag`).

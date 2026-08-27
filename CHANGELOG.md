@@ -1,36 +1,36 @@
 # Changelog
 
-## 1.0.0-rc.1 — 2026-08-27 (candidate locale, non publiée)
+## 1.0.0-rc.1 — 2026-08-27 (local, unpublished candidate)
 
-### Fonctionnalités
+### Features
 
-- Dessin 2D à la webcam : index pour viser, pincement pour tracer, poing pour gommer.
-- Commandes contextuelles ouvertes avec le signe paix ; réglages synchronisés avec le dock.
-- Modes Libre, Stabilisé et Formes ; retour possible au tracé original après régularisation.
-- Couleurs prédéfinies et personnalisées HEX/RGB, épaisseur du stylo et de la gomme, traits continus, tirets et pointillés.
-- Annuler/rétablir, confirmation d'effacement, navigation et zoom de toile, export PNG.
-- Interface flottante, tutoriel illustré en cinq missions, état de première visite mémorisé localement.
-- Modèle et runtime MediaPipe servis localement ; inférence dans un Worker, sans envoi vidéo à un serveur.
+- Webcam-based 2D drawing: aim with the index finger, pinch to draw, make a fist to erase.
+- Contextual commands opened with a peace sign; settings synchronized with the dock.
+- Freehand, stabilized, and shape modes; restore original strokes after shape correction.
+- Preset and custom HEX/RGB colors, pen/eraser widths, solid, dashed, and dotted strokes.
+- Undo/redo, clear confirmation, canvas pan/zoom, and PNG export.
+- Floating interface, five illustrated tutorial missions, locally remembered first-visit state.
+- Locally served MediaPipe model/runtime; Worker inference without uploading video.
 
-### Fiabilité et préparation de livraison
+### Reliability and release preparation
 
-- File d'inférence bornée et abandon des images dépassées pour éviter l'accumulation de retard.
-- Reprise du suivi sans raccord parasite après une perte de main ; feedback lisible sous la caméra.
-- Réglages adaptatifs, navigation clavier, réduction des animations et tests d'accessibilité ciblés.
-- CSP et en-têtes de sécurité, vérification des assets et budgets de bundle, audit des dépendances.
-- Tests séparés par catégorie et parcours navigateur ; préparation de la QA et du workflow de release.
-- Taille de gomme sélectionnée respectée lors de l'effacement au poing, y compris sous 40 pixels.
-- Workspace séparé en composition, gestes, navigation et tutoriel ; anciennes interfaces inutilisées retirées.
-- Licence MIT, notices tierces incluses dans le build et guide de contribution.
+- Bounded inference queue and discarded outdated images to prevent growing delays.
+- Tracking recovery without connecting strokes after hand loss; readable feedback below the camera.
+- Responsive settings, keyboard navigation, reduced motion, and targeted accessibility tests.
+- CSP/security headers, asset verification, bundle budgets, and dependency auditing.
+- Separate test groups and browser journeys; QA and release workflow preparation.
+- Fist erasing respects the selected eraser size, including sizes below 40 pixels.
+- Workspace split into composition, gestures, navigation, and onboarding; unused interfaces removed.
+- MIT license, third-party notices included in builds, and contributor guide.
 
-### Limites connues
+### Known limitations
 
-- La qualité et la latence dépendent de la webcam, de l'éclairage et du matériel ; QA physique finale encore à faire.
-- Chrome et Edge Windows sont les cibles de validation initiales. Tablette réelle, Safari et Firefox ne sont pas certifiés par les tests desktop.
-- Les contrôles fonctionnent au clavier et à la souris, mais le dessin libre nécessite actuellement une main détectée.
-- Pas de sauvegarde de document ni de collaboration ; exporter avant de fermer la page.
-- Le PNG capture la zone visible de la toile : dézoomer/recentrer avant d'exporter pour inclure les traits hors champ.
-- Démo publique et publication open source encore en attente.
+- Quality and latency depend on the webcam, lighting, and hardware; final physical QA is pending.
+- Chrome and Edge on Windows are the initial validation targets. Desktop tests do not certify physical tablets, Safari, or Firefox.
+- Controls support keyboard and mouse, but freehand drawing currently requires a detected hand.
+- No document persistence or collaboration; export before closing the page.
+- PNG captures the visible canvas: zoom out/recenter to include off-screen strokes.
+- Public demo and open-source publication are still pending.
 
-Les résultats automatiques datés du [lot 10](./docs/qa/lot10-local.md) ne
-remplacent pas la [QA finale](./docs/qa/v1.0.0.md).
+Dated automated results from [batch 10](docs/qa/lot10-local.md) do not replace
+[final QA](docs/qa/v1.0.0.md).

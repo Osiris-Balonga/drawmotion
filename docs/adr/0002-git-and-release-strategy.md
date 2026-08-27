@@ -1,23 +1,28 @@
-# ADR 0002 — Stratégie Git et livraison
+# ADR 0002 — Git and release strategy
 
-Date : 2026-08-25  
-Statut : accepté
+Date: 2026-08-25
 
-## Contexte
+Status: accepted
 
-Le projet doit progresser par lots révisables et ne jamais apparaître sur GitHub sous la forme d'un unique dépôt applicatif poussé en bloc.
+## Context
 
-## Décision
+The project should progress in reviewable batches, not appear on GitHub as
+an entire application pushed in a single commit.
 
-- un premier commit direct contient uniquement gouvernance et documentation ;
-- toutes les capacités suivantes passent par une branche courte et une pull request ;
-- `dev` est la branche d'intégration par défaut ;
-- `main` est la branche de production déployée publiquement ;
-- les branches courtes ouvrent des PR vers `dev` et conservent leurs commits atomiques par rebase merge ;
-- une action refuse toute PR vers `main` dont la tête n'est pas exactement `dev` ;
-- les promotions `dev -> main` utilisent un merge commit explicite ;
-- les tags de version pointent exclusivement sur `main`.
+## Decision
 
-## Conséquences
+- The initial direct commit contains only governance and documentation.
+- All later capabilities use short-lived branches and pull requests.
+- `dev` is the default integration branch.
+- `main` is the branch intended for public production deployment.
+- Short-lived branches target `dev`, preserving atomic commits through rebase merge.
+- An action rejects PRs targeting `main` unless the source branch is exactly `dev`.
+- Promotions from `dev -> main` use an explicit merge commit.
+- Release tags point only to `main`.
 
-Les lots sont séquentiels. Un agent prépare une PR et ne la fusionne qu'avec une autorisation explicite du mainteneur. Les hotfix passent eux aussi par `dev`, puis par la même promotion contrôlée vers `main`. Cette stratégie reprend le modèle éprouvé du dépôt PlotTwist tout en conservant les commits atomiques prescrits pour DrawMotion.
+## Consequences
+
+Batches are sequential. An agent prepares a PR and merges only with explicit
+maintainer authorization. Hotfixes also go through `dev`, followed by the same
+controlled promotion to `main`. This follows the PlotTwist repository's model
+while preserving DrawMotion's atomic commits.

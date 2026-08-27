@@ -1,85 +1,84 @@
-# Architecture actuelle
+# Architecture
 
-Application cliente React/TypeScript, sans API serveur ni base de données.
-L'interface possède les réglages ; le flux de frames et le rendu restent
-impératifs pour ne pas provoquer un rendu React à chaque point.
+DrawMotion is a React/TypeScript client application without a server API or
+database. The UI owns settings; the frame pipeline and rendering are imperative
+to avoid a React render for every point.
 
-## Parcours d'une image
+## Frame pipeline
 
 ```text
-getUserMedia → HandTrackingSession → WorkerHandTracker → Worker MediaPipe
-                         ↓ résultats
-           classifieur + détecteur de pincement
+getUserMedia → HandTrackingSession → WorkerHandTracker → MediaPipe Worker
+                         ↓ results
+              classifier + pinch detector
                          ↓
-             useWorkspaceGestures
-       filtre → coordonnées écran → intentions
+              useWorkspaceGestures
+       filter → screen coordinates → intentions
                          ↓
-             CanvasDrawingController
-       document + historique + assistance
+              CanvasDrawingController
+          document + history + assistance
                          ↓
-             TwoLayerCanvasRenderer → PNG
+              TwoLayerCanvasRenderer → PNG
 ```
 
-Le Worker exécute Hand Landmarker ; le classifieur applicatif interprète ses
-landmarks. Il n'y a pas de réseau d'inférence, de service Python ou de Three.js.
-L'adaptateur MediaPipe utilisé **dans** le Worker n'est pas un ancien mode
-d'inférence sur le thread principal.
+The Worker runs Hand Landmarker; the application's classifier interprets its
+landmarks. There is no remote inference, Python service, or Three.js.
+The MediaPipe adapter used **inside** the Worker is not a legacy main-thread
+inference mode.
 
-## Où intervenir
+## Where to make changes
 
-| Responsabilité                                                | Emplacement                                           |
-| ------------------------------------------------------------- | ----------------------------------------------------- |
-| Autorisation, flux vidéo, arrêt des pistes                    | `src/infrastructure/camera/`                          |
-| Capture, file bornée, protocole Worker, modèle et diagnostics | `src/infrastructure/mediapipe/`, `src/workers/`       |
-| Pincement, classification, stabilité, rupture de suivi        | `src/core/gestures/`                                  |
-| Miroir caméra vers écran                                      | `src/core/geometry/coordinate-mapping.ts`             |
-| Traits, historique, régularisation, viewport et Canvas        | `src/core/drawing/`                                   |
-| Réglages partagés et composition de l'écran                   | `src/features/workspace/workspace-shell.tsx`          |
-| Adaptation des frames aux commandes, menu et feedback         | `src/features/workspace/use-workspace-gestures.ts`    |
-| Zoom, déplacement, raccourcis clavier                         | `src/features/workspace/use-workspace-navigation.ts`  |
-| Progression et observation des exercices                      | `src/features/onboarding/use-workspace-onboarding.ts` |
-| Machine du tutoriel et stockage versionné                     | `src/features/onboarding/`                            |
-| Contrôles du dock et composants Base UI                       | `src/features/toolbar/`, `src/components/ui/`         |
+| Responsibility                                              | Location                                              |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| Permissions, video streams, stopping tracks                 | `src/infrastructure/camera/`                          |
+| Capture, bounded queue, Worker protocol, model, diagnostics | `src/infrastructure/mediapipe/`, `src/workers/`       |
+| Pinching, classification, stability, tracking loss          | `src/core/gestures/`                                  |
+| Mirrored camera-to-screen mapping                           | `src/core/geometry/coordinate-mapping.ts`             |
+| Strokes, history, shape assistance, viewport, Canvas        | `src/core/drawing/`                                   |
+| Shared settings and screen composition                      | `src/features/workspace/workspace-shell.tsx`          |
+| Frame-to-command adaptation, menu, feedback                 | `src/features/workspace/use-workspace-gestures.ts`    |
+| Zoom, pan, keyboard shortcuts                               | `src/features/workspace/use-workspace-navigation.ts`  |
+| Progress and exercise observation                           | `src/features/onboarding/use-workspace-onboarding.ts` |
+| Tutorial state machine and versioned storage                | `src/features/onboarding/`                            |
+| Dock controls and Base UI components                        | `src/features/toolbar/`, `src/components/ui/`         |
 
-Les trois hooks de workspace ont des responsabilités distinctes, pas un store
-global. Le shell fournit le même état et les mêmes callbacks au dock et aux
-commandes gestuelles : aucune copie indépendante des couleurs ou des épaisseurs.
+The three workspace hooks have distinct responsibilities; they are not a global
+store. The shell provides the same state and callbacks to the dock and gesture
+commands, with no independent copies of colors or thicknesses.
 
-Les styles du workspace sont importés dans un ordre explicite :
+Workspace styles have an explicit import order:
 `chrome.css`, `camera.css`, `interactions.css`, `responsive.css`.
-Les règles adaptatives restent en dernier ; les tokens sont dans
-`src/styles/globals.css`.
+Responsive overrides stay last. Tokens live in `src/styles/globals.css`.
 
-## Invariants à préserver
+## Invariants
 
-- **Une image en vol vers le Worker**, au plus une remplaçante en attente.
-  Libérer les bitmaps abandonnés et les ressources lors de l'arrêt.
-- **Pas de raccord après une rupture de suivi.** Une reprise distante réancre
-  le filtre ; l'ancien point ne doit pas devenir le départ d'un nouveau trait.
-- **Un seul miroir horizontal.** Le crop circulaire est un aperçu visuel,
-  pas la zone de détection ni une limitation des coordonnées de dessin.
-- **Pas de clic gestuel sur les petits boutons.** Les pincements choisissent
-  les grandes cibles de la palette contextuelle ; le dock est souris/clavier/tactile.
-- **Unités explicites.** Les intentions utilisent des coordonnées écran CSS.
-  Le contrôleur inverse le viewport pour conserver les points du document.
-  Les épaisseurs affichées sont divisées par 1000, puis le renderer les adapte
-  au petit côté de la toile et au zoom. Le poing doit utiliser la taille de
-  gomme sélectionnée, pas un minimum caché ni celle du stylo.
-- **Historique commun** pour traits et gomme. L'assistance conserve les points
-  originaux pour pouvoir refuser une régularisation.
-- **Export de la couche persistante visible**, sans caméra, contrôles ou pointeur.
-  Le cadrage de tout le document n'est pas automatique.
-- **Persistance limitée** au tutoriel : clé `drawmotion:onboarding`, schéma
-  versionné. Donnée absente, ancienne, invalide ou stockage bloqué : première
-  visite sans empêcher l'utilisation. Le dessin n'est pas sauvegardé.
+- **One image in flight to the Worker**, with at most one pending replacement.
+  Dispose of discarded bitmaps and release resources when stopping.
+- **No connecting stroke after tracking loss.** A distant return reanchors the
+  filter; the previous point must not become the start of a new stroke.
+- **Exactly one horizontal mirror.** The circular crop is a visual preview,
+  not the detection region or a restriction on drawing coordinates.
+- **No gesture clicks on small buttons.** Pinches select large targets in the
+  contextual palette; the dock uses mouse, keyboard, or touch.
+- **Explicit units.** Intentions use CSS screen coordinates. The controller
+  inverts the viewport transform to store document points. Displayed widths
+  are divided by 1000, then the renderer scales them by the canvas's shorter
+  side and zoom. A fist must use the selected eraser size, not a hidden minimum
+  or the pen width.
+- **Shared history** for drawing and erasing. Assistance preserves original
+  points so users can reject a shape correction.
+- **Export the visible persistent layer**, without the camera, controls, or
+  pointer. Fitting the whole document is not automatic.
+- **Tutorial-only persistence** under `drawmotion:onboarding`, with a versioned
+  schema. Missing, old, invalid, or inaccessible data falls back to a first
+  visit without blocking use. Drawings are not saved.
 
-## Tests et décisions
+## Tests and decisions
 
-La [stratégie de tests](TESTING.md) distingue moteur, composants, intégrations
-et parcours navigateur. Une webcam réelle reste nécessaire pour juger latence,
-précision et reconnaissance en conditions variables.
+The [testing guide](TESTING.md) separates core logic, components, integrations,
+and browser journeys. A physical webcam is still required to assess latency,
+accuracy, and recognition under varying conditions.
 
-Les [ADR](adr/) expliquent les décisions structurantes ; [PRODUCT](../PRODUCT.md)
-et [DESIGN](../DESIGN.md) décrivent l'intention produit, pas des résultats de QA.
-Le [plan initial archivé](archive/implementation-plan.md) n'est pas une liste
-d'instructions à rejouer.
+[ADRs](adr/) explain structural decisions. [PRODUCT](../PRODUCT.md) and
+[DESIGN](../DESIGN.md) describe intent, not QA results.
+The [archived initial plan](archive/implementation-plan.md) is not a set of
+instructions to execute again.
