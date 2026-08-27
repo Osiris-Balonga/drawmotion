@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload coverage report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ github.sha }}
           path: .artifacts/coverage/
@@ -111,7 +111,7 @@ jobs:
         run: pnpm verify:bundle
 
       - name: Upload production build
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: dist-${{ github.sha }}
           path: dist/
@@ -160,7 +160,7 @@ jobs:
 
       - name: Upload browser failure evidence
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: browser-failures-${{ github.sha }}
           path: |
@@ -199,7 +199,7 @@ jobs:
           E2E_USE_BUILD: "1"
       - name: Upload browser failure evidence
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: pwa-failures-${{ github.sha }}
           path: |
