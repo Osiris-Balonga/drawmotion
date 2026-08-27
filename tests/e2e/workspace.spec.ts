@@ -54,6 +54,13 @@ test("first visit, loaded illustration, saved skip and tutorial replay", async (
     .toBeGreaterThan(0)
 
   const camera = page.getByRole("button", { name: "Activer ma caméra" })
+  await expect(camera).toHaveCSS("cursor", "pointer")
+  await expect(
+    page.getByRole("button", { name: "Stylo", exact: true }),
+  ).toHaveCSS("cursor", "pointer")
+  await expect(
+    page.getByRole("button", { name: "Revoir le tutoriel" }),
+  ).toHaveCSS("cursor", "pointer")
   await expectInsideViewport(camera)
   const initialBounds = await camera.boundingBox()
   await expect(camera).toHaveCSS("border-radius", "50%")
@@ -83,6 +90,9 @@ test("dock and command palette share stroke, color and eraser settings", async (
   await page.keyboard.press("ArrowRight")
   await expect(slider).toHaveAttribute("aria-valuenow", "10")
   await page.getByRole("button", { name: "12 px", exact: true }).click()
+  await expect(
+    page.getByRole("button", { name: "12 px", exact: true }),
+  ).toHaveCSS("cursor", "pointer")
   await page.keyboard.press("Escape")
 
   let palette = await openCommands(page, "Trait")
