@@ -167,7 +167,8 @@ Sur un dépôt privé GitHub Free, certaines protections ne sont pas configurabl
 
 ## 5. Scripts npm obligatoires
 
-Le lot 1 doit fournir les scripts suivants, qui deviennent contractuels :
+Scripts contractuels, actualisés lors du nettoyage des tests. Le découpage et
+les prérequis sont détaillés dans [docs/TESTING.md](./docs/TESTING.md).
 
 ```json
 {
@@ -178,15 +179,20 @@ Le lot 1 doit fournir les scripts suivants, qui deviennent contractuels :
   "format": "prettier --write .",
   "format:check": "prettier --check .",
   "typecheck": "tsc -b --pretty false",
-  "test": "vitest",
-  "test:unit": "vitest run",
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "test:unit": "vitest run --project unit",
+  "test:components": "vitest run --project components",
+  "test:integration": "vitest run --project integration",
   "test:coverage": "vitest run --coverage",
   "test:e2e": "playwright test",
-  "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build"
+  "test:all": "pnpm test && pnpm test:e2e",
+  "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:all"
 }
 ```
 
 Le script `validate` ne doit pas être affaibli pour faire passer une PR.
+Le build est exécuté par le serveur de test Playwright, avant les parcours E2E.
 
 ## 6. Workflows GitHub Actions
 
@@ -211,18 +217,19 @@ Jobs séparés et noms stables :
    - `pnpm typecheck`.
 2. `unit-tests`
    - même installation ;
-   - `pnpm test:coverage` ;
+   - `pnpm test:coverage` (unitaires, composants et intégrations une seule fois) ;
    - artefact de couverture, conservation 14 jours.
 3. `build`
    - même installation ;
    - vérification du checksum des assets MediaPipe ;
    - `pnpm build` ;
    - artefact `dist`, conservation 7 jours.
-4. `e2e-chromium`, ajouté au lot 9
+4. `e2e-chromium`, socle ajouté lors du nettoyage des tests, à compléter au lot 9
    - dépend de `build` ;
    - installation Chromium Playwright avec dépendances ;
-   - `pnpm test:e2e --project=chromium` ;
-   - rapport Playwright uploadé même en cas d'échec.
+   - téléchargement de l'artefact `dist` du job `build` ;
+   - `pnpm test:e2e` avec `E2E_USE_BUILD=1` (Chromium configuré par défaut) ;
+   - rapport, traces et captures Playwright uploadés en cas d'échec.
 
 Les actions doivent être épinglées sur une version majeure maintenue au moment du bootstrap. Ne jamais utiliser une action inconnue proposée par un agent sans revue de sa provenance.
 
