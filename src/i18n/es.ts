@@ -22,7 +22,7 @@ export const es = {
   "pwa.menu": "Instalación y sin conexión",
   "pwa.title": "Lleva DrawMotion contigo",
   "pwa.description":
-    "Prepara la app en línea y dibuja sin conexión. La cámara permanece apagada durante la preparación.",
+    "Prepara la app en línea y dibuja sin conexión. La preparación nunca activa la cámara.",
   "pwa.prepare": "Preparar sin conexión · unos 50 MB",
   "pwa.unavailable":
     "La preparación sin conexión no está disponible aquí. Usa un navegador compatible mediante HTTPS.",

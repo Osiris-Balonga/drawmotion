@@ -214,6 +214,7 @@ export class PwaClient {
   }
 
   async checkForUpdate(force = false) {
+    if (this.state.update === "checking") return
     if (
       !this.registration ||
       this.registration.installing ||

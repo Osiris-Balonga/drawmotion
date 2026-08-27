@@ -22,7 +22,7 @@ export const it = {
   "pwa.menu": "Installazione e offline",
   "pwa.title": "Porta DrawMotion con te",
   "pwa.description":
-    "Prepara l’app online, poi disegna senza connessione. La fotocamera resta spenta durante la preparazione.",
+    "Prepara l’app online, poi disegna senza connessione. La preparazione non attiva mai la fotocamera.",
   "pwa.prepare": "Prepara offline · circa 50 MB",
   "pwa.unavailable":
     "La preparazione offline non è disponibile qui. Usa un browser compatibile tramite HTTPS.",
