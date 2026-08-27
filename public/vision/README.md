@@ -19,7 +19,11 @@ and checked by `pnpm verify:vision-assets` before the production build.
 The MediaPipe project and JavaScript package are distributed under Apache-2.0.
 Google's implementation guide explicitly directs web applications to download
 the compatible model into their project. The model bundle is redistributed
-unchanged from the official versioned URL above.
+unchanged from the official versioned URL above. The guide links the
+[Hand Tracking Lite/Full model card](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Hand%20Tracking%20%28Lite_Full%29%20with%20Fairness%20Oct%202021.pdf),
+whose page 2 specifies Apache License, Version 2.0 (checked 2026-08-27).
+The full licence is retained in [../licenses/mediapipe-Apache-2.0.txt](../licenses/mediapipe-Apache-2.0.txt).
+See [distribution notices](../licenses/README.md) for other bundled assets.
 
 ## SHA-256
 

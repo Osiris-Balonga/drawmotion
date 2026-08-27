@@ -1,55 +1,68 @@
-# Inventaire tiers — préparation de redistribution
+# Licences et provenance
 
-Relevé du 27 août 2026 à partir des `package.json` installés et de
-`pnpm-lock.yaml`. Ce document est un inventaire de préparation, **pas un
-remplacement des textes de licence ou une validation juridique complète**.
-La licence propre à DrawMotion reste à choisir par le mainteneur.
+Vérification du 27 août 2026 pour le lockfile courant. La licence MIT de
+[DrawMotion](../LICENSE) ne remplace pas celle des composants tiers.
 
-## Dépendances directes déclarées en production
+## Ce que le build distribue
 
-| Paquet                     | Version installée | Licence déclarée |
-| -------------------------- | ----------------- | ---------------- |
-| @base-ui/react             | 1.7.0             | MIT              |
-| @fontsource-variable/geist | 5.3.0             | OFL-1.1          |
-| @mediapipe/tasks-vision    | 1.0.1             | Apache-2.0       |
-| class-variance-authority   | 0.7.1             | Apache-2.0       |
-| clsx                       | 2.1.1             | MIT              |
-| lucide-react               | 1.33.0            | ISC              |
-| react / react-dom          | 19.2.8            | MIT              |
-| shadcn                     | 4.19.0            | MIT              |
-| sonner                     | 2.0.8             | MIT              |
-| tailwind-merge             | 3.6.0             | MIT              |
-| tw-animate-css             | 1.4.0             | MIT              |
+`pnpm build` produit `dist/licenses/` et vérifie sa présence et son contenu.
+`pnpm verify:licenses` permet de refaire ce contrôle sur un build existant.
 
-Cette liste ne signifie pas que chaque paquet est embarqué dans le navigateur.
-Les transitifs et les outils de build doivent aussi être examinés selon les
-fichiers effectivement redistribués. L'inventaire complet des métadonnées est
-reproductible avec `pnpm licenses list --json` (inclut des chemins locaux : ne
-pas publier sa sortie brute). Les métadonnées seules ne remplacent pas la
-lecture des fichiers `LICENSE`, `COPYING` et `NOTICE` applicables.
+| Ressource                                  | Licence et texte distribué                          | Provenance                                       |
+| ------------------------------------------ | --------------------------------------------------- | ------------------------------------------------ |
+| JavaScript applicatif et transitifs        | Textes complets dans `bundled.md`, générés par Vite | Paquets effectivement inclus dans les chunks     |
+| Worker MediaPipe, JS et WASM               | Apache-2.0, `mediapipe-Apache-2.0.txt`              | `@mediapipe/tasks-vision@1.0.1`                  |
+| Hand Landmarker full, float16, version 1   | Apache-2.0, même texte                              | Modèle officiel inchangé ; références ci-dessous |
+| Geist Variable 5.3.0                       | OFL-1.1, `geist-OFL.txt`                            | `@fontsource-variable/geist`                     |
+| Composants shadcn/ui adaptés et CSS 4.19.0 | MIT, `shadcn-MIT.txt`                               | shadcn/ui, primitives Base UI                    |
+| Tailwind CSS 4.3.3                         | MIT, `tailwindcss-MIT.txt`                          | `tailwindcss`                                    |
+| tw-animate-css 1.4.0                       | MIT, `tw-animate-css-MIT.txt`                       | `tw-animate-css`                                 |
+| Code original DrawMotion                   | MIT, `drawmotion-MIT.txt`                           | Copié depuis le LICENSE racine par Vite          |
 
-## Ressources embarquées hors bundle applicatif
+Le rapport Vite couvre les modules JavaScript du bundle applicatif, pas les
+assets copiés depuis `public/` ni automatiquement le build Worker séparé.
+Les textes statiques complémentaires sont conservés dans
+[public/licenses](../public/licenses/README.md). Les notices mixtes des icônes
+Lucide sont conservées dans le texte complet de son paquet, pas réduites à « ISC ».
 
-- `public/vision/` : modèle et six fichiers runtime MediaPipe. Versions,
-  origine officielle et empreintes dans [le relevé de provenance](../public/vision/README.md).
-  Vérifier spécifiquement les conditions du modèle téléchargé, puis conserver
-  les textes Apache et notices applicables ; ne pas déduire automatiquement
-  la licence du modèle de celle du paquet JavaScript.
-- Geist : police locale issue de `@fontsource-variable/geist`, texte OFL dans
-  son fichier `LICENSE`. Préserver ce texte dans la distribution.
-- `public/brand/drawmotion-symbol-b.png` et `public/onboarding/*.png` : visuels
-  générés pour le projet selon l'historique de conception. Faire confirmer
-  leur provenance et leur périmètre de réutilisation par le mainteneur avant
-  publication ; ne pas les attribuer à MediaPipe ou à une bibliothèque d'icônes.
-- `src/components/ui/` : composants intégrés à partir de shadcn/Base UI ;
-  conserver les notices applicables au code copié, même s'il a été adapté.
+Le contrôle de packaging n'est pas une analyse juridique automatique. Après
+mise à jour d'une dépendance, relire son texte, ses éventuels fichiers NOTICE et
+l'artefact final ; la présence d'un identifiant SPDX ne suffit pas.
 
-## Avant toute distribution publique
+## Modèle et runtime MediaPipe
 
-- [ ] Choisir la licence de DrawMotion et ajouter le texte `LICENSE` approuvé.
-- [ ] Relire les licences et notices directes/transitives pertinentes pour le build final.
-- [ ] Vérifier les conditions de redistribution du modèle et des visuels.
-- [ ] Fournir les textes d'attribution/licence requis avec le site statique et le code source.
-- [ ] Vérifier que les notices restent présentes dans l'artefact Vercel final.
+La [documentation officielle Hand Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker)
+relie le modèle full au
+[Model Card Hand Tracking Lite/Full](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Hand%20Tracking%20%28Lite_Full%29%20with%20Fairness%20Oct%202021.pdf).
+La page 2 comporte « LICENSED UNDER — Apache License, Version 2.0 ».
+C'est la référence de licence du modèle, distincte de celle du paquet JavaScript.
 
-Aucune de ces étapes n'est déclarée terminée par la présence de cet inventaire.
+Les URLs versionnées, dates de récupération et SHA-256 du modèle et des six
+fichiers runtime figurent dans [public/vision/README.md](../public/vision/README.md).
+`pnpm verify:vision-assets` contrôle leur intégrité. Le texte Apache provient
+du [LICENSE MediaPipe](https://github.com/google-ai-edge/mediapipe/blob/master/LICENSE).
+
+## Visuels du projet
+
+`public/brand/drawmotion-symbol-b.png` et `public/onboarding/*.png` sont des
+visuels générés avec l'outil de génération d'images OpenAI, puis sélectionnés
+et adaptés pour DrawMotion par le mainteneur. Ce ne sont pas des illustrations
+MediaPipe ni des icônes Lucide. La licence MIT couvre les droits du mainteneur
+sur ces assets ; elle ne garantit ni exclusivité sur un contenu généré, ni
+disponibilité d'une marque. Aucune vidéo de webcam personnelle n'est nécessaire
+au dépôt ni aux tests.
+
+## Mettre à jour les notices
+
+1. Mettre à jour le paquet et le lockfile dans la même PR.
+2. Relire la licence et la provenance des nouveaux fichiers. Pour CSS, polices,
+   modèles, WASM et code copié, actualiser le texte dans `public/licenses/`.
+3. Exécuter `pnpm build`, `pnpm verify:vision-assets` et inspecter
+   `dist/licenses/`, y compris les mentions de copyright.
+4. Vérifier que le site déployé sert ces fichiers. Ne pas retirer ce dossier
+   de l'artefact statique.
+5. Pour auditer aussi les outils de développement : `pnpm licenses list --json`.
+   Sa sortie contient des chemins locaux ; ne pas publier la sortie brute.
+
+Les dépendances de développement ne sont pas toutes redistribuées avec le site.
+Leur licence reste disponible dans chaque paquet installé depuis le lockfile.
