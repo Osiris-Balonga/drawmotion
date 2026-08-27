@@ -19,7 +19,7 @@ export const en = {
   "pwa.menu": "Install & offline",
   "pwa.title": "Keep DrawMotion with you",
   "pwa.description":
-    "Prepare once online, then draw without a connection. Your camera stays off during preparation.",
+    "Prepare once online, then draw without a connection. Preparation never activates your camera.",
   "pwa.prepare": "Prepare offline · about 50 MB",
   "pwa.unavailable":
     "Offline preparation is unavailable here. Use a supported browser over HTTPS.",

@@ -22,7 +22,7 @@ export const fr = {
   "pwa.menu": "Installation et hors ligne",
   "pwa.title": "Emportez DrawMotion",
   "pwa.description":
-    "Préparez l’app en ligne, puis dessinez sans connexion. La caméra reste éteinte pendant la préparation.",
+    "Préparez l’app en ligne, puis dessinez sans connexion. La préparation n’active jamais la caméra.",
   "pwa.prepare": "Préparer hors ligne · environ 50 Mo",
   "pwa.unavailable":
     "La préparation hors ligne n’est pas disponible ici. Utilisez un navigateur compatible en HTTPS.",
