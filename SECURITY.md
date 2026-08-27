@@ -3,10 +3,10 @@
 DrawMotion is a prototype without a maintained public release yet.
 Do not post webcam data or sensitive information in an issue.
 
-The intended private channel is [Report a vulnerability](https://github.com/Osiris-Balonga/drawmotion/security/advisories/new).
-Its activation must be verified before the repository becomes public: the API
-check on August 27, 2026 returned 404 and did not confirm availability. If the
-link is unavailable, ask the maintainer to enable private reporting without
+Use [Report a vulnerability](https://github.com/Osiris-Balonga/drawmotion/security/advisories/new).
+Private reporting was enabled and verified through the GitHub API on August
+27, 2026 when the repository became public. If the link is unavailable, ask
+the maintainer to restore private reporting without
 disclosing the vulnerability in a public issue. No response or fix deadline
 is guaranteed.
 
@@ -23,6 +23,8 @@ using synthetic data. Do not attach personal recordings or secrets.
 - Dependabot checks npm and GitHub Actions weekly, targeting `dev`.
 - CodeQL JavaScript/TypeScript analysis and dependency review use SHA-pinned
   actions, minimal permissions, and no `pull_request_target`.
+- The public repository has the dependency graph and dependency alerts enabled;
+  dependency review requires the graph to remain enabled.
 
 For a private repository, CodeQL and dependency review require GitHub Code
 Security eligibility and activation. They are **disabled by default**, with an
