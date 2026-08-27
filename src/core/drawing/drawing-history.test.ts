@@ -8,7 +8,6 @@ import {
 } from "./drawing-history"
 import {
   emptyDrawingDocument,
-  isNormalizedPoint,
   type DrawingDocument,
   type Stroke,
 } from "./drawing-model"
@@ -26,11 +25,6 @@ function documentWith(...strokes: Stroke[]): DrawingDocument {
 }
 
 describe("drawing model and history", () => {
-  it("recognizes points inside and outside the normalized canvas", () => {
-    expect(isNormalizedPoint(stroke.points[0]!)).toBe(true)
-    expect(isNormalizedPoint({ x: 1.1, y: 0.5 })).toBe(false)
-  })
-
   it("undoes and redoes document states deterministically", () => {
     const drawn = documentWith(stroke)
     const history = recordDrawing(

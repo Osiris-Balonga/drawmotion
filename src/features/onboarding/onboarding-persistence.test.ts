@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  loadOnboardingCompletion,
   loadOnboardingProgress,
   resetOnboardingCompletion,
-  saveOnboardingCompletion,
   saveOnboardingProgress,
 } from "./onboarding-persistence"
 
@@ -45,15 +43,20 @@ describe("onboarding progress persistence", () => {
   it("stores completion and can reset it", () => {
     const { adapter } = createStorage()
 
-    saveOnboardingCompletion(adapter)
-    expect(loadOnboardingCompletion(adapter)).toBe(true)
+    saveOnboardingProgress(
+      { status: "completed", currentStep: "complete" },
+      adapter,
+    )
     expect(loadOnboardingProgress(adapter)).toEqual({
       status: "completed",
       currentStep: "complete",
     })
 
     resetOnboardingCompletion(adapter)
-    expect(loadOnboardingCompletion(adapter)).toBe(false)
+    expect(loadOnboardingProgress(adapter)).toEqual({
+      status: "new",
+      currentStep: "cursor",
+    })
   })
 
   it("normalizes skipped and newly-started sessions", () => {
