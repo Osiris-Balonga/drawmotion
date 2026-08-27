@@ -1,4 +1,13 @@
 export const en = {
+  "pwa.updatePolicy":
+    "Updates wait until every DrawMotion window is closed. Your drawing session is never reloaded.",
+  "pwa.updateChecking": "Checking for updates…",
+  "pwa.updateDownloading": "Downloading an update. You can keep drawing.",
+  "pwa.updateWaiting":
+    "An update is ready. Close all DrawMotion windows when you finish, then reopen. No reload is needed now.",
+  "pwa.updateFailed":
+    "The update could not be downloaded. Your current version is still available.",
+  "pwa.checkUpdate": "Check for updates",
   "pwa.installed": "Opened as an installed app.",
   "pwa.install": "Install DrawMotion",
   "pwa.installHelp":

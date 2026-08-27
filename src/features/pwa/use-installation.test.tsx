@@ -19,6 +19,7 @@ it("requests installation only on explicit action and consumes the prompt once",
   expect(result.current.canPrompt).toBe(true)
   await act(async () => {
     result.current.install()
+    await Promise.resolve()
   })
   expect(prompt).toHaveBeenCalledTimes(1)
   expect(result.current.canPrompt).toBe(false)

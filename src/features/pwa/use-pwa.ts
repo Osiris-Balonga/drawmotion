@@ -1,7 +1,10 @@
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import { toast } from "sonner"
+import { t } from "@/i18n"
 import { PwaClient } from "@/infrastructure/pwa/pwa-client"
 
 export function usePwa() {
+  const notified = useRef(false)
   const [client] = useState(
     () =>
       new PwaClient(
@@ -29,5 +32,14 @@ export function usePwa() {
       client.dispose()
     }
   }, [client])
+  useEffect(() => {
+    if (state.update === "waiting-for-close" && !notified.current) {
+      notified.current = true
+      toast.message(t("pwa.updateWaiting"), {
+        id: "pwa-update",
+        duration: 8000,
+      })
+    }
+  }, [state.update])
   return { state, client }
 }

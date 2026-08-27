@@ -1,6 +1,14 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "pwa.updatePolicy":
+    "更新会等待所有 DrawMotion 窗口关闭后再应用，不会重新加载你的绘画会话。",
+  "pwa.updateChecking": "正在检查更新…",
+  "pwa.updateDownloading": "正在下载更新，你可以继续绘画。",
+  "pwa.updateWaiting":
+    "更新已准备好。完成绘画后，请关闭所有 DrawMotion 窗口，再重新打开。现在无需重新加载。",
+  "pwa.updateFailed": "无法下载更新，当前版本仍然可用。",
+  "pwa.checkUpdate": "检查更新",
   "pwa.installed": "已作为安装的应用打开。",
   "pwa.install": "安装 DrawMotion",
   "pwa.installHelp":

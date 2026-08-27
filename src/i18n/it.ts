@@ -1,6 +1,16 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "pwa.updatePolicy":
+    "Gli aggiornamenti attendono la chiusura di tutte le finestre di DrawMotion. La sessione di disegno non viene mai ricaricata.",
+  "pwa.updateChecking": "Ricerca di aggiornamenti…",
+  "pwa.updateDownloading":
+    "Download di un aggiornamento. Puoi continuare a disegnare.",
+  "pwa.updateWaiting":
+    "Un aggiornamento è pronto. Quando hai finito, chiudi tutte le finestre di DrawMotion e riapri l’app. Non serve ricaricare ora.",
+  "pwa.updateFailed":
+    "Impossibile scaricare l’aggiornamento. La versione attuale resta disponibile.",
+  "pwa.checkUpdate": "Cerca aggiornamenti",
   "pwa.installed": "Aperta come applicazione installata.",
   "pwa.install": "Installa DrawMotion",
   "pwa.installHelp":
