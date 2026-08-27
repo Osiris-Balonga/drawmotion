@@ -121,10 +121,14 @@ test("dock and command palette share stroke, color and eraser settings", async (
 for (const viewport of [
   { width: 782, height: 600 },
   { width: 768, height: 1024 },
+  // Layout viewport equivalents of 1440×900 and 1280×800 at 200% browser zoom.
+  // Native browser zoom and real touch devices remain manual QA checks.
+  { width: 720, height: 450 },
+  { width: 640, height: 400 },
 ]) {
   test(`palette and camera stay usable at ${viewport.width}x${viewport.height}`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.setViewportSize(viewport)
     await enterWorkspace(page)
     const camera = page.getByRole("button", { name: "Activer ma caméra" })
@@ -155,5 +159,20 @@ for (const viewport of [
     await expect(
       page.getByRole("textbox", { name: "HEX", exact: true }),
     ).toHaveValue("#1267AB")
+    await expectInsideViewport(page.getByRole("dialog"))
+    await expectInsideViewport(camera)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    if (viewport.width === 640) {
+      await page.getByRole("dialog").evaluate(async (element) => {
+        await Promise.all(
+          element
+            .getAnimations({ subtree: true })
+            .map((animation) => animation.finished.catch(() => undefined)),
+        )
+      })
+      await page.screenshot({
+        path: testInfo.outputPath("compact-controls.png"),
+      })
+    }
   })
 }

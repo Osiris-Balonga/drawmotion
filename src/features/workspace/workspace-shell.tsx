@@ -842,8 +842,9 @@ export function WorkspaceShell() {
         <div>
           <h1 id="mobile-title">Un écran plus large est nécessaire</h1>
           <p>
-            DrawMotion est conçu pour ordinateur et tablette. Passez en paysage
-            ou utilisez un écran d’au moins 768 pixels.
+            DrawMotion est conçu pour ordinateur et tablette. Agrandissez la
+            fenêtre ou passez la tablette en paysage. Sur téléphone, ouvrez
+            cette même adresse sur un ordinateur équipé d’une webcam.
           </p>
         </div>
       </section>

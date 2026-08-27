@@ -10,6 +10,7 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4175",
     browserName: "chromium",
+    channel: process.env.E2E_BROWSER_CHANNEL || undefined,
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

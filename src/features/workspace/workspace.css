@@ -1200,7 +1200,7 @@ button.camera-preview__viewport:disabled {
   }
 }
 
-@media (min-width: 48rem) and (max-width: 80rem) {
+@media (min-width: 40rem) and (max-width: 80rem) {
   .workspace-topbar {
     top: var(--space-md);
     right: var(--space-md);
@@ -1296,7 +1296,7 @@ button.camera-preview__viewport:disabled {
   }
 }
 
-@media (min-width: 48rem) and (max-width: 52rem) {
+@media (min-width: 40rem) and (max-width: 52rem) {
   .workspace-topbar__brand p,
   .workspace-topbar__export-label {
     display: none;
@@ -1312,7 +1312,41 @@ button.camera-preview__viewport:disabled {
   }
 }
 
-@media (max-width: 47.999rem) {
+@media (min-width: 40rem) and (max-width: 47.999rem) {
+  .tool-rail {
+    left: var(--space-md);
+    transform: none;
+  }
+
+  .command-dock__extended {
+    left: 0;
+    transform: none;
+  }
+
+  .tool-rail[data-collapsed] .command-dock__extended {
+    transform: translateY(0.5rem);
+  }
+
+  .gesture-coach {
+    flex-wrap: wrap;
+    max-height: calc(100svh - 11rem);
+    overflow-y: auto;
+  }
+
+  .gesture-coach__actions {
+    flex-direction: row;
+    justify-content: end;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera-preview__gesture-toast {
+    animation: none;
+  }
+}
+
+@media (max-width: 39.999rem), (max-width: 47.999rem) and (pointer: coarse) {
   .workspace-topbar,
   .workspace-main,
   .skip-link {
@@ -1328,7 +1362,7 @@ button.camera-preview__viewport:disabled {
     justify-content: center;
     gap: var(--space-lg);
     padding: var(--space-2xl);
-    color: var(--foreground);
+    color: var(--canvas-foreground);
     background: var(--canvas);
   }
 
@@ -1348,7 +1382,7 @@ button.camera-preview__viewport:disabled {
   .mobile-workspace-notice p {
     max-width: 38ch;
     margin-top: var(--space-xs);
-    color: var(--muted-foreground);
+    color: var(--canvas-foreground);
     line-height: 1.5;
     text-wrap: pretty;
   }
