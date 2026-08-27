@@ -6,7 +6,9 @@ Direction UX : piste C, tutoriel guidé puis toile minimale
 
 Point au 27 août 2026 : prototype fonctionnel, socle du lot 9 et implémentation
 locale du lot 10. Le lot 10 reste à qualifier sur preview HTTPS et webcam
-physique avant la QA finale et la livraison (lot 11).
+physique avant la QA finale et la livraison (lot 11). La préparation locale
+du lot 11 est engagée : checklist, version candidate et procédure de release ;
+cela ne vaut ni validation finale ni autorisation de publication.
 Les ajouts gestuels du lot 9 sont des simulations de landmarks
 dans Chromium, pas une validation du modèle MediaPipe sur une vidéo réelle.
 La fusion, les checks obligatoires GitHub et la publication nécessitent encore
