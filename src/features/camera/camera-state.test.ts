@@ -10,7 +10,7 @@ import {
 type RequestResultEvent = Exclude<CameraEvent["type"], "REQUEST" | "STOP">
 
 describe("camera lifecycle", () => {
-  it("déclare les huit états contractuels", () => {
+  it("declares the eight lifecycle states", () => {
     expect(CAMERA_STATES).toEqual([
       "idle",
       "requesting",
@@ -30,7 +30,7 @@ describe("camera lifecycle", () => {
     ["BUSY", "busy"],
     ["FAIL", "failed"],
   ] satisfies Array<[RequestResultEvent, CameraState]>)(
-    "résout une demande avec %s vers %s",
+    "resolves a request with %s to %s",
     (eventType, expectedState) => {
       expect(transitionCameraState("requesting", { type: eventType })).toBe(
         expectedState,
@@ -44,15 +44,15 @@ describe("camera lifecycle", () => {
     "busy",
     "failed",
     "stopped",
-  ] satisfies CameraState[])("permet de relancer depuis l’état %s", (state) => {
+  ] satisfies CameraState[])("allows retrying from the %s state", (state) => {
     expect(transitionCameraState(state, { type: "REQUEST" })).toBe("requesting")
   })
 
-  it("passe à stopped lors de l’arrêt d’un flux prêt", () => {
+  it("transitions to stopped when stopping a ready stream", () => {
     expect(transitionCameraState("ready", { type: "STOP" })).toBe("stopped")
   })
 
-  it("ignore les résultats tardifs après un arrêt", () => {
+  it("ignores late results after stopping", () => {
     expect(transitionCameraState("stopped", { type: "READY" })).toBe("stopped")
   })
 })

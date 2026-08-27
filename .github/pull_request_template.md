@@ -1,28 +1,29 @@
-## Objectif
+## Goal
 
-Décrire le problème résolu et le comportement attendu. Lier l'issue si elle existe.
+Describe the problem and expected behavior. Link the issue, if any.
+Write the description in English.
 
-## Changements
+## Changes
 
 -
 
-## Preuves
+## Evidence
 
-- [ ] Vérifications exécutées indiquées, avec résultats (`pnpm validate` et couverture pour le code)
-- [ ] Régression pertinente couverte ; pas de test répétant ses propres données
-- [ ] Capture ou essai manuel joint si l'interface ou les gestes changent
-- [ ] Aucun secret, fichier privé, rapport ou build ajouté
-- [ ] Provenance et licence des nouveaux assets/dépendances vérifiées, notices conservées
-- [ ] Documentation et ADR mis à jour si une décision a changé
+- [ ] List checks actually run and their results (`pnpm validate` and coverage for code changes)
+- [ ] Cover the relevant regression without tests that merely repeat their own inputs
+- [ ] Include a screenshot or manual check when UI or gestures change
+- [ ] No secrets, private files, reports, or builds added
+- [ ] Verify provenance and licensing of new assets/dependencies; preserve notices
+- [ ] Update English documentation and ADRs when decisions change
 
-## Promotion en production
+## Production promotion
 
-À remplir uniquement si la branche cible est `main` :
+Complete this section only when targeting `main`:
 
-- [ ] La branche source est exactement `dev`
-- [ ] Aucun commit spécifique à la release n'a été ajouté après la validation de `dev`
-- [ ] Le contrôle `Production source policy` et le déploiement Vercel sont verts
+- [ ] The source branch is exactly `dev`
+- [ ] No release-specific commits were added after validating `dev`
+- [ ] The `Production source policy` check and Vercel deployment are green
 
-## Risques et rollback
+## Risks and rollback
 
-Décrire le principal risque et la manière de revenir au comportement précédent.
+Describe the main risk and how to restore the previous behavior.

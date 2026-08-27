@@ -1,72 +1,82 @@
-# Contribuer à DrawMotion
+# Contributing to DrawMotion
 
-Les correctifs reproductibles, améliorations de documentation et retours
-d'usage sont bienvenus. Pour une nouvelle interaction gestuelle ou une refonte,
-discuter d'abord du problème et du comportement attendu dans une issue.
-Les échanges et PR peuvent être rédigés en français ou en anglais.
+Reproducible fixes, documentation improvements, and usage feedback are welcome.
+Before introducing a new gesture or redesign, discuss the problem and intended
+behavior in an issue.
 
-## Installation
+## Language
 
-Node.js 24 et pnpm 11.19.0, puis :
+Write repository documentation, code identifiers, comments, test descriptions,
+commit messages, and pull request descriptions in **English**. This includes
+ADRs, QA reports, contributor templates, and archived documentation.
+
+Only user-facing application content is localized, including labels, guidance,
+accessibility announcements, and error messages. Tests may quote localized UI
+strings when asserting that content; those strings are not documentation.
+Do not translate app content as part of a repository documentation change.
+
+## Setup
+
+Use Node.js 24 and pnpm 11.19.0, then:
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Aucune clé API n'est requise. Les assets MediaPipe sont dans le dépôt.
-Pour les tests navigateur : `pnpm exec playwright install chromium`.
-La caméra exige localhost ou HTTPS, pas une adresse HTTP du réseau local.
+No API key is required. MediaPipe assets are included in the repository.
+For browser tests, run `pnpm exec playwright install chromium`.
+Camera access requires localhost or HTTPS, not a plain HTTP LAN address.
 
-## Une modification, une intention
+## One change, one purpose
 
-- Partir de `dev` pour une branche courte et ouvrir la PR vers `dev`.
-  Ne pas viser `main` directement ; la promotion est `dev -> main`.
-- Garder des commits autonomes : correctif, refactorisation et docs séparés
-  lorsqu'ils ont des intentions distinctes. Exemple : `fix(gestures): stop ink after tracking loss`.
-- Décrire le problème, la solution, les risques et les vérifications réellement
-  exécutées. Une capture est utile pour une modification visuelle.
-- Ne pas ajouter de dépendance, couche générique ou test sans expliquer ce
-  qu'il apporte. Réutiliser les réglages communs au dock et aux commandes.
-- Les changements de seuils gestuels exigent une régression reproductible
-  et un essai webcam : des fixtures seules ne prouvent pas la précision.
-- Ne jamais committer secrets, captures privées, vidéos de webcam, build,
-  couverture ou rapports. Tout nouvel asset doit avoir une provenance et une licence.
-- Attendre la revue du mainteneur ; ne pas fusionner ni publier sans son accord.
+- Create a short-lived branch from `dev` and target `dev` in your PR.
+  Do not target `main` directly; production promotion is `dev -> main`.
+- Keep commits self-contained. Separate fixes, refactoring, and documentation
+  when they serve different purposes. Example: `fix(gestures): stop ink after tracking loss`.
+- Explain the problem, solution, risks, and checks actually performed.
+  Include a screenshot for visual changes when helpful.
+- Justify new dependencies, abstractions, and tests. Reuse settings shared by
+  the dock and gesture commands.
+- Gesture threshold changes need a reproducible regression test and a webcam
+  check: fixtures alone do not establish real-world accuracy.
+- Never commit secrets, private screenshots, webcam recordings, builds, coverage,
+  or reports. New assets need documented provenance and licensing.
+- Wait for maintainer review. Do not merge or publish without approval.
 
-Pour les frontières du code, consulter [ARCHITECTURE](docs/ARCHITECTURE.md).
-Les composants UI utilisent Base UI, pas Radix.
+See [ARCHITECTURE](docs/ARCHITECTURE.md) for code boundaries.
+UI components use Base UI, not Radix.
 
-## Vérifier sans multiplier les tests
+## Verification without redundant tests
 
-Lancer d'abord le groupe concerné : `pnpm test:unit`, `pnpm test:components`
-ou `pnpm test:integration`. Les parcours navigateur se filtrent par fichier :
+Start with the affected group: `pnpm test:unit`, `pnpm test:components`,
+or `pnpm test:integration`. Browser journeys can be filtered by file:
 `pnpm test:e2e gestures.spec.ts --workers=1`.
 
-Avant une PR qui modifie le code, exécuter `pnpm validate` et
-`pnpm test:coverage`. Une PR documentaire peut se limiter au formatage et
-à la vérification des liens, en l'indiquant. La CI vérifie le build, les assets,
-les budgets et les notices ; ne pas masquer un échec en baissant les seuils.
+Before a code PR, run `pnpm validate` and `pnpm test:coverage`.
+Documentation-only PRs may use formatting and link checks instead, stating
+that scope explicitly. CI also checks the build, assets, budgets, and notices.
+Do not hide failures by lowering thresholds.
 
-Un test doit détecter un défaut concret, pas vérifier ses propres constantes
-ou les détails internes d'une bibliothèque. La [stratégie de tests](docs/TESTING.md)
-précise les frontières simulées et les essais manuels nécessaires.
+A test should catch a concrete defect, not restate its own constants or assert
+library internals. The [testing guide](docs/TESTING.md) describes mocked
+boundaries and required manual checks.
 
-## Code assisté par IA
+## AI-assisted contributions
 
-Le contributeur reste responsable de comprendre et vérifier ce qu'il propose,
-de respecter les licences et de ne pas envoyer de données privées à un outil.
-Une PR assistée par IA suit les mêmes exigences de revue et de preuve ; une
-sortie générée ou un compte rendu de tests non exécutés n'est pas une validation.
+Contributors are responsible for understanding and verifying their changes,
+respecting licenses, and keeping private data out of tools. AI-assisted PRs
+have the same review and evidence requirements as other contributions.
+Generated output or reports of tests that were never run are not validation.
 
-## Communication et licence
+## Communication and licensing
 
-Discuter des changements, pas des personnes. Pas de harcèlement, de données
-personnelles publiées ou de contributions manifestement malveillantes. Le
-mainteneur peut masquer ou fermer les échanges qui enfreignent ces règles ;
-les abus sur GitHub peuvent aussi être signalés avec « Report content ».
+Discuss changes, not people. Harassment, publication of personal information,
+and deliberately malicious contributions are not acceptable. The maintainer
+may hide or close discussions that violate these rules. Abuse on GitHub can
+also be reported through its Report content feature.
 
-Pour les vulnérabilités, suivre [SECURITY](SECURITY.md), pas une issue publique.
-Les contributions originales sont proposées sous la [licence MIT](LICENSE) ;
-les notices tierces doivent être conservées. Aucune cession de copyright
-ni CLA supplémentaire n'est demandée.
+For vulnerabilities, follow [SECURITY](SECURITY.md), not a public issue.
+Original contributions are offered under the [MIT license](LICENSE);
+third-party notices must be preserved. No additional CLA or copyright
+assignment is required.

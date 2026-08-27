@@ -1,12 +1,12 @@
-# Archives de conception
+# Design archives
 
-Le [plan d'implémentation initial](implementation-plan.md) conserve le découpage
-et les décisions de départ. Il contient des choix remplacés et ne décrit pas
-tous les comportements actuels.
+The [initial implementation plan](implementation-plan.md) preserves the original
+batches and decisions. Some choices have been superseded; it does not describe
+every current behavior.
 
-Les relevés [lot 10](../qa/lot10-local.md) et [lot 11](../qa/lot11-local.md)
-sont des preuves datées sur leurs commits, pas la validation du HEAD actuel.
+[Batch 10](../qa/lot10-local.md) and [batch 11](../qa/lot11-local.md) reports are
+dated evidence for their revisions, not validation of the current HEAD.
 
-Pour contribuer aujourd'hui : [CONTRIBUTING](../../CONTRIBUTING.md),
-[architecture](../ARCHITECTURE.md), [tests](../TESTING.md).
-Pour publier : [livraison](../RELEASE.md) et [QA finale](../qa/v1.0.0.md).
+For current contributions, use [CONTRIBUTING](../../CONTRIBUTING.md),
+[architecture](../ARCHITECTURE.md), and [testing](../TESTING.md).
+For publication, use [releasing](../RELEASE.md) and [final QA](../qa/v1.0.0.md).

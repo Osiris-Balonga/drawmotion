@@ -1,15 +1,15 @@
 # DrawMotion
 
-Dessinez dans les airs, directement dans votre navigateur. DrawMotion transforme
-les mouvements d'une main devant une webcam en dessin 2D : pincez pour tracer,
-relâchez pour lever le stylo, fermez le poing pour gommer.
+Draw in the air, directly in your browser. DrawMotion turns hand movements
+captured by a webcam into 2D drawings: pinch to draw, release to lift the pen,
+and make a fist to erase.
 
-Prototype en préparation pour une démo publique, version `1.0.0-rc.1`.
-La démo n'est pas encore publiée. [Capacités et limites](CHANGELOG.md).
+Prototype being prepared for a public demo, version `1.0.0-rc.1`.
+The demo is not published yet. See [features and limitations](CHANGELOG.md).
 
-## Démarrer
+## Getting started
 
-Prérequis : **Node.js 24** et **pnpm 11.19.0**.
+Requirements: **Node.js 24** and **pnpm 11.19.0**.
 
 ```sh
 git clone https://github.com/Osiris-Balonga/drawmotion.git
@@ -18,67 +18,70 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Le dépôt est encore privé : le clonage nécessite actuellement un accès.
-Ouvrez l'URL affichée par Vite, cliquez sur l'aperçu caméra et suivez le tutoriel.
-Aucune clé API ni serveur Python n'est nécessaire. Chrome et Edge sur ordinateur
-sont les cibles initiales ; consultez les [limites de compatibilité](docs/COMPATIBILITY.md).
+The repository is still private, so cloning currently requires access.
+Open the URL printed by Vite, click the camera preview, and follow the tutorial.
+No API key or Python server is needed. Desktop Chrome and Edge are the initial
+targets; see [compatibility limitations](docs/COMPATIBILITY.md).
 
-## Utilisation
+## Using DrawMotion
 
-- **Viser** : déplacez l'index ; le point violet indique la position.
-- **Dessiner** : rapprochez le pouce et l'index. Relâchez pour terminer le trait.
-- **Gommer** : fermez le poing et passez sur le dessin.
-- **Commandes gestuelles** : maintenez index et majeur levés, signe paix.
-  Choisissez ensuite une grande cible en pinçant. Ce geste est désactivé pendant
-  les premières missions du tutoriel pour ne pas les interrompre.
-- **Réglages** : le dock et les commandes partagent couleur, épaisseur et style.
-  La roue HEX/RGB du dock s'utilise à la souris, au tactile ou au clavier.
-- **Précision** : Libre suit le mouvement, Stabilisé atténue les irrégularités,
-  Formes peut régulariser lignes, cercles, ellipses et rectangles. « Garder mon
-  tracé » permet de refuser une correction.
-- **Navigation** : boutons de zoom, `+` / `-` / `0`, Espace + glisser pour déplacer
-  la toile. `M` ouvre les commandes ; Ctrl/Cmd + Z annule.
-- **Export** : le PNG contient la zone visible au zoom courant, pas automatiquement
-  tout le document. Dézoomez/recentrez avant d'exporter.
+- **Aim**: move your index finger; the purple dot shows the pointer position.
+- **Draw**: bring your thumb and index finger together. Release to finish the stroke.
+- **Erase**: make a fist and move it over the drawing.
+- **Gesture commands**: hold up your index and middle fingers in a peace sign.
+  Then pinch over a large target to select it. This gesture is disabled during
+  the first tutorial missions to avoid interrupting them.
+- **Settings**: the dock and gesture commands share color, thickness, and stroke
+  style. The dock's HEX/RGB picker supports mouse, touch, and keyboard input.
+- **Precision**: freehand follows your movement, stabilized drawing reduces
+  unevenness, and shape assistance can regularize lines, circles, ellipses, and
+  rectangles. You can reject a correction and keep your original stroke.
+- **Navigation**: use the zoom controls or `+` / `-` / `0`, and Space + drag to
+  pan the canvas. `M` opens commands; Ctrl/Cmd + Z undoes an action.
+- **Export**: the PNG captures the visible area at the current zoom, not
+  automatically the entire document. Zoom out and recenter before exporting.
 
-Le dessin reste en mémoire : **exportez avant de recharger ou de fermer**.
-Les réglages fonctionnent sans caméra, mais le tracé libre nécessite encore une
-main détectée. La précision dépend du cadrage, de l'éclairage et du matériel ;
-DrawMotion ne remplace pas une tablette graphique.
+Drawings stay in memory: **export before reloading or closing the page**.
+Settings work without a camera, but freehand drawing still requires a detected
+hand. Accuracy depends on framing, lighting, and hardware; DrawMotion is not
+a replacement for a drawing tablet.
 
-## Traitement local
+## Local processing
 
-MediaPipe Hand Landmarker s'exécute dans un Web Worker. Le modèle, WASM, les
-polices et les illustrations sont servis avec le site. DrawMotion n'enregistre
-ni ne téléverse la vidéo ; le micro n'est pas demandé. Seule la progression du
-tutoriel est conservée dans le stockage local.
+MediaPipe Hand Landmarker runs in a Web Worker. The model, WASM, fonts, and
+illustrations are served with the site. DrawMotion does not record or upload
+video and does not request microphone access. Only tutorial progress is saved
+in local storage.
 
-La [documentation de confidentialité](docs/COMPATIBILITY.md#confidentialité)
-distingue les données en mémoire, les requêtes normales de fichiers et les
-contrôles réseau. Pour une vulnérabilité, voir [SECURITY.md](SECURITY.md).
+The [privacy documentation](docs/COMPATIBILITY.md#privacy) distinguishes in-memory
+data, normal asset requests, and network checks. To report a vulnerability,
+see [SECURITY.md](SECURITY.md).
 
-## Contribuer et tester
+## Contributing and testing
 
-React, TypeScript, Vite, Tailwind CSS, shadcn/ui **Base UI**, MediaPipe et Canvas
-2D. Pas de Three.js, backend ou store global.
+React, TypeScript, Vite, Tailwind CSS, shadcn/ui **Base UI**, MediaPipe, and
+Canvas 2D. No Three.js, backend, or global state store.
 
 ```sh
-pnpm test                       # unitaires + composants + intégration
+pnpm test                       # unit, component, and integration tests
 pnpm exec playwright install chromium
-pnpm test:e2e                   # parcours navigateur sur un build de production
+pnpm test:e2e                   # browser journeys against a production build
 ```
 
-Les groupes se lancent séparément : `test:unit`, `test:components`,
-`test:integration`. `test:all` lance tous les tests.
-Voir [CONTRIBUTING](CONTRIBUTING.md), [l'architecture](docs/ARCHITECTURE.md) et
-[la stratégie de tests](docs/TESTING.md), notamment ce qui exige une vraie webcam.
+Run groups separately with `test:unit`, `test:components`, and
+`test:integration`. `test:all` runs all tests.
+See [CONTRIBUTING](CONTRIBUTING.md), [architecture](docs/ARCHITECTURE.md), and
+[testing](docs/TESTING.md), including the checks that require a physical webcam.
 
-## Licence et livraison
+Repository code and documentation are written in English. User-facing app
+content may be localized; see the [language policy](CONTRIBUTING.md#language).
 
-Le code original est sous [licence MIT](LICENSE). Les dépendances, la police et
-le modèle conservent leurs licences : [notices tierces](docs/THIRD_PARTY.md).
-`pnpm build` inclut les textes requis dans `dist/licenses/`.
+## License and release
 
-La publication reste conditionnée à la [QA manuelle](docs/qa/v1.0.0.md) et à la
-[procédure de livraison](docs/RELEASE.md). Les anciens plans sont conservés dans
-[les archives](docs/archive/README.md), pas utilisés comme instructions actuelles.
+Original code is licensed under [MIT](LICENSE). Dependencies, the font, and the
+model retain their own licenses: see [third-party notices](docs/THIRD_PARTY.md).
+`pnpm build` includes the required texts in `dist/licenses/`.
+
+Publication still requires [manual QA](docs/qa/v1.0.0.md) and the
+[release procedure](docs/RELEASE.md). Historical plans are kept in
+[the archive](docs/archive/README.md), not used as current instructions.

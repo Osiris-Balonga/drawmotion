@@ -1,75 +1,82 @@
-# Archive — plan initial d'implémentation
+# Archive — Initial implementation plan
 
-> Document historique, archivé le 27 août 2026. Les décisions ci-dessous
-> décrivent le déroulement initial, pas les instructions actuelles de contribution.
-> Certaines ont été remplacées (état React plutôt que Zustand, interfaces,
-> découpage des tests). Consulter [CONTRIBUTING](../../CONTRIBUTING.md),
-> [l'architecture actuelle](../ARCHITECTURE.md) et [la livraison](../RELEASE.md).
+> Historical document, archived on August 27, 2026. The decisions below describe
+> the original implementation sequence, not current contribution instructions.
+> Some were superseded, including state management, interfaces, and test grouping.
+> Use [CONTRIBUTING](../../CONTRIBUTING.md), the [current architecture](../ARCHITECTURE.md),
+> and the [release guide](../RELEASE.md) for current work.
+> Statements such as "source of truth" below belong to the historical plan.
 
 ---
 
-Statut : plan approuvé à exécuter séquentiellement  
-Produit : démonstration technologique web de dessin 2D contrôlé par la main  
-Direction UX : piste C, tutoriel guidé puis toile minimale
+Original status: approved plan, to be executed sequentially.
 
-Point au 27 août 2026 : prototype fonctionnel, socle du lot 9 et implémentation
-locale du lot 10. Le lot 10 reste à qualifier sur preview HTTPS et webcam
-physique avant la QA finale et la livraison (lot 11). La préparation locale
-du lot 11 est engagée : checklist, version candidate et procédure de release ;
-cela ne vaut ni validation finale ni autorisation de publication.
-Les ajouts gestuels du lot 9 sont des simulations de landmarks
-dans Chromium, pas une validation du modèle MediaPipe sur une vidéo réelle.
-La fusion, les checks obligatoires GitHub et la publication nécessitent encore
-la validation du mainteneur ; un test local vert ne vaut pas livraison.
+Product: web technology demo for hand-controlled 2D drawing.
 
-## 1. Règles d'exécution pour tous les agents
+UX direction: option C, guided tutorial followed by a minimal canvas.
 
-Ce document est la source de vérité. Un agent ne travaille que sur un seul lot à la fois.
+Status recorded on August 27, 2026: functional prototype, batch 9 foundations,
+and local batch 10 implementation. Batch 10 still needed qualification on an
+HTTPS preview and a physical webcam before final QA and delivery (batch 11).
+Local batch 11 preparation had started: checklist, candidate version, and
+release procedure. This was neither final validation nor publication approval.
+Batch 9 gesture additions used simulated Chromium landmarks, not MediaPipe
+validation against real video. Merging, required GitHub checks, and publication
+still needed maintainer approval; passing local tests did not constitute delivery.
 
-1. Lire ce document, `PRODUCT.md`, `DESIGN.md` et les ADR applicables avant toute modification.
-2. Vérifier que le lot précédent est fusionné dans `dev`.
-3. Mettre `dev` à jour, puis créer exactement la branche indiquée.
-4. Ne modifier que les fichiers et responsabilités du lot courant.
-5. Réaliser les commits dans l'ordre indiqué. Un commit doit compiler et ne contenir qu'une intention.
-6. Exécuter `pnpm validate` avant chaque push. Exécuter aussi les commandes supplémentaires du lot.
-7. Pousser la branche et ouvrir une pull request en mode brouillon dès le premier commit.
-8. Compléter la checklist de la PR, joindre les preuves demandées, puis passer la PR en « Ready for review ».
-9. Ne jamais fusionner sa propre PR sans autorisation explicite. L'agent s'arrête lorsque les contrôles sont verts et que la PR est prête, sauf si le mainteneur lui demande de poursuivre.
-10. Ne jamais pousser directement sur `dev` ou `main`, sauf le bootstrap initial décrit au lot 0.
+## 1. Original execution rules for agents
 
-Interdictions permanentes :
+This document was the plan's source of truth. An agent worked on one batch at a time.
 
-- pas de `--force`, pas de réécriture d'historique après le début d'une revue ;
-- pas de dépendance ajoutée sans justification dans la PR ;
-- pas de `dist/`, couverture, rapports Playwright ou secrets dans Git ;
-- pas de primitives ou paquets Radix : tous les composants shadcn reposent sur Base UI ;
-- pas de logique MediaPipe, Canvas ou caméra dans les composants React ;
-- pas de coordonnées vidéo stockées dans Zustand à chaque image ;
-- pas de CDN en production pour le modèle ou les fichiers WASM ;
-- pas de geste destructif sans confirmation explicite ;
-- pas de fusion si une vérification manuelle prescrite n'a pas été faite.
+1. Read this plan, `PRODUCT.md`, `DESIGN.md`, and applicable ADRs before changes.
+2. Verify that the previous batch has merged into `dev`.
+3. Update `dev` and create the specified branch.
+4. Change only files and responsibilities belonging to the current batch.
+5. Commit in the specified order. Each commit must compile and serve one purpose.
+6. Run `pnpm validate` before each push, plus batch-specific checks.
+7. Push the branch and open a draft PR after the first commit.
+8. Complete the PR checklist, attach evidence, and mark it ready for review.
+9. Never merge your own PR without explicit authorization. Stop when checks are
+   green and the PR is ready unless the maintainer requests further work.
+10. Never push directly to `dev` or `main`, except for the initial batch 0 bootstrap.
 
-## 2. Stack verrouillée
+Original prohibitions:
 
-| Zone        | Choix                                                                         |
-| ----------- | ----------------------------------------------------------------------------- |
-| Runtime     | Node.js 24 LTS, fixé par `.nvmrc` et `package.json#engines`                   |
-| Paquets     | pnpm, version exacte dans `packageManager`                                    |
-| Application | React 19, TypeScript strict, Vite 8                                           |
-| Styles      | Tailwind CSS 4.3.x installé avec versions exactes, plugin `@tailwindcss/vite` |
-| Composants  | shadcn/ui CLI v4, preset Base Nova, primitives Base UI, sources commitées     |
-| Icônes      | Lucide React                                                                  |
-| Vision      | `@mediapipe/tasks-vision`, Hand Landmarker, traitement local                  |
-| Dessin      | Canvas 2D natif, deux couches superposées                                     |
-| État UI     | Hooks React actuellement ; ressources impératives hors état UI                |
-| Tests       | Vitest, Testing Library, Playwright, axe-core                                 |
-| Qualité     | ESLint, Prettier, TypeScript, couverture Vitest                               |
-| CI          | GitHub Actions                                                                |
-| Déploiement | Vercel : previews de PR, production depuis `main` uniquement                  |
+- No `--force` or history rewriting after review starts.
+- No dependency without PR justification.
+- No `dist/`, coverage, Playwright reports, or secrets in Git.
+- No Radix primitives/packages; shadcn components must use Base UI.
+- No MediaPipe, Canvas, or camera logic inside React components.
+- No video coordinates written into Zustand on every frame.
+- No production CDN for model/WASM files.
+- No destructive gesture without explicit confirmation.
+- No merge before prescribed manual checks.
 
-Règle de version : le lot 1 résout les dernières versions stables compatibles et les écrit exactement dans `package.json` et `pnpm-lock.yaml`. Les lots suivants n'utilisent jamais `latest` hors mise à jour dédiée.
+## 2. Locked stack
 
-## 3. Architecture cible
+| Area        | Choice                                                                     |
+| ----------- | -------------------------------------------------------------------------- |
+| Runtime     | Node.js 24 LTS, pinned through `.nvmrc` and `package.json#engines`         |
+| Packages    | pnpm, exact version in `packageManager`                                    |
+| Application | React 19, strict TypeScript, Vite 8                                        |
+| Styling     | Exact Tailwind CSS 4.3.x versions with `@tailwindcss/vite`                 |
+| Components  | shadcn/ui CLI v4, Base Nova, Base UI primitives, committed sources         |
+| Icons       | Lucide React                                                               |
+| Vision      | `@mediapipe/tasks-vision`, Hand Landmarker, local processing               |
+| Drawing     | Native two-layer Canvas 2D                                                 |
+| UI state    | React hooks at the time of archival; imperative resources outside UI state |
+| Testing     | Vitest, Testing Library, Playwright, axe-core                              |
+| Quality     | ESLint, Prettier, TypeScript, Vitest coverage                              |
+| CI          | GitHub Actions                                                             |
+| Deployment  | Vercel PR previews; production only from `main`                            |
+
+Version rule: batch 1 resolves compatible stable versions and pins them exactly
+in `package.json` and `pnpm-lock.yaml`. Later batches do not use `latest`
+outside a dedicated upgrade.
+
+## 3. Original target architecture
+
+This tree is historical, not the current file inventory.
 
 ```text
 src/
@@ -77,20 +84,20 @@ src/
     App.tsx
     providers.tsx
   components/
-    ui/                         # sources shadcn possédées par le projet
+    ui/                         # project-owned shadcn sources
   features/
     camera/
     onboarding/
     toolbar/
     workspace/
   core/
-    drawing/                    # modèle de traits, commandes, historique
-    gestures/                   # interprétation pure des landmarks
-    geometry/                   # mapping et transformations de coordonnées
+    drawing/                    # strokes, commands, history
+    gestures/                   # pure landmark interpretation
+    geometry/                   # coordinate mapping and transforms
   infrastructure/
-    camera/                     # getUserMedia et cycle de vie MediaStream
-    mediapipe/                  # adaptateur Hand Landmarker
-    persistence/                # préférences locales uniquement
+    camera/                     # getUserMedia and MediaStream lifecycle
+    mediapipe/                  # Hand Landmarker adapter
+    persistence/                # local preferences only
   workers/
     hand-tracker.worker.ts
     protocol.ts
@@ -111,82 +118,78 @@ docs/
 scripts/
 ```
 
-Flux obligatoire :
+Required pipeline in the original plan:
 
 ```text
-Webcam -> Worker MediaPipe -> landmarks -> moteur de gestes
-       -> intentions -> moteur de dessin -> Canvas
-                                  |-> store UI -> React
+Webcam -> MediaPipe Worker -> landmarks -> gesture engine
+       -> intentions -> drawing engine -> Canvas
+                                  |-> UI store -> React
 ```
 
-React affiche l'interface. Le Worker produit des landmarks. Le moteur de gestes produit des intentions. Le moteur de dessin exécute ces intentions. Aucun module ne saute une couche.
+React presents the interface. The Worker produces landmarks, the gesture engine
+produces intentions, and the drawing engine executes them. Modules must not
+skip layers.
 
-## 4. Modèle Git et GitHub
+## 4. Git and GitHub model
 
-### Branches longues
+### Long-lived branches
 
-- `dev` : branche d'intégration par défaut, toujours compilable et testée ; toutes les PR de développement la ciblent.
-- `main` : branche de production ; elle ne reçoit que des PR de promotion dont la tête est exactement `dev`.
+- `dev`: default integration branch, always buildable and tested; target of development PRs.
+- `main`: production branch, receiving only promotion PRs whose source is exactly `dev`.
 
-### Branches courtes
+### Short-lived branches
 
-- `chore/<sujet>` pour l'outillage ;
-- `feat/<sujet>` pour une capacité produit ;
-- `fix/<sujet>` pour une correction ;
-- `docs/<sujet>` pour la documentation seule ;
-- `release/vX.Y.Z` pour préparer une livraison avant fusion dans `dev` ;
-- `hotfix/<sujet>` créé depuis `dev` pour une urgence publique, puis promu avec le reste de `dev`.
+- `chore/<topic>`: tooling.
+- `feat/<topic>`: product capability.
+- `fix/<topic>`: correction.
+- `docs/<topic>`: documentation only.
+- `release/vX.Y.Z`: release preparation before integration into `dev`.
+- `hotfix/<topic>`: public-production emergency, created from `dev` and promoted with it.
 
 ### Commits
 
-Utiliser Conventional Commits : `chore`, `feat`, `fix`, `test`, `docs`, `refactor`, `perf`, `ci`.
-
-Un commit est créé immédiatement après que son intention est terminée et que les tests concernés passent. Ne pas attendre la fin du lot pour tout committer.
+Use Conventional Commits: `chore`, `feat`, `fix`, `test`, `docs`,
+`refactor`, `perf`, and `ci`.
+Commit immediately after completing one purpose and passing its relevant tests,
+rather than waiting for the entire batch.
 
 ### Pull requests
 
-- PR brouillon après le premier commit ;
-- taille cible : moins de 500 lignes métier modifiées, hors lockfile, composants shadcn générés et modèle binaire ;
-- rebase merge recommandé vers `dev` pour conserver les commits atomiques prescrits ;
-- merge commit pour la PR de promotion `dev -> main`, afin que la frontière de livraison soit explicite ;
-- les trois méthodes de fusion restent disponibles au mainteneur comme dans PlotTwist ;
-- les branches fusionnées ne sont pas supprimées automatiquement ;
-- aucune PR suivante avant fusion de la précédente, sauf correctif documentaire sans conflit explicitement autorisé.
+- Draft PR after the first commit.
+- Target fewer than 500 changed business-logic lines, excluding lockfiles,
+  generated shadcn components, and binary models.
+- Prefer rebase merge into `dev` to retain atomic commits.
+- Use a merge commit for `dev -> main` to make release boundaries explicit.
+- Keep all three merge methods available to the maintainer, as in PlotTwist.
+- Do not automatically delete merged branches.
+- Do not start the next PR before the previous one merges, except for an
+  explicitly authorized, conflict-free documentation fix.
 
-### Protection de `dev`
+### Protecting dev
 
-Activer après le premier push :
+After the first push, enable PR requirements, resolved conversations, blocked
+force pushes/deletions, and no bypasses. Require a human approval once a second
+maintainer is available.
 
-- require a pull request before merging ;
-- require conversation resolution ;
-- block force pushes and deletions ;
-- do not allow bypassing ;
-- une approbation humaine quand un second mainteneur est disponible.
+After each workflow's first successful run, add these required checks:
+`quality`, `unit-tests`, `build`, `e2e-chromium` from batch 9, and
+`Vercel` or the exact preview check name after its first run.
 
-Après le premier passage réussi de chaque workflow, ajouter comme contrôles requis :
+### Protecting main
 
-- `quality` ;
-- `unit-tests` ;
-- `build` ;
-- `e2e-chromium` à partir du lot 9 ;
-- `Vercel` ou le nom exact du contrôle de preview à partir de sa première exécution.
+Require a PR sourced exactly from `dev` and the `Production source policy`
+check. Do not require linear history, so promotion merge commits remain possible.
+Use a manually approved GitHub `production` environment if the plan supports it.
+Require a successful Vercel deployment before closing the release.
 
-### Protection de `main`
+Some protections may be unavailable for private repositories on GitHub Free.
+In that case, follow them by convention and enable enforcement when the
+repository becomes public or the plan supports it.
 
-Règles de production :
+## 5. Required package scripts
 
-- PR dont la branche source est strictement `dev` ;
-- contrôle requis `Production source policy` ;
-- historique linéaire non requis afin d'autoriser le merge commit de promotion ;
-- environnement GitHub `production` avec approbation manuelle si le plan GitHub le permet ;
-- déploiement Vercel réussi requis avant de clore la release.
-
-Sur un dépôt privé GitHub Free, certaines protections ne sont pas configurables. Dans ce cas, les workflows restent obligatoires par convention et les règles sont activées dès que le dépôt devient public ou que le forfait le permet.
-
-## 5. Scripts npm obligatoires
-
-Scripts contractuels, actualisés lors du nettoyage des tests. Le découpage et
-les prérequis sont détaillés dans [docs/TESTING.md](../TESTING.md).
+Historical contract, updated during the test cleanup.
+See [TESTING](../TESTING.md) and current `package.json` for current commands.
 
 ```json
 {
@@ -209,512 +212,438 @@ les prérequis sont détaillés dans [docs/TESTING.md](../TESTING.md).
 }
 ```
 
-Le script `validate` ne doit pas être affaibli pour faire passer une PR.
-Le build est exécuté par le serveur de test Playwright, avant les parcours E2E.
+Do not weaken `validate` to pass a PR. The Playwright test server builds the
+application before browser journeys.
 
-## 6. Workflows GitHub Actions
+## 6. GitHub Actions workflows
 
-### `.github/workflows/ci.yml`
+These were planning requirements; consult the actual workflows for implementation.
 
-Déclencheurs : `pull_request` vers `dev` ou `main`, et `push` sur `dev`.
+### CI
 
-Permissions globales : `contents: read`. Ajouter des permissions seulement au job qui en a besoin.
+`.github/workflows/ci.yml` runs on PRs targeting `dev` or `main`, and pushes
+to `dev`. Default permissions are `contents: read`; add permissions only to
+jobs that need them. Group concurrency by workflow and branch, cancelling
+superseded PR runs.
 
-Activer une concurrence par workflow et branche, avec annulation du run précédent sur une PR.
+Keep job names stable:
 
-Jobs séparés et noms stables :
+1. `quality`: checkout, Node 24, pnpm from `packageManager`, pnpm cache,
+   frozen install, format check, lint, and typecheck.
+2. `unit-tests`: same setup, `pnpm test:coverage` for unit/component/integration
+   tests once; retain coverage artifacts for 14 days.
+3. `build`: same setup, MediaPipe checksums, `pnpm build`;
+   retain `dist` for seven days.
+4. `e2e-chromium`: foundation introduced during test cleanup, extended in batch 9;
+   depends on `build`, installs Playwright Chromium and system dependencies,
+   downloads `dist`, runs `pnpm test:e2e` with `E2E_USE_BUILD=1`,
+   and uploads reports/traces/screenshots on failure.
 
-1. `quality`
-   - checkout ;
-   - Node 24 ;
-   - pnpm depuis `packageManager` ;
-   - cache pnpm ;
-   - `pnpm install --frozen-lockfile` ;
-   - `pnpm format:check` ;
-   - `pnpm lint` ;
-   - `pnpm typecheck`.
-2. `unit-tests`
-   - même installation ;
-   - `pnpm test:coverage` (unitaires, composants et intégrations une seule fois) ;
-   - artefact de couverture, conservation 14 jours.
-3. `build`
-   - même installation ;
-   - vérification du checksum des assets MediaPipe ;
-   - `pnpm build` ;
-   - artefact `dist`, conservation 7 jours.
-4. `e2e-chromium`, socle ajouté lors du nettoyage des tests, à compléter au lot 9
-   - dépend de `build` ;
-   - installation Chromium Playwright avec dépendances ;
-   - téléchargement de l'artefact `dist` du job `build` ;
-   - `pnpm test:e2e` avec `E2E_USE_BUILD=1` (Chromium configuré par défaut) ;
-   - rapport, traces et captures Playwright uploadés en cas d'échec.
+The original plan required maintained major action versions at bootstrap.
+Never use an unfamiliar action without checking its provenance.
 
-Les actions doivent être épinglées sur une version majeure maintenue au moment du bootstrap. Ne jamais utiliser une action inconnue proposée par un agent sans revue de sa provenance.
+### Production source policy
 
-### `.github/workflows/production-source.yml`
+`.github/workflows/production-source.yml` runs for every PR targeting `main`.
+The stable `Production source policy` job fails unless `github.head_ref`
+is exactly `dev`; releases must not bypass it.
 
-Déclencheur : toute pull request vers `main`. Le job stable `Production source policy` échoue si `github.head_ref` n'est pas exactement `dev`. Une release ne contourne jamais cette règle.
+### Security
 
-### `.github/workflows/security.yml`
+The original `security.yml` plan specified JavaScript/TypeScript CodeQL on
+PRs, `dev`, `main`, and Mondays; dependency review on PRs; minimal permissions;
+and no repository writes. See current `SECURITY.md` for private-repository
+eligibility and actual enabled checks.
 
-- CodeQL JavaScript/TypeScript sur PR, `dev`, `main` et chaque lundi ;
-- Dependency Review sur les PR ;
-- permissions minimales ;
-- aucune écriture sur le dépôt.
+### Dependabot
 
-### `.github/dependabot.yml`
+Check npm/pnpm and GitHub Actions every Monday, targeting `dev`.
+Group minor development updates. Never automatically merge MediaPipe, Vite,
+React, Tailwind, or Playwright updates.
 
-- npm/pnpm chaque lundi ;
-- GitHub Actions chaque lundi ;
-- toutes les PR Dependabot ciblent `dev` ;
-- regrouper les mises à jour mineures de développement ;
-- ne jamais auto-fusionner une mise à jour MediaPipe, Vite, React, Tailwind ou Playwright.
+### Release
 
-### `.github/workflows/release.yml`
+The original `release.yml` plan reacted to `v*.*.*` tags on `main`,
+verified ancestry, reran validation/E2E, created release notes, and attached
+asset checksums and a build report. It did not redeploy because Vercel deploys
+`main`.
 
-Déclencheur : tag `v*.*.*` présent sur un commit de `main`.
+**Superseded:** the current workflow creates a draft only and has different
+tag/version checks. Follow [RELEASE](../RELEASE.md), not this historical sequence.
 
-Étapes :
+## 7. Vercel deployment plan
 
-1. vérifier que le commit tagué appartient à `main` ;
-2. réexécuter `pnpm validate` et les E2E ;
-3. créer la GitHub Release et générer les notes ;
-4. joindre les checksums des assets et le rapport de build ;
-5. ne jamais redéployer manuellement : Vercel déploie la branche `main`.
+After batch 1: connect GitHub, select the Vite preset, use
+`pnpm install --frozen-lockfile`, `pnpm build`, and output `dist`.
+Production comes from `main`; PRs receive previews. Attach a public domain
+only in batch 11.
 
-## 7. Déploiement Vercel
+Add and actually test these headers in `vercel.json`:
 
-À configurer après le lot 1 :
+- `Permissions-Policy: camera=(self), microphone=(), geolocation=()`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `X-Content-Type-Options: nosniff`
+- CSP allowing only local resources and necessary Worker/WebAssembly execution.
 
-- connecter le dépôt GitHub ;
-- framework preset : Vite ;
-- commande d'installation : `pnpm install --frozen-lockfile` ;
-- commande de build : `pnpm build` ;
-- dossier de sortie : `dist` ;
-- production branch : `main` ;
-- previews : toutes les PR ;
-- ne rattacher le domaine public qu'au lot 11.
+Derive CSP from the real build instead of copying an untested policy.
+The original target included `default-src 'self'`, `worker-src 'self' blob:`,
+and only the necessary WebAssembly permission.
 
-Ajouter dans `vercel.json`, puis tester réellement :
+## 8. Implementation batches
 
-- `Permissions-Policy: camera=(self), microphone=(), geolocation=()` ;
-- `Referrer-Policy: strict-origin-when-cross-origin` ;
-- `X-Content-Type-Options: nosniff` ;
-- une CSP autorisant uniquement les ressources locales, le Worker et WebAssembly nécessaires.
+Each planned batch started from the previous batch merged into `dev`, with
+a PR targeting `dev`.
 
-La CSP doit être dérivée du build réel. Ne pas copier une CSP non testée. L'objectif final est notamment `default-src 'self'`, `worker-src 'self' blob:` et l'autorisation WebAssembly strictement nécessaire.
+### Batch 0 — Minimal governance and first push
 
-## 8. Lots d'implémentation
+No branch: the sole exception allowed local work on `main` before creating
+`dev`. Create only `.gitignore`, `.gitattributes`, `.editorconfig`,
+`.nvmrc`, a pre-implementation README, `PRODUCT.md`, `DESIGN.md`, this plan,
+and ADRs 0001/0002.
 
-Chaque lot commence depuis le `dev` fusionné du lot précédent et ouvre une PR vers `dev`.
+Exact commit: `chore(repo): initialize DrawMotion governance`.
 
-### Lot 0 — Gouvernance minimale et premier push
+Then create an empty private GitHub repository without a generated README,
+push only that commit, create/default to `dev`, target development PRs there,
+and enable available protections. No later direct pushes to `dev` or `main`.
 
-Branche : aucune ; seule exception de travail local sur `main` avant la création de `dev`.
+Exit criterion: the remote contains governance only, with no application code.
 
-Créer uniquement :
+### Batch 1 — Reproducible bootstrap
 
-- `.gitignore`, `.gitattributes`, `.editorconfig`, `.nvmrc` ;
-- `README.md` avec objectif et statut « pré-implémentation » ;
-- `PRODUCT.md`, `DESIGN.md` ;
-- ce document ;
-- `docs/adr/0001-technical-stack.md` ;
-- `docs/adr/0002-git-and-release-strategy.md`.
+Branch: `chore/bootstrap-app`
 
-Commit exact :
+PR: `chore: bootstrap the DrawMotion web application`
 
-```text
-chore(repo): initialize DrawMotion governance
-```
-
-Puis :
-
-1. créer un dépôt GitHub privé vide, sans README généré ;
-2. pousser uniquement ce commit ;
-3. créer `dev`, la définir comme branche par défaut et y diriger toutes les PR applicatives ;
-4. activer les protections disponibles sur `dev` et `main` ;
-5. ne plus jamais pousser directement sur ces deux branches.
-
-Critère de sortie : le remote ne contient que la gouvernance et aucun code applicatif.
-
-### Lot 1 — Bootstrap reproductible
-
-Branche : `chore/bootstrap-app`  
-PR : `chore: bootstrap the DrawMotion web application`
-
-Commits exacts :
+Ordered commits:
 
 1. `chore(app): scaffold React TypeScript with Vite`
-   - initialiser Vite dans le dossier existant ;
-   - fixer Node 24 et pnpm ;
-   - activer TypeScript strict ;
-   - ajouter alias `@/* -> src/*` ;
-   - retirer toute démo Vite.
+   - Initialize Vite in the existing directory; pin Node 24 and pnpm.
+   - Enable strict TypeScript and `@/* -> src/*`; remove Vite demo content.
 2. `chore(ui): configure Tailwind CSS and shadcn`
-   - installer Tailwind 4.3.x et `@tailwindcss/vite` avec versions exactes ;
-   - `@import "tailwindcss"` dans `src/styles/globals.css` ;
-   - exécuter `pnpm dlx shadcn@latest init -d --base base` ;
-   - vérifier le preset Base Nova, CSS variables, alias et `rsc: false` ;
-   - vérifier que `components.json` déclare Base UI et qu'aucun paquet `@radix-ui/*` ou `radix-ui` n'est installé ;
-   - ne générer encore que `button` et `tooltip`.
+   - Pin Tailwind 4.3.x and `@tailwindcss/vite`; import Tailwind in globals.
+   - Original bootstrap command: `pnpm dlx shadcn@latest init -d --base base`.
+   - Verify Base Nova, CSS variables, aliases, and `rsc: false`.
+   - Verify Base UI in `components.json`; no `@radix-ui/*` or `radix-ui`.
+   - Generate only button and tooltip initially.
 3. `chore(quality): add static analysis and unit test harness`
-   - ESLint, Prettier, Vitest, Testing Library, jsdom ;
-   - scripts contractuels ;
-   - un smoke test de `App`.
+   - ESLint, Prettier, Vitest, Testing Library, jsdom, contract scripts, App smoke test.
 4. `ci: validate pull requests with GitHub Actions`
-   - `ci.yml`, template de PR et `CODEOWNERS` si pertinent.
+   - CI workflow, PR template, and CODEOWNERS where relevant.
 
-Vérifications : `pnpm validate`, puis exécution GitHub de `quality`, `unit-tests`, `build`.
+Checks: `pnpm validate`, then GitHub `quality`, `unit-tests`, and `build`.
+After merging, require all three jobs on `dev`.
 
-Après fusion : rendre ces trois jobs obligatoires dans la protection de `dev`.
+### Batch 2 — Design system and direction C shell
 
-### Lot 2 — Design system et coque direction C
+Branch: `feat/guided-workspace-shell`
 
-Branche : `feat/guided-workspace-shell`  
-PR : `feat: establish the guided DrawMotion workspace`
+PR: `feat: establish the guided DrawMotion workspace`
 
-Commits exacts :
+Ordered commits:
 
 1. `feat(ui): define DrawMotion semantic design tokens`
-   - thème sombre Base Nova en OKLCH ;
-   - accent violet, succès vert, avertissement orange ;
-   - contraste WCAG AA ;
-   - `prefers-reduced-motion` ;
-   - aucun gradient ni glassmorphism.
+   - Dark Base Nova OKLCH theme; violet accent, green success, orange warning.
+   - WCAG AA contrast, reduced motion, no gradients/glassmorphism.
 2. `feat(ui): add accessible workspace primitives`
-   - ajouter via shadcn : `alert-dialog`, `badge`, `dialog`, `popover`, `progress`, `separator`, `slider`, `sonner`, `toggle-group`, `tooltip` ;
-   - ne pas utiliser `Card` comme conteneur générique ;
-   - envelopper les tooltips dans un provider unique.
+   - Generate alert-dialog, badge, dialog, popover, progress, separator, slider,
+     sonner, toggle-group, and tooltip.
+   - No generic Card wrappers; one tooltip provider.
 3. `feat(workspace): build the responsive drawing shell`
-   - barre supérieure ;
-   - espace Canvas vide ;
-   - rail d'outils gauche ;
-   - caméra circulaire simulée ;
-   - panneau d'instruction inférieur ;
-   - structure correcte à 1280×720, 1440×900 et 1920×1080.
-4. `test(ui): cover workspace keyboard and accessibility states`
+   - Top bar, empty Canvas, left tool rail, simulated circular camera,
+     bottom guidance, layouts at 1280×720, 1440×900, and 1920×1080.
+4. `test(ui): cover workspace keyboard and accessibility states`.
 
-Critères : aucun moteur réel ; toutes les commandes sont désactivées ou simulées explicitement ; capture des trois résolutions jointe à la PR.
+Exit criteria: no real engine yet; commands explicitly disabled or simulated;
+attach screenshots at all three resolutions.
 
-### Lot 3 — Caméra, confidentialité et erreurs
+### Batch 3 — Camera, privacy, and errors
 
-Branche : `feat/camera-lifecycle`  
-PR : `feat: add privacy-first camera lifecycle`
+Branch: `feat/camera-lifecycle`
 
-Commits exacts :
+PR: `feat: add privacy-first camera lifecycle`
+
+Ordered commits:
 
 1. `test(camera): specify camera lifecycle states`
-   - tests des états `idle`, `requesting`, `ready`, `denied`, `missing`, `busy`, `failed`, `stopped`.
+   - Cover idle, requesting, ready, denied, missing, busy, failed, and stopped.
 2. `feat(camera): implement the MediaStream adapter`
-   - encapsuler `getUserMedia` ;
-   - demander uniquement la vidéo ;
-   - arrêter toutes les tracks au démontage et à la mise en pause de l'onglet ;
-   - caméra frontale, résolution idéale 1280×720.
+   - Wrap getUserMedia; request video only.
+   - Stop all tracks on unmount and background pausing.
+   - Prefer the front camera at an ideal 1280×720.
 3. `feat(camera): add permission and recovery experience`
-   - écran « Activer ma caméra » ;
-   - texte local, non enregistré ;
-   - erreurs actionnables ;
-   - sélection de caméra si plusieurs périphériques existent.
-4. `test(camera): verify mocked permission flows`
+   - Camera activation, local/non-recorded explanation, actionable errors,
+     and selection among multiple devices.
+4. `test(camera): verify mocked permission flows`.
 
-Critère manuel : permission accordée, refusée, retirée pendant l'usage, webcam absente et webcam occupée par une autre application.
+Manual checks: allowed, denied, revoked during use, missing webcam, and webcam
+occupied by another application.
 
-### Lot 4 — MediaPipe dans un Worker
+### Batch 4 — MediaPipe in a Worker
 
-Branche : `feat/hand-tracking-worker`  
-PR : `feat: detect hand landmarks off the main thread`
+Branch: `feat/hand-tracking-worker`
 
-Commits exacts :
+PR: `feat: detect hand landmarks off the main thread`
+
+Ordered commits:
 
 1. `chore(vision): vendor verified MediaPipe runtime assets`
-   - installer `@mediapipe/tasks-vision` avec version exacte ;
-   - héberger localement modèle et WASM ;
-   - documenter URL d'origine, licence, version et SHA-256 ;
-   - ajouter `scripts/verify-vision-assets.mjs`.
+   - Pin tasks-vision; host model/WASM locally; document source URLs,
+     licenses, versions, and SHA-256; add the asset verification script.
 2. `test(vision): define the tracker port and worker protocol`
-   - messages versionnés `INIT`, `FRAME`, `RESULT`, `METRICS`, `ERROR`, `DISPOSE` ;
-   - fixtures déterministes de landmarks ;
-   - faux tracker pour les tests.
+   - Versioned INIT, FRAME, RESULT, METRICS, ERROR, DISPOSE messages.
+   - Deterministic landmark fixtures and a fake tracker.
 3. `feat(vision): run Hand Landmarker in a dedicated worker`
-   - `runningMode: VIDEO` ;
-   - au maximum une inférence en vol ;
-   - abandon des frames obsolètes ;
-   - transfert d'`ImageBitmap` ;
-   - destruction propre du Worker.
+   - VIDEO mode, at most one inference in flight, stale-frame dropping,
+     ImageBitmap transfer, and clean Worker disposal.
 4. `feat(vision): render tracking status and landmark overlay`
-   - overlay aligné avec la caméra miroir ;
-   - état fiable, hésitant ou perdu ;
-   - métriques disponibles en développement uniquement.
-5. `test(vision): cover initialization failure and worker disposal`
+   - Mirrored-camera alignment, reliable/uncertain/lost states,
+     development-only metrics.
+5. `test(vision): cover initialization failure and worker disposal`.
 
-Critères : aucune requête réseau tierce après chargement ; interface utilisable pendant l'inférence ; pas de fuite de Worker ou MediaStream.
+Exit criteria: no third-party network requests after loading, usable UI during
+inference, and no Worker/MediaStream leaks.
 
-### Lot 5 — Moteur de gestes
+### Batch 5 — Gesture engine
 
-Branche : `feat/gesture-engine`  
-PR : `feat: translate hand landmarks into stable gestures`
+Branch: `feat/gesture-engine`
 
-Commits exacts :
+PR: `feat: translate hand landmarks into stable gestures`
+
+Ordered commits:
 
 1. `test(gestures): specify gesture classification fixtures`
-   - pincement, main ouverte, poing, main incertaine, perte de suivi ;
-   - tests de non-régression aux seuils.
+   - Pinch, open hand, fist, uncertain hand, tracking loss, threshold regressions.
 2. `feat(gestures): classify pinch open-hand and fist states`
-   - distances normalisées par la taille de la paume ;
-   - hystérésis distincte entrée/sortie ;
-   - seuils centralisés et documentés.
+   - Palm-normalized distances, separate entry/exit hysteresis,
+     centralized and documented thresholds.
 3. `feat(gestures): smooth pointer motion and map coordinates`
-   - filtre temporel ;
-   - transformation caméra miroir vers Canvas ;
-   - verrouillage de la dernière position fiable ;
-   - aucune extrapolation après perte de main.
+   - Temporal filter, mirrored-camera mapping, last reliable position,
+     no extrapolation after hand loss.
 4. `feat(gestures): emit versioned drawing intentions`
-   - `POINTER_MOVE`, `DRAW_START`, `DRAW_MOVE`, `DRAW_END`, `PAUSE`, `TRACKING_LOST` ;
-   - machine d'état pure et testable.
-5. `test(gestures): cover jitter and accidental activation resistance`
+   - POINTER_MOVE, DRAW_START, DRAW_MOVE, DRAW_END, PAUSE, TRACKING_LOST;
+     pure, testable state machine.
+5. `test(gestures): cover jitter and accidental activation resistance`.
 
-Critère : une main immobile près du seuil ne doit pas alterner rapidement entre dessin et pause.
+Exit criterion: a stationary hand near a threshold must not rapidly alternate
+between drawing and pausing.
 
-### Lot 6 — Moteur Canvas et historique
+### Batch 6 — Canvas engine and history
 
-Branche : `feat/canvas-engine`  
-PR : `feat: add the two-layer drawing engine`
+Branch: `feat/canvas-engine`
 
-Commits exacts :
+PR: `feat: add the two-layer drawing engine`
+
+Ordered commits:
 
 1. `test(drawing): specify strokes commands and history behavior`
-   - modèle `Stroke`, points normalisés, outil, couleur, largeur ;
-   - historique borné ;
-   - redo invalidé après une nouvelle action.
+   - Stroke model, normalized points, tool/color/width, bounded history,
+     redo invalidation after a new action.
 2. `feat(drawing): implement immutable drawing commands`
-   - ajout de trait, suppression par gomme, effacement, undo, redo ;
-   - fonctions indépendantes du DOM.
+   - Add/erase/clear/undo/redo operations independent of the DOM.
 3. `feat(canvas): render persistent and interaction layers`
-   - Canvas principal persistant ;
-   - Canvas supérieur pour curseur et prévisualisation ;
-   - rendu par `requestAnimationFrame` ;
-   - device pixel ratio pris en compte.
+   - Persistent drawing layer and pointer/preview layer;
+     requestAnimationFrame and device pixel ratio.
 4. `feat(canvas): connect gesture intentions to drawing commands`
-   - pas de re-render React par frame ;
-   - fin automatique du trait en cas de perte de suivi.
-5. `test(canvas): verify resize replay and high-DPI rendering`
+   - No React rerender per frame; end the stroke on tracking loss.
+5. `test(canvas): verify resize replay and high-DPI rendering`.
 
-Critères : aucun trait perdu lors d'un redimensionnement ; undo/redo déterministes ; 60 Hz visuels visés même si la détection est moins fréquente.
+Exit criteria: strokes survive resizing, deterministic undo/redo, and a
+60 Hz visual target even when detection is slower.
 
-### Lot 7 — Tutoriel guidé direction C
+### Batch 7 — Guided direction C onboarding
 
-Branche : `feat/guided-onboarding`  
-PR : `feat: teach DrawMotion through five validated missions`
+Branch: `feat/guided-onboarding`
 
-Commits exacts :
+PR: `feat: teach DrawMotion through five validated missions`
 
-1. `test(onboarding): specify the five-mission progression`
+Ordered commits:
+
+1. `test(onboarding): specify the five-mission progression`.
 2. `feat(onboarding): validate cursor drawing styling shapes and undo`
-   - viser trois repères avec le curseur, puis pincer/tracer/relâcher ;
-   - ouvrir les commandes par le signe paix (index et majeur levés), choisir
-     le vert et une épaisseur ;
-   - régulariser une forme puis annuler ;
-   - retour arrière, passer le tutoriel et le rejouer.
+   - Aim at three targets, then pinch/draw/release.
+   - Open commands with a peace sign (index and middle fingers raised),
+     select green and a thickness, regularize a shape, and undo.
+   - Back, skip, and replay controls.
 3. `feat(onboarding): add contextual gesture guidance`
-   - panneau bas non bloquant ;
-   - disparaît après réussite ;
-   - illustrations chargées depuis les assets locaux ;
-   - commande « Revoir le tutoriel » dans le dock ;
-   - ouverture gestuelle des commandes inhibée pendant les missions curseur/dessin.
+   - Non-blocking bottom panel, dismissed on success; local illustrations.
+   - Tutorial replay in the dock.
+   - Disable gesture-menu opening during pointer/drawing missions.
 4. `feat(onboarding): persist completion locally`
-   - stockage versionné ;
-   - aucune donnée biométrique ou vidéo ;
-   - possibilité de réinitialiser.
-5. `test(onboarding): verify keyboard fallback and reduced motion`
+   - Versioned, resettable storage with no biometric or video data.
+5. `test(onboarding): verify keyboard fallback and reduced motion`.
 
-Critère : un nouvel utilisateur atteint la toile en moins de deux minutes sans explication externe.
+Target: a new user reaches the canvas in under two minutes without external help.
 
-### Lot 8 — Outils complets et export
+### Batch 8 — Complete tools and export
 
-Branche : `feat/drawing-tools-export`  
-PR : `feat: complete drawing controls and PNG export`
+Branch: `feat/drawing-tools-export`
 
-Commits exacts :
+PR: `feat: complete drawing controls and PNG export`
+
+Ordered commits:
 
 1. `feat(tools): add pen eraser color and thickness controls`
-   - toutes les commandes utilisables par souris et clavier ;
-   - état actif annoncé aux technologies d'assistance ;
-   - sélection par pincement dans la palette gestuelle dédiée, pas sur le dock ;
-   - mêmes réglages dans les deux interfaces, avec épaisseur de gomme séparée ;
-   - couleur personnalisée HEX/RGB uniquement dans le dock.
+   - Mouse/keyboard controls and announced active states.
+   - Pinch selection only in the dedicated gesture palette, not the dock.
+   - Shared settings, separate eraser width; dock-only custom HEX/RGB color.
 2. `feat(history): expose undo redo and clear-canvas actions`
-   - `Ctrl+Z`, `Ctrl+Y` et `Ctrl+Shift+Z` ;
-   - confirmation shadcn `AlertDialog` avant effacement ;
-   - boutons désactivés quand non applicables.
+   - Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z; shadcn AlertDialog before clearing;
+     disable inapplicable actions.
 3. `feat(export): download the canvas as PNG`
-   - fond blanc explicite ;
-   - résolution physique du Canvas ;
-   - nom `drawmotion-YYYY-MM-DD-HHmmss.png` ;
-   - toast succès/échec avec Sonner.
+   - Explicit white background, physical Canvas resolution,
+     filename `drawmotion-YYYY-MM-DD-HHmmss.png`, Sonner success/failure feedback.
 4. `feat(shortcuts): add tool and viewport keyboard commands`
-   - `P` stylo, `E` gomme, `Espace` + glisser pour déplacer la toile ;
-   - raccourcis désactivés quand un contrôle saisissable a le focus.
-5. `test(tools): cover destructive confirmation and export behavior`
+   - P for pen, E for eraser, Space + drag for pan;
+     disable shortcuts while an editable control has focus.
+5. `test(tools): cover destructive confirmation and export behavior`.
 
-Critère : les réglages usuels sont utilisables à la souris/clavier et depuis
-les commandes gestuelles ; le sélecteur HEX/RGB reste volontairement hors
-gestes. Le dessin lui-même nécessite actuellement le suivi de la main.
+Exit criterion: common settings work via mouse/keyboard and gesture commands.
+HEX/RGB deliberately remains outside gesture control. Drawing itself still
+requires hand tracking.
 
-### Lot 9 — E2E, accessibilité et robustesse
+### Batch 9 — E2E, accessibility, and robustness
 
-Branche : `test/end-to-end-hardening`  
-PR : `test: harden DrawMotion end to end`
+Branch: `test/end-to-end-hardening`
 
-Commits exacts :
+PR: `test: harden DrawMotion end to end`
+
+Ordered commits:
 
 1. `test(e2e): configure deterministic gesture camera fixtures`
-   - Chromium avec son faux périphérique vidéo intégré et permission automatique ;
-   - script Worker de test servant des séquences de landmarks synthétiques ;
-   - vrais MediaStream, transferts ImageBitmap, classification, filtres et moteur ;
-   - aucune vidéo personnelle, aucun crochet de test livré dans le code applicatif ;
-   - le modèle MediaPipe/WASM est remplacé : ses assets, performances et précision
-     doivent être vérifiés séparément avec une vraie caméra avant livraison.
+   - Chromium's built-in fake video device and automatic permission.
+   - Test Worker serving synthetic landmarks; real MediaStream, ImageBitmap
+     transfers, classification, filters, and engine.
+   - No personal video or shipped test hooks.
+   - MediaPipe/WASM is replaced here; verify assets, performance, and accuracy
+     separately with a physical camera before release.
 2. `test(e2e): cover first-run drawing and PNG export`
-   - caméra -> cinq missions -> persistance -> trait -> gomme -> undo -> redo -> PNG ;
-   - couleur/épaisseur sélectionnées par vrai pincement sur la palette ;
-   - assertions sur les pixels Canvas et sur le fichier PNG téléchargé et décodé.
-3. `test(e2e): cover camera failures and tracking loss`
+   - Camera, five missions, persistence, drawing, erasing, undo/redo, PNG.
+   - Real pinch selection of color/width.
+   - Canvas pixels and downloaded/decoded PNG assertions.
+3. `test(e2e): cover camera failures and tracking loss`.
 4. `test(a11y): enforce automated accessibility checks`
-   - axe-core sur tutoriel, réglages du trait, couleur personnalisée et commandes ;
-   - parcours clavier du popover : Tab, flèches, sélection, Échap et retour du focus ;
-   - contrôle manuel complémentaire des lecteurs d'écran, du focus visible et du zoom.
+   - axe-core on tutorial, stroke settings, custom color, and commands.
+   - Keyboard popover flow: Tab, arrows, selection, Escape, restored focus.
+   - Complementary manual screen-reader, focus, and zoom checks.
 5. `ci: require Chromium end-to-end tests`
-   - job `e2e-chromium` ;
-   - artefacts en cas d'échec.
+   - `e2e-chromium` job and failure artifacts.
 
-Le job `e2e-chromium` est configuré ; les détails et limites figurent dans
-`docs/TESTING.md`. Après le premier run GitHub vert et accord du mainteneur,
-ajouter ce job aux checks obligatoires de `dev` (pas fait par les tests locaux).
+The job was configured; scope and limitations are in `docs/TESTING.md`.
+After its first green GitHub run and maintainer approval, require it on `dev`.
+Local tests do not configure GitHub required checks.
 
-### Lot 10 — Sécurité, performance et compatibilité
+### Batch 10 — Security, performance, and compatibility
 
-Implémentation locale : file bornée avant transfert, diagnostics bornés en
-développement, réglages accessibles aux formats équivalents à 200 %, panneaux
-défilables, feedback sans animation, erreur de suivi explicite, CSP testée avec
-le vrai Worker/WASM, budgets JS/CSS et workflow sécurité. Dependabot existait
-déjà et est conservé. CodeQL/revue des dépendances sont conditionnels à
-l'éligibilité du dépôt privé (voir `SECURITY.md`). Aucune publication ni
-exécution GitHub distante n'est déduite des résultats locaux.
+Local implementation included bounded pre-transfer queues, bounded development
+diagnostics, accessible settings at 200%-equivalent viewports, scrollable panels,
+reduced-motion feedback, explicit tracking errors, real Worker/WASM CSP checks,
+JS/CSS budgets, and a security workflow. Existing Dependabot was retained.
+CodeQL/dependency review depended on private-repository eligibility; see
+`SECURITY.md`. Local results did not imply publication or remote execution.
 
-Les commits restent sur la branche de travail actuelle avec les précédents
-lots locaux ; ne pas recréer artificiellement une branche depuis un `dev`
-non fusionné. La reprise des PR séquentielles nécessite la validation du
-mainteneur. Détails et QA restante : `docs/COMPATIBILITY.md`.
+Commits remained on the existing working branch with earlier local batches.
+Do not artificially recreate branches from an unmerged `dev`. Resuming
+sequential PRs required maintainer approval. See `docs/COMPATIBILITY.md`.
 
-Branche : `chore/production-hardening`  
-PR : `chore: harden DrawMotion for production`
+Planned branch: `chore/production-hardening`
 
-Commits exacts :
+PR: `chore: harden DrawMotion for production`
+
+Ordered commits:
 
 1. `perf(vision): enforce frame backpressure and collect diagnostics`
-   - une frame maximum en attente ;
-   - FPS détection, latence médiane et p95 en mode développement ;
-   - aucune télémétrie distante.
+   - At most one pending frame; development detection FPS and median/p95 latency;
+     no remote telemetry.
 2. `fix(responsive): harden supported desktop viewport layouts`
-   - ordinateurs et tablettes, dont 782×600 et 768×1024 déjà couverts dans Chromium ;
-   - mobiles : message de compatibilité actionnable, pas de promesse de prise en charge ;
-   - zoom navigateur 200 % pour les contrôles.
+   - Desktop/tablet, including 782×600 and 768×1024 in Chromium.
+   - Actionable mobile compatibility message, not a mobile support promise.
+   - Controls usable at 200% browser zoom.
 3. `chore(security): add restrictive production headers`
-   - `vercel.json` et test de fumée des headers ;
-   - CSP compatible Worker/WASM vérifiée sur une preview.
-4. `ci(security): add CodeQL dependency review and Dependabot`
-5. `docs(compatibility): document browsers privacy and troubleshooting`
+   - vercel.json and header smoke check; preview-tested Worker/WASM CSP.
+4. `ci(security): add CodeQL dependency review and Dependabot`.
+5. `docs(compatibility): document browsers privacy and troubleshooting`.
 
-Budgets de sortie :
+Exit targets: no console errors during normal use, no network activity after
+local assets load, analyzed application bundle with justified major regressions,
+stable tracking on recent Chrome/Edge, and explicit fallback elsewhere.
 
-- aucune erreur console dans le parcours nominal ;
-- aucun appel réseau après chargement des assets locaux ;
-- bundle applicatif analysé et régression majeure justifiée ;
-- suivi stable sur Chrome et Edge récents ;
-- dégradation explicite ailleurs.
+### Batch 11 — Release candidate and v1.0.0 delivery
 
-### Lot 11 — Release candidate et livraison v1.0.0
+Planned branch: `release/v1.0.0`, from `dev`
 
-Branche : `release/v1.0.0`, créée depuis `dev`  
-PR 1 vers `dev` : `chore: prepare DrawMotion v1.0.0`  
-PR 2 de promotion `dev` vers `main` : `release: DrawMotion v1.0.0`
+PR to `dev`: `chore: prepare DrawMotion v1.0.0`
 
-Commits exacts :
+Promotion PR from `dev` to `main`: `release: DrawMotion v1.0.0`
+
+Ordered commits:
 
 1. `docs(release): add v1 manual QA checklist`
-   - `docs/qa/v1.0.0.md` ;
-   - matrices Chrome/Edge, Windows/macOS si disponibles ;
-   - permission caméra, luminosité faible, main hors cadre, export.
+   - `docs/qa/v1.0.0.md`; Chrome/Edge, Windows/macOS where available;
+     permission, low lighting, out-of-frame hand, export.
 2. `chore(release): prepare version 1.0.0`
-   - version package ;
-   - `CHANGELOG.md` ;
-   - README final ;
-   - mentions de confidentialité et licences tierces.
+   - Package version, changelog, final README, privacy and third-party notices.
 3. `fix(release): resolve v1 release candidate findings`
-   - seulement si nécessaire ;
-   - chaque correction référencée dans la checklist QA.
+   - Only when needed, with each fix linked to its QA entry.
 
-Procédure :
+Original procedure: open preparation PR to `dev`; wait for CI and Vercel
+preview; perform physical-webcam QA; merge only with a completed checklist;
+freeze new application merges during promotion; open `dev -> main` without
+extra changes; verify CI/preview and merge; verify production/headers;
+attach the public domain; create and push annotated `v1.0.0` on `main`;
+retain QA/deployment links in the release.
 
-1. ouvrir la PR de préparation vers `dev` et attendre CI + preview Vercel ;
-2. effectuer la QA manuelle sur la preview avec une vraie webcam ;
-3. fusionner dans `dev` uniquement si la checklist est complète ;
-4. geler les nouvelles fusions applicatives sur `dev` pendant la promotion ;
-5. ouvrir une PR dont la tête est `dev` et la base `main`, sans modification supplémentaire ;
-6. vérifier CI et preview, puis fusionner ;
-7. vérifier la production Vercel et les headers ;
-8. rattacher le domaine public ;
-9. créer le tag annoté `v1.0.0` sur le commit de `main` ;
-10. pousser le tag ; le workflow `release.yml` crée la GitHub Release ;
-11. conserver un lien vers le rapport QA et le déploiement dans la release.
+The original plan described immediate GitHub Release creation. The current
+draft-only workflow and separate publication approval supersede that step;
+use [RELEASE](../RELEASE.md).
 
-## 9. Couverture et stratégie de test
+## 9. Coverage and test strategy
 
-Seuils actuellement appliqués à la couverture globale Vitest :
+Global Vitest thresholds at archival: 80% lines, functions, and statements;
+75% branches.
 
-- 80 % lignes, fonctions et instructions ; 75 % branches.
+Initial domain-specific goals (95% lines / 90% branches for gestures/drawing,
+90% lines for camera) were not configured thresholds. Do not claim CI enforces
+them. Cleanup did not lower existing thresholds.
+See `docs/TESTING.md` for grouping, commands, and criteria for adding tests.
 
-Les objectifs initiaux par domaine (95 % lignes/90 % branches pour gestes et
-dessin, 90 % lignes pour caméra) ne sont pas des seuils configurés aujourd'hui.
-Ne pas les annoncer comme imposés par la CI. Le nettoyage n'a pas abaissé les
-seuils existants. Répartition, commandes et critères d'ajout : `docs/TESTING.md`.
+Tests should verify behavior, not React internals. Visual snapshots do not
+replace functional assertions. CI webcam input is simulated; a physical webcam
+remains mandatory for release-candidate validation.
 
-Les tests doivent vérifier des comportements, pas les détails internes de React. Les snapshots visuels ne remplacent pas les assertions fonctionnelles.
+## 10. Original definition of done
 
-La webcam CI est toujours simulée. Une vraie webcam reste obligatoire pour la release candidate.
+The v1 target required:
 
-## 10. Définition globale de « terminé »
+- A new user understands the gestures and finishes five missions in under two minutes.
+- Pen, eraser, colors, thickness, clear, undo/redo, and PNG export work.
+- Hand loss ends a stroke without artifacts.
+- Video and landmarks never leave the device.
+- Runtime assets are local and verified.
+- Mouse/keyboard provide fallback controls.
+- Required GitHub checks are green.
+- Physical-webcam QA is signed off.
+- `main` matches the `v1.0.0` tag.
+- A rollback to the previous Vercel deployment is documented and exercised.
 
-DrawMotion v1 est terminé uniquement si :
+These are original acceptance targets, not a statement that they were met.
 
-- un nouvel utilisateur comprend les gestes et réussit les cinq missions en moins de deux minutes ;
-- stylo, gomme, couleurs, épaisseur, effacement, undo, redo et export PNG fonctionnent ;
-- la perte de main termine le trait sans artefact ;
-- la vidéo et les landmarks ne quittent jamais l'appareil ;
-- tous les assets d'exécution sont locaux et vérifiés ;
-- souris et clavier permettent le parcours de secours ;
-- les contrôles requis GitHub sont verts ;
-- la QA avec webcam réelle est signée ;
-- `main` correspond exactement au tag `v1.0.0` ;
-- le rollback Vercel vers le déploiement précédent a été documenté et testé au moins une fois.
+## 11. Post-release hotfix workflow
 
-## 11. Workflow hotfix après livraison
+1. Create `hotfix/<topic>` from `dev`.
+2. First add a reproducing test; commit `test: reproduce <defect>`.
+3. Fix it; commit `fix: resolve <defect>`.
+4. Open a PR to `dev`, run CI, and obtain approval.
+5. Merge into `dev`, then open `dev -> main`.
+6. After CI, approval, and deployment verification, release/tag `v1.0.1` on `main`.
+7. Never fix `main` directly; `dev` remains the source of promotions.
 
-1. créer `hotfix/<sujet>` depuis `dev` ;
-2. écrire d'abord un test qui reproduit le défaut ;
-3. commit `test: reproduce <défaut>` ;
-4. commit `fix: resolve <défaut>` ;
-5. PR vers `dev`, CI et approbation ;
-6. fusionner dans `dev`, puis ouvrir immédiatement la promotion `dev -> main` ;
-7. après CI, approbation et déploiement Vercel réussis, fusionner et taguer `v1.0.1` sur `main` ;
-8. ne jamais corriger directement `main` : `dev` reste la source unique des promotions.
+## 12. Original technical references
 
-## 12. Sources techniques de référence
-
-- Vite : https://vite.dev/guide/
-- Tailwind CSS avec Vite : https://tailwindcss.com/docs/installation/using-vite
-- shadcn/ui avec Vite : https://ui.shadcn.com/docs/installation/vite
-- MediaPipe Hand Landmarker Web : https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/web_js
-- Playwright en CI : https://playwright.dev/docs/ci
-- GitHub protected branches : https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
-- Vercel et Git : https://vercel.com/docs/git
+- [Vite](https://vite.dev/guide/)
+- [Tailwind CSS with Vite](https://tailwindcss.com/docs/installation/using-vite)
+- [shadcn/ui with Vite](https://ui.shadcn.com/docs/installation/vite)
+- [MediaPipe Hand Landmarker Web](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/web_js)
+- [Playwright CI](https://playwright.dev/docs/ci)
+- [GitHub protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+- [Vercel Git integration](https://vercel.com/docs/git)
