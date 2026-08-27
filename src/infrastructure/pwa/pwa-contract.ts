@@ -1,5 +1,6 @@
 export const OFFLINE_PROTOCOL = 1
 export const OFFLINE_STATUS_REQUEST = "GET_OFFLINE_STATUS"
+export const CLIENT_BUILD_REQUEST = "GET_DRAWMOTION_BUILD"
 
 export type OfflineReport = {
   protocol: typeof OFFLINE_PROTOCOL

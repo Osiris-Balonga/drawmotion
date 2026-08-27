@@ -1,20 +1,27 @@
 import type { Messages } from "./en"
 
 export const es = {
+  "pwa.reconnected": "Conexión restablecida.",
+  "pwa.disconnectedIncomplete":
+    "Estás sin conexión. Aún faltan algunos recursos; la descarga se reintentará al reconectar.",
+  "pwa.disconnectedReady": "Estás sin conexión. Puedes seguir dibujando.",
+  "pwa.disconnected": "Sin conexión",
+  "pwa.details": "Almacenamiento y actualizaciones",
+  "pwa.local": "Tus dibujos permanecen en este dispositivo.",
   "pwa.updatePolicy":
     "Las actualizaciones esperan a que cierres todas las ventanas de DrawMotion. Tu sesión de dibujo nunca se recarga.",
   "pwa.updateChecking": "Buscando actualizaciones…",
   "pwa.updateDownloading":
     "Descargando una actualización. Puedes seguir dibujando.",
   "pwa.updateWaiting":
-    "Hay una actualización lista. Cuando termines, cierra todas las ventanas de DrawMotion y vuelve a abrir la app. No necesitas recargar ahora.",
+    "Hay una actualización lista para el próximo inicio. Puedes seguir dibujando.",
   "pwa.updateFailed":
     "No se pudo descargar la actualización. Tu versión actual sigue disponible.",
   "pwa.checkUpdate": "Buscar actualizaciones",
   "pwa.installed": "Abierta como aplicación instalada.",
   "pwa.install": "Instalar DrawMotion",
   "pwa.installHelp":
-    "Usa «Instalar aplicación» en el navegador. En iPad: Safari → Compartir → Añadir a pantalla de inicio. Instalar no prepara por sí solo los recursos sin conexión.",
+    "Instala la app desde el menú del navegador. En iPad: Safari → Compartir → Añadir a pantalla de inicio.",
   "pwa.persist": "Solicitar almacenamiento local persistente",
   "pwa.storageGranted": "Almacenamiento persistente autorizado",
   "pwa.storageDenied":
@@ -22,19 +29,15 @@ export const es = {
   "pwa.menu": "Instalación y sin conexión",
   "pwa.title": "Lleva DrawMotion contigo",
   "pwa.description":
-    "Prepara la app en línea y dibuja sin conexión. La preparación nunca activa la cámara.",
-  "pwa.prepare": "Preparar sin conexión · unos 50 MB",
+    "La app guarda automáticamente sus recursos sin conexión (unos 50 MB) después de cargar, sin activar la cámara.",
   "pwa.unavailable":
     "La preparación sin conexión no está disponible aquí. Usa un navegador compatible mediante HTTPS.",
-  "pwa.idle": "Aún no está preparada para usarse sin conexión.",
-  "pwa.preparing": "Preparando la app y la detección de gestos…",
+  "pwa.preparing": "Guardando la app para usarla sin conexión… Puedes dibujar.",
   "pwa.reopen":
-    "Preparación completada. Cierra todas las ventanas de DrawMotion y vuelve a abrir la app para usarla sin conexión.",
-  "pwa.verifying": "Comprobando los recursos sin conexión…",
-  "pwa.ready": "Lista para usarse sin conexión en este dispositivo.",
+    "Los recursos sin conexión están guardados para tu próxima visita.",
+  "pwa.ready": "Disponible sin conexión en este dispositivo.",
   "pwa.failed":
-    "No se pudieron verificar los recursos. Conéctate y reinténtalo. Si el problema persiste, sigue los pasos de recuperación de la documentación del proyecto.",
-  "pwa.retry": "Comprobar de nuevo",
+    "El acceso sin conexión aún no está completo. Las descargas se reintentan automáticamente cuando hay conexión.",
   "pwa.limits":
     "El navegador puede borrar el almacenamiento local. Exporta tus dibujos importantes.",
   "draft.restoreFailed":

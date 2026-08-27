@@ -75,6 +75,12 @@ export function pwaPlugins(base: string): Plugin[] {
         },
       ],
       generateBundle() {
+        // Deliberately not precached: connectivity probes must reach the server.
+        this.emitFile({
+          type: "asset",
+          fileName: "network-check.json",
+          source: JSON.stringify({ application: "drawmotion" }),
+        })
         this.emitFile({
           type: "asset",
           fileName: "manifest.webmanifest",

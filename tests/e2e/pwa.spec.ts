@@ -7,7 +7,7 @@ async function openMenu(page: Page) {
   await page.getByRole("button", { name: "Installation et hors ligne" }).click()
 }
 
-test("explicit preparation survives a full browser restart and first offline camera inference", async () => {
+test("automatic caching takes control without reloading and survives a cold offline camera launch", async () => {
   test.setTimeout(120_000)
   await mkdir(".artifacts/pwa", { recursive: true })
   const profile = await mkdtemp(path.resolve(".artifacts/pwa/profile-"))
@@ -26,16 +26,21 @@ test("explicit preparation survives a full browser restart and first offline cam
   try {
     let page = context.pages()[0]
     await page.goto(server.url)
-    expect(
-      await page.evaluate(
-        async () => (await navigator.serviceWorker.getRegistrations()).length,
-      ),
-    ).toBe(0)
     await openMenu(page)
-    await page.getByRole("button", { name: /Préparer hors ligne/ }).click()
     await expect(
-      page.locator('[data-offline-state="prepared-reopen"]'),
-    ).toBeVisible({ timeout: 60_000 })
+      page.getByRole("button", {
+        name: /Préparer hors ligne|Vérifier à nouveau/,
+      }),
+    ).toHaveCount(0)
+    await expect(page.locator('[data-offline-state="ready"]')).toBeVisible({
+      timeout: 60_000,
+    })
+    expect(
+      await page.evaluate(() => !!navigator.serviceWorker.controller),
+    ).toBe(true)
+    await expect(
+      page.getByRole("button", { name: "Activer ma caméra" }),
+    ).toBeAttached()
     expect(server.requests.filter((url) => url.endsWith(".wasm"))).toHaveLength(
       3,
     )
@@ -84,6 +89,7 @@ test("a failed or mixed deployment never reports ready and retry preserves draft
 }) => {
   test.setTimeout(120_000)
   const server = await createPwaServer()
+  server.fail("vision/hand_landmarker.task", "integrity")
   const context = await browser.newContext({
     serviceWorkers: "allow",
     locale: "fr-FR",
@@ -92,23 +98,25 @@ test("a failed or mixed deployment never reports ready and retry preserves draft
     const page = await context.newPage()
     await page.goto(server.url)
     await page.evaluate(() => localStorage.setItem("pwa-test-sentinel", "keep"))
-    server.fail("vision/hand_landmarker.task", "integrity")
     await openMenu(page)
-    await page.getByRole("button", { name: /Préparer hors ligne/ }).click()
     await expect(page.locator('[data-offline-state="failed"]')).toBeVisible({
       timeout: 60_000,
     })
     expect(
       await page.evaluate(() => localStorage.getItem("pwa-test-sentinel")),
     ).toBe("keep")
-    server.fail()
-    await page.getByRole("button", { name: /Préparer hors ligne/ }).click()
+    await context.setOffline(true)
+    await page.evaluate(() => window.dispatchEvent(new Event("offline")))
     await expect(
-      page.locator('[data-offline-state="prepared-reopen"]'),
-    ).toBeVisible({ timeout: 60_000 })
-    await page.reload()
-    await openMenu(page)
-    await expect(page.locator('[data-offline-state="ready"]')).toBeVisible()
+      page.locator('[data-connection-state="offline"]'),
+    ).toBeVisible()
+    server.fail()
+    await context.setOffline(false)
+    await page.evaluate(() => window.dispatchEvent(new Event("online")))
+    await expect(page.locator('[data-connection-state="online"]')).toBeVisible()
+    await expect(page.locator('[data-offline-state="ready"]')).toBeVisible({
+      timeout: 60_000,
+    })
     expect(
       (
         await page.request.get(new URL("not-a-route", server.url).href)
@@ -126,7 +134,11 @@ test("a failed or mixed deployment never reports ready and retry preserves draft
             await cache.delete(request)
       }
     })
-    await page.getByRole("button", { name: "Vérifier à nouveau" }).click()
+    await page.clock.install()
+    await page.clock.fastForward(61_000)
+    await page.evaluate(() =>
+      document.dispatchEvent(new Event("visibilitychange")),
+    )
     await expect(page.locator('[data-offline-state="failed"]')).toBeVisible()
     expect(
       await page.evaluate(async () =>
@@ -135,6 +147,10 @@ test("a failed or mixed deployment never reports ready and retry preserves draft
           .then((response) => response?.text()),
       ),
     ).toBe("keep")
+    await page.clock.fastForward(31_000)
+    await expect(page.locator('[data-offline-state="ready"]')).toBeVisible({
+      timeout: 15_000,
+    })
   } finally {
     await context.close()
     await server.close()

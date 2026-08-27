@@ -62,6 +62,8 @@ test("WCAG checks on onboarding, stroke settings, custom color and commands", as
   await scan("onboarding")
   await page.getByRole("button", { name: "Installation et hors ligne" }).click()
   await scan("offline-menu")
+  await page.getByText("Stockage et mises à jour", { exact: true }).click()
+  await scan("offline-details")
   await page.keyboard.press("Escape")
   await expect(
     page.getByRole("button", { name: "Installation et hors ligne" }),

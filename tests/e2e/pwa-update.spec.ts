@@ -25,10 +25,9 @@ async function menu(page: Page) {
 async function prepare(page: Page, url: string) {
   await page.goto(url)
   await menu(page)
-  await page.getByRole("button", { name: /Préparer hors ligne/ }).click()
-  await expect(
-    page.locator('[data-offline-state="prepared-reopen"]'),
-  ).toBeVisible({ timeout: 60_000 })
+  await expect(page.locator('[data-offline-state="ready"]')).toBeVisible({
+    timeout: 60_000,
+  })
   await page.reload()
   await menu(page)
   await expect(page.locator('[data-offline-state="ready"]')).toBeVisible()
@@ -87,6 +86,7 @@ test("an update waits for both windows to close, then starts B offline with the 
     })
     server.switchBuild(buildB)
     const requestStart = server.requests.length
+    await first.getByText("Stockage et mises à jour", { exact: true }).click()
     await first
       .getByRole("button", { name: "Rechercher une mise à jour" })
       .click()
@@ -213,6 +213,7 @@ test("an interrupted B download leaves the previous version ready offline", asyn
       .getAttribute("content")
     server.switchBuild(buildB)
     server.fail("index.html")
+    await page.getByText("Stockage et mises à jour", { exact: true }).click()
     await page
       .getByRole("button", { name: "Rechercher une mise à jour" })
       .click()

@@ -1,20 +1,28 @@
 import type { Messages } from "./en"
 
 export const fr = {
+  "pwa.reconnected": "Connexion rétablie.",
+  "pwa.disconnectedIncomplete":
+    "Vous êtes hors connexion. Certaines ressources manquent encore ; le téléchargement reprendra avec la connexion.",
+  "pwa.disconnectedReady":
+    "Vous êtes hors connexion. Vous pouvez continuer à dessiner.",
+  "pwa.disconnected": "Hors connexion",
+  "pwa.details": "Stockage et mises à jour",
+  "pwa.local": "Vos dessins restent sur cet appareil.",
   "pwa.updatePolicy":
     "Les mises à jour attendent la fermeture de toutes les fenêtres DrawMotion. Votre session de dessin n’est jamais rechargée.",
   "pwa.updateChecking": "Recherche de mises à jour…",
   "pwa.updateDownloading":
     "Téléchargement d’une mise à jour. Vous pouvez continuer à dessiner.",
   "pwa.updateWaiting":
-    "Une mise à jour est prête. Quand vous aurez terminé, fermez toutes les fenêtres DrawMotion, puis rouvrez l’app. Rien à recharger maintenant.",
+    "Une mise à jour est prête pour le prochain lancement. Vous pouvez continuer à dessiner.",
   "pwa.updateFailed":
     "La mise à jour n’a pas pu être téléchargée. Votre version actuelle reste disponible.",
   "pwa.checkUpdate": "Rechercher une mise à jour",
   "pwa.installed": "Ouvert en tant qu’application installée.",
   "pwa.install": "Installer DrawMotion",
   "pwa.installHelp":
-    "Utilisez « Installer l’application » dans votre navigateur. Sur iPad : Safari → Partager → Sur l’écran d’accueil. L’installation seule ne prépare pas les ressources hors ligne.",
+    "Installez l’app depuis le menu du navigateur. Sur iPad : Safari → Partager → Sur l’écran d’accueil.",
   "pwa.persist": "Demander la protection du stockage local",
   "pwa.storageGranted": "Stockage persistant autorisé",
   "pwa.storageDenied":
@@ -22,19 +30,16 @@ export const fr = {
   "pwa.menu": "Installation et hors ligne",
   "pwa.title": "Emportez DrawMotion",
   "pwa.description":
-    "Préparez l’app en ligne, puis dessinez sans connexion. La préparation n’active jamais la caméra.",
-  "pwa.prepare": "Préparer hors ligne · environ 50 Mo",
+    "L’app conserve automatiquement ses ressources hors ligne (environ 50 Mo) après le chargement, sans activer la caméra.",
   "pwa.unavailable":
     "La préparation hors ligne n’est pas disponible ici. Utilisez un navigateur compatible en HTTPS.",
-  "pwa.idle": "Pas encore préparé pour le hors ligne.",
-  "pwa.preparing": "Préparation de l’app et de la détection des gestes…",
+  "pwa.preparing":
+    "Enregistrement de l’app pour le hors ligne… Vous pouvez dessiner.",
   "pwa.reopen":
-    "Préparation terminée. Fermez toutes les fenêtres DrawMotion, puis rouvrez l’app pour l’utiliser hors ligne.",
-  "pwa.verifying": "Vérification des ressources hors ligne…",
-  "pwa.ready": "Prêt pour le hors ligne sur cet appareil.",
+    "Les ressources hors ligne sont disponibles pour votre prochaine visite.",
+  "pwa.ready": "Disponible sans connexion sur cet appareil.",
   "pwa.failed":
-    "Les ressources hors ligne n’ont pas pu être vérifiées. Reconnectez-vous et réessayez. Si cela persiste, consultez les étapes de récupération dans la documentation du projet.",
-  "pwa.retry": "Vérifier à nouveau",
+    "L’accès hors ligne n’est pas encore complet. Les téléchargements reprennent automatiquement quand la connexion est disponible.",
   "pwa.limits":
     "Le navigateur peut effacer le stockage local. Exportez vos dessins importants.",
   "app.title": "DrawMotion — Dessinez dans les airs avec votre webcam",
