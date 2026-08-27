@@ -1,0 +1,26 @@
+diff --git a/dist/api.d.mts b/dist/api.d.mts
+--- a/dist/api.d.mts
++++ b/dist/api.d.mts
+@@ -6 +6 @@
+-import sharp__default from 'sharp';
++import type * as sharp__default from 'sharp';
+diff --git a/dist/api.d.ts b/dist/api.d.ts
+--- a/dist/api.d.ts
++++ b/dist/api.d.ts
+@@ -6 +6 @@
+-import sharp__default from 'sharp';
++import type * as sharp__default from 'sharp';
+diff --git a/dist/shared/assets-generator.Bot_1kJ_.d.mts b/dist/shared/assets-generator.Bot_1kJ_.d.mts
+--- a/dist/shared/assets-generator.Bot_1kJ_.d.mts
++++ b/dist/shared/assets-generator.Bot_1kJ_.d.mts
+@@ -1 +1,2 @@
+-import sharp__default, { PngOptions, WebpOptions } from 'sharp';
++import type * as sharp__default from 'sharp';
++import { PngOptions, WebpOptions } from 'sharp';
+diff --git a/dist/shared/assets-generator.BQ3PQ6A_.d.ts b/dist/shared/assets-generator.BQ3PQ6A_.d.ts
+--- a/dist/shared/assets-generator.BQ3PQ6A_.d.ts
++++ b/dist/shared/assets-generator.BQ3PQ6A_.d.ts
+@@ -1 +1,2 @@
+-import sharp__default, { PngOptions, WebpOptions } from 'sharp';
++import type * as sharp__default from 'sharp';
++import { PngOptions, WebpOptions } from 'sharp';
