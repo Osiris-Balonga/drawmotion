@@ -6,6 +6,7 @@
     "module": "ESNext",
     "skipLibCheck": false,
     "moduleResolution": "Bundler",
+    "paths": { "@/*": ["./src/*"] },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
