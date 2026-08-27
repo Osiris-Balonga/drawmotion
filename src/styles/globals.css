@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  font-synthesis: none;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+
+  --background: oklch(0.16 0.012 286);
+  --foreground: oklch(0.97 0.006 286);
+  --card: oklch(0.2 0.014 286);
+  --card-foreground: oklch(0.97 0.006 286);
+  --popover: oklch(0.23 0.016 286);
+  --popover-foreground: oklch(0.97 0.006 286);
+  --primary: oklch(0.56 0.22 293);
+  --primary-foreground: oklch(0.99 0.003 286);
+  --secondary: oklch(0.25 0.018 286);
+  --secondary-foreground: oklch(0.94 0.008 286);
+  --muted: oklch(0.24 0.014 286);
+  --muted-foreground: oklch(0.74 0.014 286);
+  --accent: oklch(0.31 0.08 293);
+  --accent-foreground: oklch(0.98 0.005 286);
+  --destructive: oklch(0.63 0.21 25);
+  --border: oklch(0.34 0.018 286);
+  --input: oklch(0.3 0.018 286);
+  --ring: oklch(0.72 0.16 293);
+  --success: oklch(0.72 0.16 151);
+  --success-foreground: oklch(0.16 0.03 151);
+  --warning: oklch(0.8 0.15 75);
+  --warning-foreground: oklch(0.2 0.04 75);
+  --canvas: oklch(0.995 0.002 286);
+  --canvas-foreground: oklch(0.18 0.01 286);
+  --shell-raised: oklch(0.22 0.016 286);
+  --shell-sunken: oklch(0.125 0.01 286);
+  --radius: 0.5rem;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+  --space-3xl: 3rem;
+
+  --duration-fast: 120ms;
+  --duration-state: 200ms;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --z-floating-controls: 10;
+  --z-gesture-palette: 20;
+  --z-gesture-pointer: 30;
+  --z-skip-link: 40;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", "Segoe UI", sans-serif;
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-canvas-foreground: var(--canvas-foreground);
+  --color-canvas: var(--canvas);
+  --color-shell-raised: var(--shell-raised);
+  --color-shell-sunken: var(--shell-sunken);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

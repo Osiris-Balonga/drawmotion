@@ -1,42 +1,48 @@
 # Product
 
-## Register
-
-product
-
-## Platform
-
-web
-
 ## Users
 
-DrawMotion s'adresse en priorité aux personnes qui découvrent une démonstration de vision par ordinateur sur un ordinateur équipé d'une webcam. Elles ne doivent connaître ni MediaPipe ni les interfaces gestuelles. Elles veulent comprendre immédiatement la technologie, produire un dessin simple et constater que la main peut remplacer un dispositif de pointage.
+DrawMotion primarily serves people discovering a computer-vision demo on a
+webcam-equipped computer. They should not need to know MediaPipe or gesture
+interfaces. They want to understand the technology, make a simple drawing,
+and see how a hand can replace a pointing device.
 
-## Product Purpose
+## Purpose
 
-DrawMotion transforme les mouvements détectés de la main en commandes de dessin 2D dans une expérience proche de Paint ou Excalidraw. Le produit réussit lorsqu'un nouvel utilisateur autorise la caméra, apprend trois gestes, trace un dessin, change ses outils et exporte un PNG sans aide extérieure en moins de deux minutes.
+DrawMotion turns detected hand movements into 2D drawing commands in an
+experience inspired by Paint and Excalidraw. The target is for a new user to
+allow camera access, learn the gestures, draw, change tools, and export a PNG
+without outside help in under two minutes. This is a product goal, not a
+verified completion-time claim.
 
-## Brand Personality
+## Brand personality
 
-Précise, pédagogique, spectaculaire. La voix est brève, rassurante et factuelle. L'expérience rend la technologie visible juste assez pour susciter la curiosité, puis s'efface derrière la création.
+Precise, educational, and visually engaging. The voice is brief, reassuring,
+and factual. The experience reveals enough technology to invite curiosity,
+then gets out of the way of drawing.
 
-## Anti-references
+Repository code and documentation are English-only. User-facing app content,
+including guidance and accessibility messages, may be localized.
 
-- Les HUD de science-fiction remplis de jauges, réticules et données décoratives.
-- Le glassmorphism, les halos néon et les gradients violets utilisés comme décoration générique.
-- Les interfaces de démonstration qui exposent les paramètres du modèle avant d'expliquer l'action attendue.
-- Les outils de dessin qui associent une action destructive à un geste facile à déclencher par erreur.
-- Les composants surdimensionnés, les cartes imbriquées et les animations qui retardent la tâche.
+## What to avoid
 
-## Design Principles
+- Science-fiction HUDs full of decorative gauges, reticles, and data.
+- Glassmorphism, neon halos, and purple gradients used as generic decoration.
+- Demos that expose model parameters before explaining what to do.
+- Destructive actions bound to gestures that are easy to trigger accidentally.
+- Oversized components, nested cards, and animations that delay the task.
 
-1. **Montrer pour apprendre.** Chaque instruction est validée par la détection réelle plutôt que par une longue explication.
-2. **La toile d'abord.** La surface de dessin domine ; la technologie reste observable sans devenir le contenu principal.
-3. **Prévenir plutôt que réparer.** Hystérésis, pause automatique et confirmations protègent contre les déclenchements involontaires.
-4. **Toujours offrir une issue.** Souris et clavier permettent de continuer si le geste ou la caméra échoue.
-5. **Respecter la caméra.** La vidéo est locale, jamais enregistrée, et son cycle de vie reste explicite.
+## Design principles
 
-## Accessibility & Inclusion
+1. **Teach by doing.** Validate instructions through detection rather than long explanations.
+2. **Canvas first.** Drawing dominates; the technology stays observable without becoming the main content.
+3. **Prevent mistakes.** Hysteresis, automatic pausing, and confirmations protect against accidental activation.
+4. **Provide a way out.** Mouse and keyboard support settings, canvas management, and export if tracking fails. Freehand drawing still requires a detected hand.
+5. **Respect camera access.** Video stays local, is never recorded, and has an explicit lifecycle.
 
-Objectif WCAG 2.2 AA pour les contrôles et contenus applicables. Tous les outils sont accessibles au clavier, les états sont annoncés textuellement, la couleur n'est jamais le seul signal, les animations respectent `prefers-reduced-motion` et le zoom navigateur à 200 % reste utilisable. La compatibilité gestuelle n'est jamais présentée comme l'unique moyen d'accomplir une action.
+## Accessibility and inclusion
 
+Target WCAG 2.2 AA for applicable controls and content: keyboard access,
+textual state announcements, signals beyond color alone, reduced-motion
+support, and usable controls at 200% browser zoom. These are goals, not
+certification. Camera-free drawing is not implemented yet.

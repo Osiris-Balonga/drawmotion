@@ -1,0 +1,23 @@
+name: Production source
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  source-policy:
+    name: Production source policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require the dev branch
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          if [ "$HEAD_BRANCH" != "dev" ]; then
+            echo "Pull requests to main must originate from dev."
+            exit 1
+          fi

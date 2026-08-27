@@ -1,104 +1,122 @@
 ---
 name: DrawMotion
-description: Une toile gestuelle guidée, précise et immédiatement compréhensible.
+description: A guided gesture canvas that is precise and easy to understand.
 ---
 
-<!-- SEED: re-run $impeccable document once there's code to capture the actual tokens and components. -->
-
-# Design System: DrawMotion
+# Design system: DrawMotion
 
 ## Overview
 
-**Creative North Star: "La toile augmentée"**
+**Creative direction: the augmented canvas.**
 
-DrawMotion ressemble d'abord à un outil de dessin calme, puis révèle la vision par ordinateur à travers des preuves utiles : aperçu caméra, squelette de la main, curseur et instruction contextuelle. Dans une pièce intérieure ordinaire, devant un écran d'ordinateur, l'utilisateur doit distinguer sans effort la toile blanche d'une coque sombre qui concentre l'attention.
+DrawMotion first feels like a calm drawing tool, then reveals computer vision
+through useful feedback: camera preview, hand landmarks, pointer, and
+contextual guidance. In an ordinary indoor setting, users should easily
+distinguish the white canvas from the dark interface around it.
 
-La composition reprend la clarté de Figma, l'immédiateté d'Excalidraw et la lisibilité technique des démonstrations MediaPipe. Elle rejette explicitement le HUD de science-fiction, le glassmorphism et les décorations néon.
+The composition draws on Figma's clarity, Excalidraw's immediacy, and the
+technical legibility of MediaPipe demos. Avoid science-fiction HUDs,
+glassmorphism, and neon decoration.
 
-**Key Characteristics:**
+Key characteristics:
 
-- toile blanche dominante et chrome sombre restreint ;
-- apprentissage progressif en trois étapes ;
-- une seule couleur de marque visible à la fois ;
-- états techniques exprimés en langage humain ;
-- mouvement réservé au feedback et aux transitions d'état.
+- A dominant white canvas with restrained dark controls.
+- Progressive learning through five illustrated missions.
+- One visible brand accent at a time.
+- Technical states explained in human language.
+- Motion reserved for feedback and state transitions.
 
 ## Colors
 
-Stratégie restreinte : neutres francs, toile blanche, coque presque noire et accent indigo-violet réservé aux actions, à la progression et au suivi actif. Les valeurs exactes seront résolues en OKLCH pendant le lot 2.
+Use slightly violet-tinted neutrals, a white canvas, and an almost-black shell.
+Reserve violet for actions, progress, and active tracking.
+Canonical tokens live in `src/styles/globals.css`.
 
-### Primary
+| Token            | Value                    | Use                                           |
+| ---------------- | ------------------------ | --------------------------------------------- |
+| Motion violet    | `oklch(0.56 0.22 293)`   | Primary action, selected tool, progress       |
+| Focus ring       | `oklch(0.72 0.16 293)`   | High-contrast keyboard focus on dark surfaces |
+| Tracking green   | `oklch(0.72 0.16 151)`   | Reliable detection and success                |
+| Attention orange | `oklch(0.80 0.15 75)`    | Imperfect framing and recoverable warnings    |
+| Graphite shell   | `oklch(0.16 0.012 286)`  | Background and toolbars                       |
+| Elevated surface | `oklch(0.22 0.016 286)`  | Floating panels                               |
+| White canvas     | `oklch(0.995 0.002 286)` | Drawing surface only                          |
+| Light ink        | `oklch(0.97 0.006 286)`  | Primary text on the shell                     |
 
-- **Indigo de mouvement** `[à résoudre pendant l'implémentation]` : action principale, outil sélectionné, progression du tutoriel et focus.
-
-### Secondary
-
-- **Vert de suivi** `[à résoudre pendant l'implémentation]` : détection fiable et réussite.
-- **Orange d'attention** `[à résoudre pendant l'implémentation]` : cadrage imparfait et avertissements récupérables.
-
-### Neutral
-
-- **Coque graphite** `[à résoudre pendant l'implémentation]` : arrière-plan et barres d'outils.
-- **Toile blanche pure** `[à résoudre pendant l'implémentation]` : surface de dessin uniquement.
-- **Encre claire** `[à résoudre pendant l'implémentation]` : texte principal sur la coque.
-
-**The Rare Accent Rule.** L'indigo-violet ne décore jamais une surface inactive ; sa rareté indique une action ou un état réel.
+Violet should indicate an action or state, not decorate an inactive surface.
 
 ## Typography
 
-**Display Font:** sans-serif technique unique `[famille à choisir pendant l'implémentation]`  
-**Body Font:** même famille sans-serif  
-**Label/Mono Font:** monospace réservé aux diagnostics de développement
+Use Geist Variable for headings, body text, and labels. Reserve monospace for
+development diagnostics. Labels should feel compact, legible, and familiar,
+like a creative tool rather than a marketing campaign.
 
-**Character:** compacte, lisible et familière. Les libellés ressemblent à ceux d'un outil de création professionnel, jamais à ceux d'une campagne marketing.
+- No oversized display headings in the workspace.
+- Headings and active panel titles use weight 600.
+- Body text uses weight 400 and a maximum measure of 70 characters.
+- Labels use weight 500, sentence case, and normal letter spacing.
 
-### Hierarchy
+Use one sans-serif family; establish hierarchy through size, weight, and
+spacing. The size scale is `0.75rem`, `0.875rem`, `1rem`, `1.25rem`,
+and `1.5rem`. Body text starts at `1rem`; smaller sizes are for metadata
+and short labels.
 
-- **Display:** absent de l'espace de travail ; aucun titre géant.
-- **Headline:** poids 600, réservé à l'autorisation caméra et au tutoriel.
-- **Title:** poids 600, utilisé pour l'étape ou le panneau actif.
-- **Body:** poids 400, mesure maximale de 70 caractères.
-- **Label:** poids 500, casse naturelle et espacement normal.
+## Spacing and motion
 
-**The One Family Rule.** Une seule famille sans-serif porte toute l'interface ; la hiérarchie vient de la taille, du poids et de l'espace.
+Use a four-point spacing scale: `0.25rem`, `0.5rem`, `0.75rem`, `1rem`,
+`1.5rem`, `2rem`, and `3rem`. Related controls use 8–12 px gaps; distinct
+work areas use 24–48 px.
+
+Direct feedback takes `120ms`; state transitions take `200ms`, using
+`cubic-bezier(0.25, 1, 0.5, 1)`. Reduced motion replaces transitions with
+immediate, perceptible state changes.
 
 ## Elevation
 
-Le système est plat par défaut. La profondeur provient d'abord des différences de tons entre coque, rail et panneau. Une ombre courte peut détacher une instruction contextuelle ou un popover, jamais habiller chaque conteneur.
+Keep the system flat by default. Tone differences separate the shell,
+toolbars, and panels. Shadows lift floating islands, the dock, and panels off
+the white canvas; do not nest surfaces and shadows without a functional reason.
 
-**The State-Only Elevation Rule.** Une ombre signale une superposition ou une réponse à l'interaction ; elle n'est jamais décorative.
+A shadow indicates an overlay or interaction response, not decoration.
 
 ## Components
 
-Les composants définitifs seront documentés après leur génération par shadcn/ui avec Base UI. La coque initiale utilisera des boutons compacts, des tooltips concis, un rail vertical, une instruction contextuelle inférieure et un aperçu caméra circulaire.
+shadcn/ui components use Base UI. The workspace has floating top islands,
+a collapsible bottom dock, contextual gesture commands, an illustrated tutorial,
+and a circular camera preview. Temporary mode feedback appears below the camera.
 
 ### Buttons
 
-- **Shape:** coins modérément courbes, jamais bulle surdimensionnée.
-- **Primary:** accent plein et texte clair, réservé à l'autorisation caméra et à la validation.
-- **Hover / Focus:** changement tonal bref et focus visible contrasté.
-- **Ghost:** actions d'outil dans le chrome sombre, avec état sélectionné explicite.
+- Moderately rounded corners, not oversized bubbles.
+- Solid accent and light text for primary permission or confirmation actions.
+- Brief tonal hover changes and clearly visible keyboard focus.
+- Ghost tool actions on dark surfaces with explicit selected states.
 
 ### Navigation
 
-Une barre supérieure compacte contient la marque, annuler, rétablir et exporter. Le rail gauche contient les outils de dessin. Les deux restent utilisables au clavier et à la souris.
+Brand, history, and export form separate islands above the full-window canvas.
+The bottom dock groups tools, widths, stroke styles, precision, and colors;
+its extended section collapses on tablets. Zoom, camera preview, and guidance
+float without reserved columns.
 
-## Do's and Don'ts
+These controls remain usable with keyboard and mouse. Pinching selects only
+the large targets in the dedicated gesture palette.
 
-### Do:
+## Do and do not
 
-- **Do** donner la plus grande surface possible à la toile.
-- **Do** expliquer chaque état caméra avec une action de récupération.
-- **Do** associer icône, texte accessible et feedback visuel aux outils.
-- **Do** limiter les transitions ordinaires à 150–250 ms et respecter la réduction de mouvement.
-- **Do** confirmer explicitement l'effacement complet de la toile.
+Do:
 
-### Don't:
+- Give the canvas as much space as possible.
+- Explain camera errors with an actionable recovery step.
+- Pair tool icons with accessible labels and visual feedback.
+- Keep ordinary transitions within 150–250 ms and respect reduced motion.
+- Explicitly confirm clearing the entire canvas.
 
-- **Don't** construire un HUD de science-fiction rempli de jauges, réticules ou données décoratives.
-- **Don't** utiliser glassmorphism, halos néon ou gradients violets comme décoration générique.
-- **Don't** exposer les paramètres du modèle avant l'action attendue.
-- **Don't** associer une action destructive à un geste facile à déclencher par erreur.
-- **Don't** imbriquer des cartes, surdimensionner les arrondis ou ralentir la tâche avec une chorégraphie.
-- **Don't** utiliser une bande latérale colorée de plus de 1 px comme accent de conteneur.
+Do not:
 
+- Add decorative HUD gauges, reticles, or data.
+- Use glassmorphism, neon halos, or generic purple gradients.
+- Expose model parameters before the expected user action.
+- Bind destructive actions to easily triggered gestures.
+- Nest cards, exaggerate corner radii, or slow tasks with choreography.
+- Use a colored side stripe thicker than 1 px as a container accent.
