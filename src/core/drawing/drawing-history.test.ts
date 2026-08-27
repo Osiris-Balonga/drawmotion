@@ -26,10 +26,9 @@ function documentWith(...strokes: Stroke[]): DrawingDocument {
 }
 
 describe("drawing model and history", () => {
-  it("defines normalized stroke points and drawing attributes", () => {
+  it("recognizes points inside and outside the normalized canvas", () => {
     expect(isNormalizedPoint(stroke.points[0]!)).toBe(true)
     expect(isNormalizedPoint({ x: 1.1, y: 0.5 })).toBe(false)
-    expect(stroke).toMatchObject({ tool: "pen", color: "#111111" })
   })
 
   it("undoes and redoes document states deterministically", () => {

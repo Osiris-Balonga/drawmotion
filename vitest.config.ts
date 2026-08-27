@@ -14,8 +14,36 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    maxWorkers: 2,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          environment: "node",
+          include: ["src/**/*.test.ts"],
+          exclude: ["src/**/*.integration.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "components",
+          environment: "jsdom",
+          setupFiles: ["./src/test/setup.ts"],
+          include: ["src/**/*.test.tsx"],
+          exclude: ["src/**/*.integration.test.tsx"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration",
+          environment: "node",
+          include: ["src/**/*.integration.test.{ts,tsx}"],
+        },
+      },
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

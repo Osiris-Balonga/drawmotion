@@ -67,10 +67,10 @@ describe("ToolRail", () => {
     const props = renderToolRail()
 
     await user.click(screen.getByRole("button", { name: "Épaisseur 8 pixels" }))
-    const slider = screen.getByRole("group", {
-      name: "Épaisseur du trait",
-    })
-    expect(slider.querySelector('[data-slot="slider-thumb"]')).not.toBeNull()
+    expect(screen.getByRole("button", { name: "8 px" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
     const preset = screen.getByRole("button", { name: "12 px" })
     await user.click(preset)
     expect(props.onThicknessChange).toHaveBeenCalledWith(12)
@@ -79,7 +79,8 @@ describe("ToolRail", () => {
     expect(props.onStrokePatternChange).toHaveBeenCalledWith("dotted")
     expect(screen.getByText("Style du trait")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Continu" })).toHaveAttribute(
-      "data-pressed",
+      "aria-pressed",
+      "true",
     )
   })
 
@@ -146,10 +147,10 @@ describe("ToolRail", () => {
     expect(
       screen.getByRole("complementary", { name: "Outils de dessin" }),
     ).toHaveAttribute("data-collapsed", "true")
-    expect(document.querySelector(".command-dock__extended")).toHaveAttribute(
-      "aria-hidden",
-      "true",
-    )
+    expect(screen.queryByRole("button", { name: "Violet" })).toBeNull()
+    expect(
+      screen.getByRole("button", { name: "Violet", hidden: true }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Déployer la palette" }),
     ).toBeInTheDocument()

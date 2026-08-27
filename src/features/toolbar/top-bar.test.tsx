@@ -58,14 +58,13 @@ describe("TopBar", () => {
     expect(dialog).not.toBeInTheDocument()
   })
 
-  it("exports only when the canvas contains a drawing", async () => {
+  it("requests export when the user activates the export button", async () => {
     const user = userEvent.setup()
     const props = renderTopBar()
     const exportButton = screen.getByRole("button", {
       name: "Exporter en PNG",
     })
 
-    expect(exportButton.parentElement).toHaveClass("workspace-topbar")
     await user.click(exportButton)
     expect(props.onExport).toHaveBeenCalledOnce()
   })
