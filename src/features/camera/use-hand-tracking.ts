@@ -69,13 +69,16 @@ export function useHandTracking(
     let previousGesture: GestureKind = "tracking-lost"
     let previousPinchPhase: PinchPhase = "released"
     let lastPinchDiagnosticAtMs = Number.NEGATIVE_INFINITY
+    let lastMetricsAtMs = Number.NEGATIVE_INFINITY
     let ambiguousFrames = 0
     const pinchDetector = new PinchDetector()
     const renderer = new LandmarkOverlayRenderer(canvas, video)
     let tracker: HandTrackerPort
     try {
       tracker = trackerFactory((nextMetrics) => {
-        if (active && import.meta.env.DEV) {
+        const now = performance.now()
+        if (active && import.meta.env.DEV && now - lastMetricsAtMs >= 1000) {
+          lastMetricsAtMs = now
           setMetrics(nextMetrics)
         }
       })

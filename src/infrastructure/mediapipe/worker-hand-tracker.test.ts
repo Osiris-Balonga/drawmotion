@@ -35,6 +35,45 @@ function emit(worker: Worker, data: unknown) {
 }
 
 describe("WorkerHandTracker", () => {
+  it("keeps only the latest waiting frame before the blocked worker and releases it on dispose", async () => {
+    vi.useFakeTimers()
+    try {
+      const { worker, postMessage } = createWorker()
+      const tracker = new WorkerHandTracker(() => worker)
+      const frames = Array.from({ length: 4 }, () => ({ close: vi.fn() }))
+      const first = tracker.detect(frames[0] as unknown as ImageBitmap, 7, 100)
+      const superseded = tracker
+        .detect(frames[1] as unknown as ImageBitmap, 8, 120)
+        .catch((error: unknown) => error)
+      const latest = tracker
+        .detect(frames[2] as unknown as ImageBitmap, 9, 140)
+        .catch((error: unknown) => error)
+      expect(postMessage).toHaveBeenCalledTimes(1)
+      expect(frames[1]?.close).toHaveBeenCalledOnce()
+      expect(await superseded).toBeInstanceOf(DroppedFrameError)
+      emit(worker, {
+        version: 1,
+        type: "RESULT",
+        result: deterministicTrackingResult,
+      })
+      await first
+      expect(postMessage).toHaveBeenLastCalledWith(
+        expect.objectContaining({ frameId: 9 }),
+        [frames[2]],
+      )
+      const queued = tracker
+        .detect(frames[3] as unknown as ImageBitmap, 10, 160)
+        .catch((error: unknown) => error)
+      tracker.dispose()
+      expect(await latest).toBeInstanceOf(Error)
+      expect(await queued).toBeInstanceOf(Error)
+      expect(frames[3]?.close).toHaveBeenCalledOnce()
+      vi.runAllTimers()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("initializes once and forwards development metrics", async () => {
     const { postMessage, worker } = createWorker()
     const onMetrics = vi.fn()

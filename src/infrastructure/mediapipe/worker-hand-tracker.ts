@@ -8,6 +8,7 @@ import {
   isVisionWorkerResponse,
   VISION_PROTOCOL_VERSION,
 } from "@/infrastructure/mediapipe/worker-protocol"
+import { VisionDiagnostics } from "@/infrastructure/mediapipe/vision-diagnostics"
 
 type WorkerPort = Pick<
   Worker,
@@ -43,8 +44,19 @@ export class WorkerHandTracker implements HandTrackerPort {
     {
       resolve: (result: HandTrackingResult) => void
       reject: (reason: Error) => void
+      startedAt: number
     }
   >()
+  private queuedFrame: {
+    frame: ImageBitmap
+    frameId: number
+    timestampMs: number
+  } | null = null
+  private inFlightId: number | null = null
+  private droppedFrames = 0
+  private readonly diagnostics = import.meta.env.DEV
+    ? new VisionDiagnostics()
+    : null
   private disposed = false
 
   constructor(
@@ -89,7 +101,30 @@ export class WorkerHandTracker implements HandTrackerPort {
     }
 
     return new Promise((resolve, reject) => {
-      this.pendingFrames.set(frameId, { resolve, reject })
+      if (this.queuedFrame) {
+        this.queuedFrame.frame.close()
+        this.pendingFrames
+          .get(this.queuedFrame.frameId)
+          ?.reject(new DroppedFrameError())
+        this.pendingFrames.delete(this.queuedFrame.frameId)
+        this.droppedFrames += 1
+      }
+      this.pendingFrames.set(frameId, {
+        resolve,
+        reject,
+        startedAt: performance.now(),
+      })
+      this.queuedFrame = { frame, frameId, timestampMs }
+      this.dispatchNextFrame()
+    })
+  }
+
+  private dispatchNextFrame(): void {
+    if (this.disposed || this.inFlightId !== null || !this.queuedFrame) return
+    const { frame, frameId, timestampMs } = this.queuedFrame
+    this.queuedFrame = null
+    this.inFlightId = frameId
+    try {
       this.worker.postMessage(
         {
           version: VISION_PROTOCOL_VERSION,
@@ -100,7 +135,24 @@ export class WorkerHandTracker implements HandTrackerPort {
         },
         [frame],
       )
-    })
+    } catch (error) {
+      frame.close()
+      this.pendingFrames
+        .get(frameId)
+        ?.reject(
+          error instanceof Error ? error : new Error("Frame transfer failed"),
+        )
+      this.pendingFrames.delete(frameId)
+      this.inFlightId = null
+    }
+  }
+
+  private completeFrame(frameId: number): void {
+    this.pendingFrames.delete(frameId)
+    if (this.inFlightId === frameId) {
+      this.inFlightId = null
+      this.dispatchNextFrame()
+    }
   }
 
   dispose(): void {
@@ -132,16 +184,28 @@ export class WorkerHandTracker implements HandTrackerPort {
         break
       case "RESULT": {
         const pending = this.pendingFrames.get(value.result.frameId)
+        if (pending && this.diagnostics) {
+          const now = performance.now()
+          const summary = this.diagnostics.record(now, now - pending.startedAt)
+          if (summary)
+            console.debug("[DrawMotion vision]", {
+              ...summary,
+              droppedFrames: this.droppedFrames,
+            })
+        }
         pending?.resolve(value.result)
-        this.pendingFrames.delete(value.result.frameId)
+        this.completeFrame(value.result.frameId)
         break
       }
       case "METRICS":
-        this.onMetrics?.(value.metrics)
+        this.onMetrics?.({
+          ...value.metrics,
+          droppedFrames: value.metrics.droppedFrames + this.droppedFrames,
+        })
         break
       case "DROPPED":
         this.pendingFrames.get(value.frameId)?.reject(new DroppedFrameError())
-        this.pendingFrames.delete(value.frameId)
+        this.completeFrame(value.frameId)
         break
       case "ERROR": {
         const error = new Error(value.message)
@@ -151,7 +215,7 @@ export class WorkerHandTracker implements HandTrackerPort {
           this.rejectInitialize = null
         } else if (value.frameId !== undefined) {
           this.pendingFrames.get(value.frameId)?.reject(error)
-          this.pendingFrames.delete(value.frameId)
+          this.completeFrame(value.frameId)
         } else {
           this.failPending(error)
         }
@@ -169,5 +233,8 @@ export class WorkerHandTracker implements HandTrackerPort {
     this.rejectInitialize = null
     this.pendingFrames.forEach(({ reject }) => reject(error))
     this.pendingFrames.clear()
+    this.queuedFrame?.frame.close()
+    this.queuedFrame = null
+    this.inFlightId = null
   }
 }
