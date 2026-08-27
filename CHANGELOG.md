@@ -26,6 +26,7 @@
 - Chrome et Edge Windows sont les cibles de validation initiales. Tablette réelle, Safari et Firefox ne sont pas certifiés par les tests desktop.
 - Les contrôles fonctionnent au clavier et à la souris, mais le dessin libre nécessite actuellement une main détectée.
 - Pas de sauvegarde de document ni de collaboration ; exporter avant de fermer la page.
+- Le PNG capture la zone visible de la toile : dézoomer/recentrer avant d'exporter pour inclure les traits hors champ.
 - Démo publique, licence du projet et publication open source encore en attente.
 
 Les résultats automatiques datés du [lot 10](./docs/qa/lot10-local.md) ne
