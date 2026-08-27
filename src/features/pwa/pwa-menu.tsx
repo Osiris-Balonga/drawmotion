@@ -10,6 +10,7 @@ import {
 import { t } from "@/i18n"
 import { usePwa } from "./use-pwa"
 import { useInstallation } from "./use-installation"
+import { UpdateStatus } from "./update-status"
 
 const statusMessages = {
   unavailable: "pwa.unavailable",
@@ -73,6 +74,14 @@ export function PwaMenu() {
           >
             {t("pwa.retry")}
           </Button>
+        )}
+        {state.buildId && (
+          <UpdateStatus
+            state={state.update}
+            onCheck={() => {
+              void client.checkForUpdate(true)
+            }}
+          />
         )}
         <div className="border-border flex flex-col gap-2 border-t pt-3">
           {installation.standalone ? (
