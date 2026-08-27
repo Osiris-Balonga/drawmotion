@@ -86,10 +86,10 @@ test("an update waits for both windows to close, then starts B offline with the 
     })
     server.switchBuild(buildB)
     const requestStart = server.requests.length
+    // A new visit checks automatically. A manual click can race that check
+    // and wait forever on the correctly disabled button once B is ready.
+    await second.reload()
     await first.getByText("Stockage et mises à jour", { exact: true }).click()
-    await first
-      .getByRole("button", { name: "Rechercher une mise à jour" })
-      .click()
     await expect(
       first.locator('[data-update-state="waiting-for-close"]'),
     ).toBeVisible({ timeout: 60_000 })
@@ -213,10 +213,9 @@ test("an interrupted B download leaves the previous version ready offline", asyn
       .getAttribute("content")
     server.switchBuild(buildB)
     server.fail("index.html")
+    await page.reload()
+    await menu(page)
     await page.getByText("Stockage et mises à jour", { exact: true }).click()
-    await page
-      .getByRole("button", { name: "Rechercher une mise à jour" })
-      .click()
     await expect(page.locator('[data-update-state="failed"]')).toBeVisible({
       timeout: 60_000,
     })
