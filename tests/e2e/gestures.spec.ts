@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises"
+import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 import {
   activateCamera,
@@ -227,10 +228,10 @@ test("denied camera explains recovery and a retry starts a real video stream", a
   ).toBeDisabled()
   await page.getByRole("button", { name: "Réessayer", exact: true }).click()
   await expect(
-    page.getByRole("button", { name: "Mettre la caméra en pause" }),
+    page.getByLabel("Mettre la caméra en pause", { exact: true }),
   ).toBeEnabled()
   await expect(page.getByLabel("Flux vidéo local")).toBeVisible()
-  await page.getByRole("button", { name: "Mettre la caméra en pause" }).click()
+  await page.getByLabel("Mettre la caméra en pause", { exact: true }).click()
   await expect(
     page.getByRole("button", { name: "Reprendre la caméra" }),
   ).toBeVisible()
@@ -313,6 +314,10 @@ test("reduced motion keeps mode feedback visible; unavailable inference explains
   await expect(page.getByRole("alert")).toContainText(
     "Le suivi de la main est indisponible",
   )
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze()
+  expect(accessibility.violations).toEqual([])
   await page
     .getByRole("alert")
     .getByRole("button", { name: "Mettre la caméra en pause" })
