@@ -271,11 +271,18 @@ export const CameraPreview = forwardRef<
         ) : null}
         {state === "ready" && trackingState === "error" ? (
           <div className="camera-preview__error" role="alert">
-            <p className="font-medium">Le suivi de la main est indisponible</p>
-            <p>
-              Essayez une version récente de Chrome ou Edge. Si le problème
-              persiste, rechargez la page après avoir exporté votre dessin.
-            </p>
+            <div className="camera-preview__message">
+              <CircleAlert aria-hidden="true" />
+              <div>
+                <p className="font-medium">
+                  Le suivi de la main est indisponible
+                </p>
+                <p>
+                  Essayez une version récente de Chrome ou Edge. Si le problème
+                  persiste, rechargez la page après avoir exporté votre dessin.
+                </p>
+              </div>
+            </div>
             <Button className="h-11 w-full" onClick={stop}>
               Mettre la caméra en pause
             </Button>

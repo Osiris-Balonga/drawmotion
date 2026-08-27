@@ -55,15 +55,16 @@ describe("CameraPreview", () => {
     const { adapter } = createAdapter()
 
     render(<CameraPreview adapterFactory={() => adapter} />)
-    await user.click(screen.getByRole("button", { name: "Activer ma caméra" }))
+    const cameraControl = screen.getByRole("button", {
+      name: "Activer ma caméra",
+    })
+    await user.click(cameraControl)
 
     expect(await screen.findByText("Caméra active")).toBeInTheDocument()
     expect(screen.getByLabelText("Flux vidéo local")).not.toHaveAttribute(
       "hidden",
     )
-    await user.click(
-      screen.getByRole("button", { name: "Mettre la caméra en pause" }),
-    )
+    await user.click(cameraControl)
 
     expect(adapter.stop).toHaveBeenCalledOnce()
     expect(screen.getByText("Caméra en pause")).toBeInTheDocument()

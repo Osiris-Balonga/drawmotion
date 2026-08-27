@@ -1346,6 +1346,18 @@ button.camera-preview__viewport:disabled {
   }
 }
 
+@media (max-height: 32rem) {
+  .camera-preview__error {
+    max-height: calc(100svh - 15.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .camera-preview__error > * {
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 39.999rem), (max-width: 47.999rem) and (pointer: coarse) {
   .workspace-topbar,
   .workspace-main,
