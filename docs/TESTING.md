@@ -169,8 +169,12 @@ Références : [projets Vitest](https://v4.vitest.dev/guide/projects),
 
 ## Exécution sur machine limitée ou navigateur installé
 
-Pour une machine occupée, `pnpm test:e2e --workers=1` exécute exactement les
-mêmes tests en série, sans retry ni augmentation des délais.
+Les parcours navigateur utilisent un seul worker par défaut, en local et en
+CI, pour ne pas faire concurrencer l'inférence et les scans d'accessibilité.
+Les tests et délais sont inchangés, sans retry. C'est aussi la
+[recommandation Playwright pour la CI](https://playwright.dev/docs/ci#workers).
+Sur une machine suffisamment puissante, `pnpm test:e2e --workers=2` reste
+possible ; vérifier la stabilité avant de généraliser la concurrence.
 
 Pour vérifier un navigateur déjà installé, dans PowerShell :
 

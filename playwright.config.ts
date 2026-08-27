@@ -5,7 +5,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  workers: 2,
+  // Camera inference and accessibility scans compete for the same CPU/GPU.
+  // Keep runs reproducible on ordinary laptops and shared CI runners.
+  workers: 1,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://127.0.0.1:4175",
