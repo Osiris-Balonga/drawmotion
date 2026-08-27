@@ -1,0 +1,73 @@
+name: Release draft
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    name: Verify tag and prepare draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tagged source and main history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+
+      - name: Validate release metadata
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const tag = process.env.RELEASE_TAG;
+          assert(/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(tag), 'Only stable vX.Y.Z tags are allowed');
+          const version = tag.slice(1);
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          assert.equal(pkg.version, version, 'Tag and package version differ');
+          const changelog = readFileSync('CHANGELOG.md', 'utf8');
+          assert(changelog.split('\n').some(line => line.startsWith(`## ${version} — `)), 'Missing final changelog entry');
+          for (const file of ['LICENSE', 'docs/THIRD_PARTY.md', 'docs/RELEASE.md', `docs/qa/v${version}.md`]) {
+            assert(readFileSync(file, 'utf8').trim().length > 0, `Missing release document: ${file}`);
+          }
+          console.info('Metadata present; human QA and licence review still required before publication.');
+          NODE
+
+      - name: Require an annotated tag at the current main commit
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          test "$(git cat-file -t "refs/tags/$RELEASE_TAG")" = "tag"
+          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse refs/remotes/origin/main)"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse refs/remotes/origin/main)"
+
+      - name: Create draft only (never publish or replace a release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            echo "Release already exists; leaving it untouched."
+            exit 0
+          fi
+          gh release create "$RELEASE_TAG" \
+            --verify-tag --draft --title "DrawMotion $RELEASE_TAG" \
+            --notes-file CHANGELOG.md \
+            "docs/qa/$RELEASE_TAG.md" docs/THIRD_PARTY.md
