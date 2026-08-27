@@ -1,0 +1,234 @@
+@media (max-height: 48rem) {
+  .tool-rail {
+    bottom: var(--space-lg);
+  }
+
+  .canvas-viewport-controls {
+    bottom: var(--space-lg);
+  }
+
+  .camera-preview__viewport {
+    width: 8rem;
+  }
+
+  .gesture-coach {
+    right: var(--space-lg);
+    bottom: 6rem;
+    left: var(--space-lg);
+    min-height: 6rem;
+  }
+
+  .gesture-coach__actions {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 96rem) {
+  .camera-preview {
+    width: 12rem;
+  }
+
+  .camera-preview__viewport {
+    width: 12rem;
+  }
+}
+
+@media (min-width: 40rem) and (max-width: 80rem) {
+  .workspace-topbar {
+    top: var(--space-md);
+    right: var(--space-md);
+    left: var(--space-md);
+  }
+
+  .workspace-topbar__brand {
+    padding-inline: var(--space-sm) var(--space-md);
+  }
+
+  .workspace-topbar__export {
+    min-width: 3.25rem;
+    padding-inline: var(--space-md);
+  }
+
+  .tool-rail {
+    bottom: var(--space-md);
+    max-width: calc(100vw - 2rem);
+  }
+
+  .command-dock__extended {
+    position: absolute;
+    bottom: calc(100% + var(--space-sm));
+    left: 50%;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    padding: var(--space-sm);
+    overflow: visible;
+    background: var(--shell-raised);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 0.75rem 1.5rem oklch(0.06 0.01 286 / 22%);
+    transform: translateX(-50%);
+    transition:
+      opacity 200ms var(--ease-out-quart),
+      transform 240ms var(--ease-out-quart),
+      visibility 0s;
+  }
+
+  .command-dock__extended-inner {
+    width: auto;
+    max-width: calc(100vw - 3rem);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tool-rail[data-collapsed] .command-dock__extended {
+    max-width: calc(100vw - 2rem);
+    opacity: 0;
+    transform: translateX(-50%) translateY(0.5rem);
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 160ms cubic-bezier(0.4, 0, 1, 1),
+      transform 200ms cubic-bezier(0.4, 0, 1, 1),
+      visibility 0s 200ms;
+  }
+
+  .camera-preview {
+    top: 5.75rem;
+    right: var(--space-md);
+    width: 8rem;
+  }
+
+  .camera-preview__viewport {
+    width: 8rem;
+  }
+
+  .canvas-viewport-controls {
+    right: var(--space-md);
+    bottom: var(--space-md);
+    left: auto;
+  }
+
+  .gesture-coach {
+    right: var(--space-md);
+    bottom: 6.25rem;
+    left: var(--space-md);
+    min-height: 6.5rem;
+    gap: var(--space-md);
+    padding: var(--space-md);
+  }
+
+  .gesture-coach__actions {
+    flex-direction: column;
+  }
+
+  .onboarding-draw-practice {
+    width: min(32rem, 68vw);
+  }
+
+  .gesture-command-palette {
+    width: min(21rem, calc(100vw - 2rem));
+  }
+}
+
+@media (min-width: 40rem) and (max-width: 52rem) {
+  .workspace-topbar__brand p,
+  .workspace-topbar__export-label {
+    display: none;
+  }
+
+  .workspace-topbar__brand {
+    min-width: 3.25rem;
+    padding-inline: var(--space-sm);
+  }
+
+  .workspace-topbar__export {
+    padding-inline: var(--space-sm);
+  }
+}
+
+@media (min-width: 40rem) and (max-width: 47.999rem) {
+  .tool-rail {
+    left: var(--space-md);
+    transform: none;
+  }
+
+  .command-dock__extended {
+    left: 0;
+    transform: none;
+  }
+
+  .tool-rail[data-collapsed] .command-dock__extended {
+    transform: translateY(0.5rem);
+  }
+
+  .gesture-coach {
+    flex-wrap: wrap;
+    max-height: calc(100svh - 11rem);
+    overflow-y: auto;
+  }
+
+  .gesture-coach__actions {
+    flex-direction: row;
+    justify-content: end;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera-preview__gesture-toast {
+    animation: none;
+  }
+}
+
+@media (max-height: 32rem) {
+  .camera-preview__error {
+    max-height: calc(100svh - 15.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .camera-preview__error > * {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 39.999rem), (max-width: 47.999rem) and (pointer: coarse) {
+  .workspace-topbar,
+  .workspace-main,
+  .skip-link {
+    display: none;
+  }
+
+  .mobile-workspace-notice {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-skip-link);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    padding: var(--space-2xl);
+    color: var(--canvas-foreground);
+    background: var(--canvas);
+  }
+
+  .mobile-workspace-notice > svg {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    color: var(--primary);
+  }
+
+  .mobile-workspace-notice h1 {
+    font-size: 1.125rem;
+    font-weight: 650;
+    text-wrap: balance;
+  }
+
+  .mobile-workspace-notice p {
+    max-width: 38ch;
+    margin-top: var(--space-xs);
+    color: var(--canvas-foreground);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+}
