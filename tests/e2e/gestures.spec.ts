@@ -235,3 +235,59 @@ test("denied camera explains recovery and a retry starts a real video stream", a
     page.getByRole("button", { name: "Reprendre la caméra" }),
   ).toBeVisible()
 })
+
+test("lost-hand notice stays legible below the camera across tablet and desktop sizes", async ({
+  page,
+}, testInfo) => {
+  await page.getByRole("button", { name: "Passer le tutoriel" }).click()
+  await activateCamera(page)
+  const camera = page.getByRole("button", { name: "Mettre la caméra en pause" })
+  for (const viewport of [
+    { width: 860, height: 594 },
+    { width: 782, height: 600 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await aimAt(page, { x: 0.5, y: 0.3 })
+    const cameraBefore = await camera.boundingBox()
+    await playHands(page, [[], [], [], []])
+    const notice = page
+      .getByRole("status")
+      .filter({ hasText: "Main non détectée" })
+    await expect(notice).toBeVisible()
+    const geometry = await notice.evaluate((element) => {
+      const label = element.querySelector("span")!
+      const range = document.createRange()
+      range.selectNodeContents(label)
+      const rect = element.getBoundingClientRect()
+      const camera = document
+        .querySelector(".camera-preview__viewport")!
+        .getBoundingClientRect()
+      const icon = element.querySelector("svg")!.getBoundingClientRect()
+      return {
+        lines: range.getClientRects().length,
+        rightOffset: Math.abs(rect.right - camera.right),
+        gap: rect.top - camera.bottom,
+        inside: rect.left >= 0 && rect.right <= innerWidth,
+        iconWidth: icon.width,
+      }
+    })
+    expect(
+      geometry.lines,
+      `${viewport.width}px: keep the short notice on one line`,
+    ).toBe(1)
+    expect(geometry.rightOffset).toBeLessThan(1)
+    expect(geometry.gap).toBeGreaterThanOrEqual(8)
+    expect(geometry.inside).toBe(true)
+    expect(geometry.iconWidth).toBeGreaterThan(15)
+    expect(await camera.boundingBox()).toEqual(cameraBefore)
+    if (viewport.width === 860) {
+      await testInfo.attach("camera-notice-tablet", {
+        body: await page.screenshot(),
+        contentType: "image/png",
+      })
+    }
+  }
+})
