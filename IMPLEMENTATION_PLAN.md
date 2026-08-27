@@ -4,6 +4,13 @@ Statut : plan approuvé à exécuter séquentiellement
 Produit : démonstration technologique web de dessin 2D contrôlé par la main  
 Direction UX : piste C, tutoriel guidé puis toile minimale
 
+Point au 27 août 2026 : prototype fonctionnel et socle du lot 9 en local.
+Le durcissement production (lot 10), la QA réelle et la livraison (lot 11)
+restent à finaliser. Les ajouts du lot 9 sont des simulations de landmarks
+dans Chromium, pas une validation du modèle MediaPipe sur une vidéo réelle.
+La fusion, les checks obligatoires GitHub et la publication nécessitent encore
+la validation du mainteneur ; un test local vert ne vaut pas livraison.
+
 ## 1. Règles d'exécution pour tous les agents
 
 Ce document est la source de vérité. Un agent ne travaille que sur un seul lot à la fois.
@@ -43,7 +50,7 @@ Interdictions permanentes :
 | Icônes      | Lucide React                                                                  |
 | Vision      | `@mediapipe/tasks-vision`, Hand Landmarker, traitement local                  |
 | Dessin      | Canvas 2D natif, deux couches superposées                                     |
-| État UI     | Zustand ; ressources impératives hors store                                   |
+| État UI     | Hooks React actuellement ; ressources impératives hors état UI                |
 | Tests       | Vitest, Testing Library, Playwright, axe-core                                 |
 | Qualité     | ESLint, Prettier, TypeScript, couverture Vitest                               |
 | CI          | GitHub Actions                                                                |
@@ -486,20 +493,23 @@ Critères : aucun trait perdu lors d'un redimensionnement ; undo/redo détermini
 ### Lot 7 — Tutoriel guidé direction C
 
 Branche : `feat/guided-onboarding`  
-PR : `feat: teach DrawMotion in three validated gestures`
+PR : `feat: teach DrawMotion through five validated missions`
 
 Commits exacts :
 
-1. `test(onboarding): specify the three-step progression`
-2. `feat(onboarding): validate hand placement pinch and open-hand steps`
-   - une étape ne passe qu'après détection stable ;
-   - progression `1 sur 3`, `2 sur 3`, `3 sur 3` ;
-   - retour arrière et recommencer.
+1. `test(onboarding): specify the five-mission progression`
+2. `feat(onboarding): validate cursor drawing styling shapes and undo`
+   - viser trois repères avec le curseur, puis pincer/tracer/relâcher ;
+   - ouvrir les commandes par le signe paix (index et majeur levés), choisir
+     le vert et une épaisseur ;
+   - régulariser une forme puis annuler ;
+   - retour arrière, passer le tutoriel et le rejouer.
 3. `feat(onboarding): add contextual gesture guidance`
    - panneau bas non bloquant ;
    - disparaît après réussite ;
-   - revient sur hésitation ou erreur ;
-   - bouton « Revoir les gestes ».
+   - illustrations chargées depuis les assets locaux ;
+   - commande « Revoir le tutoriel » dans le dock ;
+   - ouverture gestuelle des commandes inhibée pendant les missions curseur/dessin.
 4. `feat(onboarding): persist completion locally`
    - stockage versionné ;
    - aucune donnée biométrique ou vidéo ;
@@ -518,7 +528,9 @@ Commits exacts :
 1. `feat(tools): add pen eraser color and thickness controls`
    - toutes les commandes utilisables par souris et clavier ;
    - état actif annoncé aux technologies d'assistance ;
-   - sélection par pointeur gestuel et pincement.
+   - sélection par pincement dans la palette gestuelle dédiée, pas sur le dock ;
+   - mêmes réglages dans les deux interfaces, avec épaisseur de gomme séparée ;
+   - couleur personnalisée HEX/RGB uniquement dans le dock.
 2. `feat(history): expose undo redo and clear-canvas actions`
    - `Ctrl+Z`, `Ctrl+Y` et `Ctrl+Shift+Z` ;
    - confirmation shadcn `AlertDialog` avant effacement ;
@@ -528,12 +540,14 @@ Commits exacts :
    - résolution physique du Canvas ;
    - nom `drawmotion-YYYY-MM-DD-HHmmss.png` ;
    - toast succès/échec avec Sonner.
-4. `feat(shortcuts): add pen eraser and pause keyboard commands`
-   - `P` stylo, `E` gomme, `Espace` pause ;
+4. `feat(shortcuts): add tool and viewport keyboard commands`
+   - `P` stylo, `E` gomme, `Espace` + glisser pour déplacer la toile ;
    - raccourcis désactivés quand un contrôle saisissable a le focus.
 5. `test(tools): cover destructive confirmation and export behavior`
 
-Critère : chaque fonction demandée est accessible sans geste et avec les gestes.
+Critère : les réglages usuels sont utilisables à la souris/clavier et depuis
+les commandes gestuelles ; le sélecteur HEX/RGB reste volontairement hors
+gestes. Le dessin lui-même nécessite actuellement le suivi de la main.
 
 ### Lot 9 — E2E, accessibilité et robustesse
 
@@ -542,22 +556,29 @@ PR : `test: harden DrawMotion end to end`
 
 Commits exacts :
 
-1. `test(e2e): configure deterministic fake camera playback`
-   - fixture vidéo Y4M courte et licenciée ;
-   - Chromium avec faux périphérique et permission automatique ;
-   - aucune dépendance à une webcam CI réelle.
+1. `test(e2e): configure deterministic gesture camera fixtures`
+   - Chromium avec son faux périphérique vidéo intégré et permission automatique ;
+   - script Worker de test servant des séquences de landmarks synthétiques ;
+   - vrais MediaStream, transferts ImageBitmap, classification, filtres et moteur ;
+   - aucune vidéo personnelle, aucun crochet de test livré dans le code applicatif ;
+   - le modèle MediaPipe/WASM est remplacé : ses assets, performances et précision
+     doivent être vérifiés séparément avec une vraie caméra avant livraison.
 2. `test(e2e): cover first-run drawing and PNG export`
-   - permission -> tutoriel -> trait -> couleur -> épaisseur -> undo -> redo -> export.
+   - caméra -> cinq missions -> persistance -> trait -> gomme -> undo -> redo -> PNG ;
+   - couleur/épaisseur sélectionnées par vrai pincement sur la palette ;
+   - assertions sur les pixels Canvas et sur le fichier PNG téléchargé et décodé.
 3. `test(e2e): cover camera failures and tracking loss`
 4. `test(a11y): enforce automated accessibility checks`
-   - axe-core sur accueil, tutoriel et workspace ;
-   - navigation clavier complète des outils ;
-   - focus visible et ordre logique.
+   - axe-core sur tutoriel, réglages du trait, couleur personnalisée et commandes ;
+   - parcours clavier du popover : Tab, flèches, sélection, Échap et retour du focus ;
+   - contrôle manuel complémentaire des lecteurs d'écran, du focus visible et du zoom.
 5. `ci: require Chromium end-to-end tests`
    - job `e2e-chromium` ;
    - artefacts en cas d'échec.
 
-Après le premier run vert, ajouter `e2e-chromium` aux checks obligatoires de `dev`.
+Le job `e2e-chromium` est configuré ; les détails et limites figurent dans
+`docs/TESTING.md`. Après le premier run GitHub vert et accord du mainteneur,
+ajouter ce job aux checks obligatoires de `dev` (pas fait par les tests locaux).
 
 ### Lot 10 — Sécurité, performance et compatibilité
 
@@ -571,8 +592,8 @@ Commits exacts :
    - FPS détection, latence médiane et p95 en mode développement ;
    - aucune télémétrie distante.
 2. `fix(responsive): harden supported desktop viewport layouts`
-   - 1280×720 minimum ;
-   - écrans plus petits : message de compatibilité actionnable ;
+   - ordinateurs et tablettes, dont 782×600 et 768×1024 déjà couverts dans Chromium ;
+   - mobiles : message de compatibilité actionnable, pas de promesse de prise en charge ;
    - zoom navigateur 200 % pour les contrôles.
 3. `chore(security): add restrictive production headers`
    - `vercel.json` et test de fumée des headers ;
@@ -625,12 +646,14 @@ Procédure :
 
 ## 9. Couverture et stratégie de test
 
-Seuils minimaux :
+Seuils actuellement appliqués à la couverture globale Vitest :
 
-- `core/gestures` : 95 % lignes, 90 % branches ;
-- `core/drawing` : 95 % lignes, 90 % branches ;
-- `infrastructure/camera` : 90 % lignes ;
-- ensemble du projet : 80 % lignes, 75 % branches.
+- 80 % lignes, fonctions et instructions ; 75 % branches.
+
+Les objectifs initiaux par domaine (95 % lignes/90 % branches pour gestes et
+dessin, 90 % lignes pour caméra) ne sont pas des seuils configurés aujourd'hui.
+Ne pas les annoncer comme imposés par la CI. Le nettoyage n'a pas abaissé les
+seuils existants. Répartition, commandes et critères d'ajout : `docs/TESTING.md`.
 
 Les tests doivent vérifier des comportements, pas les détails internes de React. Les snapshots visuels ne remplacent pas les assertions fonctionnelles.
 
@@ -640,7 +663,7 @@ La webcam CI est toujours simulée. Une vraie webcam reste obligatoire pour la r
 
 DrawMotion v1 est terminé uniquement si :
 
-- un nouvel utilisateur comprend et réussit les trois gestes en moins de deux minutes ;
+- un nouvel utilisateur comprend les gestes et réussit les cinq missions en moins de deux minutes ;
 - stylo, gomme, couleurs, épaisseur, effacement, undo, redo et export PNG fonctionnent ;
 - la perte de main termine le trait sans artefact ;
 - la vidéo et les landmarks ne quittent jamais l'appareil ;

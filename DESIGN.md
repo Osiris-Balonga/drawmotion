@@ -16,7 +16,7 @@ La composition reprend la clarté de Figma, l'immédiateté d'Excalidraw et la l
 **Key Characteristics:**
 
 - toile blanche dominante et chrome sombre restreint ;
-- apprentissage progressif en trois étapes ;
+- apprentissage progressif en cinq missions illustrées ;
 - une seule couleur de marque visible à la fois ;
 - états techniques exprimés en langage humain ;
 - mouvement réservé au feedback et aux transitions d'état.
@@ -78,7 +78,10 @@ Le système est plat par défaut. La profondeur provient d'abord des différence
 
 ## Components
 
-Les composants définitifs seront documentés après leur génération par shadcn/ui avec Base UI. La coque initiale utilisera des boutons compacts, des tooltips concis, un rail vertical, une instruction contextuelle inférieure et un aperçu caméra circulaire.
+Les composants shadcn/ui reposent sur Base UI. La coque utilise des îlots
+supérieurs flottants, un dock inférieur repliable, des commandes gestuelles
+contextuelles, un tutoriel illustré et un aperçu caméra circulaire. Les
+indications de mode apparaissent temporairement sous la caméra.
 
 ### Buttons
 
@@ -89,7 +92,12 @@ Les composants définitifs seront documentés après leur génération par shadc
 
 ### Navigation
 
-Une barre supérieure compacte contient la marque, annuler, rétablir et exporter. Sous cette barre, la toile blanche occupe toute la surface disponible. Le rail d’outils, l’aperçu caméra et l’instruction contextuelle flottent directement au-dessus de la toile, sans colonne réservée ni cadre périphérique. Tous restent utilisables au clavier et à la souris.
+La marque, l'historique et l'export forment des îlots séparés au-dessus de la
+toile pleine fenêtre. Le dock inférieur regroupe outils, épaisseurs, styles,
+précision et couleurs ; sa partie étendue se replie sur tablette. Les contrôles
+de zoom, l'aperçu caméra et l'instruction flottent sans colonne réservée.
+Ces commandes restent utilisables au clavier et à la souris. Le pincement
+sélectionne uniquement les grandes cibles de la palette gestuelle dédiée.
 
 ## Do's and Don'ts
 
