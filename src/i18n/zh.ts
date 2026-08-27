@@ -1,6 +1,13 @@
 import type { Messages } from "./en"
 
 export const zh = {
+  "pwa.installed": "已作为安装的应用打开。",
+  "pwa.install": "安装 DrawMotion",
+  "pwa.installHelp":
+    "使用浏览器的“安装应用”选项。在 iPad 上：Safari → 分享 → 添加到主屏幕。仅安装应用并不会准备离线资源。",
+  "pwa.persist": "请求保留本地存储",
+  "pwa.storageGranted": "已获准持久存储",
+  "pwa.storageDenied": "浏览器未批准持久存储。你仍可继续绘画，请导出重要作品。",
   "pwa.menu": "安装与离线",
   "pwa.title": "随时使用 DrawMotion",
   "pwa.description": "联网准备一次，即可离线绘画。准备过程中不会开启摄像头。",

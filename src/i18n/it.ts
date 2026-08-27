@@ -1,6 +1,14 @@
 import type { Messages } from "./en"
 
 export const it = {
+  "pwa.installed": "Aperta come applicazione installata.",
+  "pwa.install": "Installa DrawMotion",
+  "pwa.installHelp":
+    "Usa «Installa app» nel browser. Su iPad: Safari → Condividi → Aggiungi alla schermata Home. L’installazione da sola non prepara le risorse offline.",
+  "pwa.persist": "Richiedi archiviazione locale persistente",
+  "pwa.storageGranted": "Archiviazione persistente autorizzata",
+  "pwa.storageDenied":
+    "Il browser non ha autorizzato l’archiviazione persistente. Puoi continuare a disegnare; esporta i disegni importanti.",
   "pwa.menu": "Installazione e offline",
   "pwa.title": "Porta DrawMotion con te",
   "pwa.description":

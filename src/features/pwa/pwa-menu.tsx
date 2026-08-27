@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover"
 import { t } from "@/i18n"
 import { usePwa } from "./use-pwa"
+import { useInstallation } from "./use-installation"
 
 const statusMessages = {
   unavailable: "pwa.unavailable",
@@ -22,6 +23,7 @@ const statusMessages = {
 
 export function PwaMenu() {
   const { state, client } = usePwa()
+  const installation = useInstallation()
   const busy = state.offline === "preparing" || state.offline === "verifying"
   return (
     <Popover>
@@ -72,6 +74,45 @@ export function PwaMenu() {
             {t("pwa.retry")}
           </Button>
         )}
+        <div className="border-border flex flex-col gap-2 border-t pt-3">
+          {installation.standalone ? (
+            <p>{t("pwa.installed")}</p>
+          ) : installation.canPrompt ? (
+            <Button variant="secondary" onClick={installation.install}>
+              {t("pwa.install")}
+            </Button>
+          ) : (
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {t("pwa.installHelp")}
+            </p>
+          )}
+          {installation.storage !== "unavailable" && (
+            <>
+              <Button
+                variant="ghost"
+                disabled={
+                  installation.storage === "granted" ||
+                  installation.storage === "requesting"
+                }
+                onClick={() => {
+                  void installation.persist()
+                }}
+                className="h-auto min-h-10 whitespace-normal"
+              >
+                {t(
+                  installation.storage === "granted"
+                    ? "pwa.storageGranted"
+                    : "pwa.persist",
+                )}
+              </Button>
+              {installation.storage === "denied" && (
+                <p role="status" className="text-muted-foreground text-xs">
+                  {t("pwa.storageDenied")}
+                </p>
+              )}
+            </>
+          )}
+        </div>
         <p className="text-muted-foreground text-xs leading-relaxed">
           {t("pwa.limits")}
         </p>
