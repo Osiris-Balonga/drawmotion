@@ -43,6 +43,10 @@ Dated results: [batch 10 local validation](qa/lot10-local.md).
   Private browsing, storage limits and denied storage may prevent retention;
   export important drawings. Failed saves display an export warning.
 - Pausing or moving the tab into the background stops the camera.
+- Offline preparation stores static application resources in an app-scoped
+  Cache Storage cache. It never caches camera frames, exports or landmarks.
+  An installed service worker checks its origin for updates on later visits
+  and occasionally when returning to the app; there is no telemetry endpoint.
 - Development diagnostics contain only timings and counters and are excluded
   from the production build.
 
@@ -76,7 +80,58 @@ video and a physical device.
 budgets of 800 KiB raw JS, 250 KiB gzip JS, and 100 KiB raw CSS. The prototype is
 approximately 640 KiB raw JS / 200 KiB gzip and 71 KiB CSS. Model/WASM files are
 excluded, checked separately by `pnpm verify:vision-assets`, and loaded when
-tracking starts.
+tracking starts, or during an explicitly requested offline preparation.
+The offline cache is budgeted at 60 MiB total, with a 16 MiB per-file ceiling.
+The service worker has separate limits of 100 KiB raw and 35 KiB gzip.
+
+## Offline use and recovery
+
+Offline mode is available in production builds on supported secure browsers,
+not in the Vite development server. Prepare once while online from the menu
+beside the app name. It downloads approximately 50 MB, including every supported
+MediaPipe runtime, fonts, tutorial illustrations and license notices. It does
+not turn on the camera or save a video.
+
+The first preparation reports **Prepared: close and reopen**, because the
+current document is not controlled by the new worker. Close all DrawMotion
+windows and reopen; **Ready for offline use** means the controlling worker
+verified that all its resources exist in its cache. That state is rechecked
+on later launches and when returning to the app. A network icon or
+`navigator.onLine` is not proof of readiness.
+
+Installing an app icon is separate from preparing offline resources. If an
+install button is unavailable, use browser controls; Safari on iPad provides
+Share → Add to Home Screen. These instructions do not certify physical iPad
+camera compatibility. Installed apps may use different storage from a browser
+tab on some platforms: prepare and verify inside the installed app too.
+
+Browser eviction, private browsing, clearing site data and low disk space can
+remove resources. Optional persistent storage is a browser decision, applies
+to the origin and is not a backup. Declining it does not disable drawing.
+Export important drawings. A first-ever visit without any connection cannot
+prepare the application.
+
+Updates download in the background but never reload a drawing session. A ready
+update waits until every old-version tab or installed window closes. Refreshing
+one of two open windows intentionally keeps the old version. Closing one app
+window does not close other copies. A failed update leaves the old version
+usable; the update state is separate from current offline readiness.
+
+If preparation fails, reconnect and retry. If verification still fails with
+an unchanged worker (for example after partial cache eviction):
+
+1. Export the drawing while the canvas is still open. Close other DrawMotion
+   windows. Do not use the browser's **Clear all site data** action.
+2. In developer tools, unregister only the service worker whose scope is this
+   DrawMotion URL (normally `/drawmotion/`). Delete only its cache, named
+   `drawmotion-precache-v2-%2Fdrawmotion%2F` for that scope. On root hosting the
+   suffix is `%2F`. Leave other projects' registrations and caches alone.
+3. Preserve Local Storage, especially `drawmotion:drawing` and tutorial state.
+   Reopen online, prepare again, close/reopen and verify readiness.
+
+Re-registering an identical script does not guarantee a damaged cache is
+rebuilt. DrawMotion deliberately does not automatically erase caches or drafts
+as a repair attempt.
 
 ## Static-host security
 

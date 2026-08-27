@@ -43,7 +43,7 @@ After QA and explicit maintainer approval:
    drawing, PNG, and `pnpm verify:deployment <HTTPS-URL>/`.
 
 GitHub Pages is deployed by the `deploy-pages` job in `ci.yml`, on `main` only.
-It depends on quality, unit coverage, build, and Chromium jobs and publishes
+It depends on quality, unit coverage, build, Chromium, and PWA jobs and publishes
 the exact tested artifact, not a fresh rebuild. Pages uses the `github-pages`
 environment with short-lived GitHub OIDC credentials; no deployment token is
 stored in the repository. Repository Settings > Pages must use GitHub Actions.
@@ -98,6 +98,20 @@ to `main`, and let CI deploy the rebuilt artifact. Recheck the page, camera,
 PNG, and deployment verification. Record the date, URL, SHA, and outcome.
 A written procedure is not an executed rollback test. Do not move published
 tags or force-push to undo a release.
+
+Once a PWA is distributed, rollback must also ship a corrected worker at the
+same `sw.js` URL and scope. Removing the worker file or reverting to pre-PWA
+HTML alone can strand existing installations on cached code. Prefer a forward
+fix with the normal cache revisions and a compatible drawing schema. Do not
+force activation, purge Local Storage, or delete unrelated origin caches.
+Existing windows must close before the fix activates; offline clients cannot
+receive it until they reconnect. Validate rollback using two built versions
+and record the result separately from the normal A/B upgrade test.
+
+Before promoting PWA changes, complete the
+[offline release checks](qa/v1.0.0.md#offline-release-checks). The CI `pwa` job
+is a deployment dependency; add it to repository-required PR checks through
+maintainer-approved settings if branch protection uses an explicit list.
 
 ## 4. Tag and draft GitHub Release
 
