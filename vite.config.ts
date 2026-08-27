@@ -7,14 +7,17 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import { resolveSeo, seoPlugin } from "./scripts/seo.ts"
 import { documentCsp } from "./scripts/security-policy.ts"
+import { buildId, pwaPlugins } from "./scripts/pwa-config.ts"
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 const { canonical } = resolveSeo(process.env)
+const base = canonical ? new URL(canonical).pathname : "/"
 
 export default defineConfig({
   // One real route; unknown URLs should stay 404 rather than become soft 404s.
   appType: "mpa",
-  base: canonical ? new URL(canonical).pathname : "/",
+  base,
+  define: { __BUILD_ID__: JSON.stringify(buildId) },
   plugins: [
     react(),
     tailwindcss(),
@@ -46,6 +49,7 @@ export default defineConfig({
         })
       },
     },
+    ...pwaPlugins(base),
   ],
   build: {
     license: { fileName: "licenses/bundled.md" },

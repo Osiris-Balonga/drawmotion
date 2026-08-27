@@ -1,0 +1,13 @@
+diff --git a/dist/index.d.mts b/dist/index.d.mts
+index 1039561e03be3c737b0bc3f2838f6a1333637be0..003aa85f701e211bd6725cbbb02a654a4db79dd3 100644
+--- a/dist/index.d.mts
++++ b/dist/index.d.mts
+@@ -4,7 +4,7 @@ import { L as LoadConfigOptions, a as LoadConfigResult } from './shared/unconfig
+ export { B as BuiltinParsers, C as CustomParser, b as LoadConfigSource, S as SearchOptions, d as defaultExtensions } from './shared/unconfig.Bryl7mAo.mjs';
+ 
+ declare function createConfigLoader<T>(options: LoadConfigOptions): {
+-    load: quansync_types.QuansyncFn<LoadConfigResult<T>, [force?: Args[0] | undefined]>;
++    load: quansync_types.QuansyncFn<LoadConfigResult<T>, [force?: boolean | undefined]>;
+     findConfigs: quansync_types.QuansyncFn<string[], []>;
+ };
+ declare const loadConfig: {

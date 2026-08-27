@@ -26,5 +26,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/workers/sw.ts"]
 }
