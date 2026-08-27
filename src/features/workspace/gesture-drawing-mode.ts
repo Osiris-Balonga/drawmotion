@@ -1,6 +1,5 @@
 import type { GestureKind } from "@/core/gestures/gesture-classifier"
 import type { PinchPhase } from "@/core/gestures/pinch-detector"
-import type { DrawingTool } from "@/features/toolbar/drawing-tools"
 import type { TrackingQuality } from "@/infrastructure/mediapipe/hand-tracking-session"
 
 export type GestureDrawingMode = {
@@ -13,7 +12,6 @@ type ResolveGestureDrawingModeOptions = {
   gesture: GestureKind
   pinchPhase: PinchPhase
   quality: TrackingQuality
-  activeTool: DrawingTool
   hasReliablePoint: boolean
 }
 

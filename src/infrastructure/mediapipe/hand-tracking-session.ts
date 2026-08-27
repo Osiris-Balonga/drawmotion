@@ -1,5 +1,4 @@
 import type {
-  HandTrackerMetrics,
   HandTrackerOptions,
   HandTrackerPort,
   HandTrackingResult,
@@ -10,7 +9,6 @@ export type TrackingQuality = "reliable" | "uncertain" | "lost"
 
 type SessionCallbacks = {
   onResult(result: HandTrackingResult, quality: TrackingQuality): void
-  onMetrics?(metrics: HandTrackerMetrics): void
   onError(error: Error): void
 }
 
