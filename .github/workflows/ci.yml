@@ -103,6 +103,9 @@ jobs:
       - name: Build production assets
         run: pnpm build
 
+      - name: Check application and Worker bundle budgets
+        run: pnpm verify:bundle
+
       - name: Upload production build
         uses: actions/upload-artifact@v5
         with:
