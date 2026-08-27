@@ -46,6 +46,12 @@ Bilan daté des exécutions : [validation locale du lot 10](./qa/lot10-local.md)
 - Les diagnostics de développement ne contiennent que des timings et
   compteurs ; ils sont absents du build de production.
 
+Ces constats portent sur le paquet et le build vérifiés, pas sur toutes les
+versions de MediaPipe. La [notice amont](https://github.com/google-ai-edge/mediapipe#privacy-notice)
+mentionne des métriques selon les API : toute mise à jour exige de refaire le
+contrôle réseau sous CSP. Les tests actuels n'observent aucune connexion tierce
+lors du chargement et de l'inférence locale.
+
 ## Performances
 
 Une seule image est transférée au Worker à la fois. Une seconde peut attendre

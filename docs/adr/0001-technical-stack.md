@@ -15,10 +15,15 @@ DrawMotion est une application web cliente, centrée sur la webcam, l'inférence
 - shadcn/ui avec le preset Base Nova et les primitives Base UI, sources possédées par le projet ;
 - MediaPipe Tasks Vision dans un Web Worker ;
 - Canvas 2D natif à deux couches ;
-- Zustand pour l'état UI uniquement ;
+- hooks React pour l'état UI et refs pour le flux vidéo impératif ;
 - Vitest, Testing Library et Playwright pour les tests ;
 - Vercel pour previews HTTPS et production.
 
 ## Conséquences
+
+Amendement du 27 août 2026 : Zustand était prévu dans le plan initial, mais
+n'a pas été introduit. L'état appartient au workspace et à ses hooks de
+gestes, de navigation et de tutoriel. Aucun store global n'est nécessaire
+pour le périmètre actuel.
 
 Le moteur de dessin, l'interprétation gestuelle et la caméra restent indépendants de React. Les assets MediaPipe sont hébergés localement. Toute nouvelle dépendance doit réduire une complexité mesurable et être justifiée dans sa pull request.

@@ -3,15 +3,13 @@
 ## État de la candidate
 
 `1.0.0-rc.1` est une version **locale non publiée**. Elle identifie la préparation
-du lot 11, sans promettre que la QA finale est terminée. Ne pas ajouter de tag
+de la livraison, sans promettre que la QA finale est terminée. Ne pas ajouter de tag
 ou passer en `1.0.0` avant validation du mainteneur.
 
-La préparation continue exceptionnellement sur la branche existante
-`feat/immersive-workspace-onboarding` : les lots précédents ne sont pas encore
-intégrés à `dev`. Ne pas créer une release depuis le `dev` ancien ni réécrire
-l'historique. Faire valider la séquence des PR et intégrer les lots précédents
-avant de créer `release/v1.0.0` depuis `dev`, comme prévu par
-[l'ADR Git](./adr/0002-git-and-release-strategy.md).
+La branche de release doit partir d'un `dev` intégrant les changements validés.
+Si des travaux sont encore sur une branche de fonctionnalité, les intégrer par
+PR avant de préparer la release. Ne pas publier depuis un `dev` périmé ni
+réécrire l'historique. Voir [l'ADR Git](./adr/0002-git-and-release-strategy.md).
 
 ## 1. Préparer et tester
 
@@ -19,6 +17,7 @@ avant de créer `release/v1.0.0` depuis `dev`, comme prévu par
    avec `pnpm exec playwright install chromium`.
 2. Exécuter `pnpm validate`, `pnpm test:coverage`, `pnpm verify:vision-assets`,
    `pnpm build`, `pnpm verify:bundle` et `pnpm audit --audit-level high`.
+   Le build inclut la génération et la vérification des notices de licences.
    Garder les opérations lourdes séquentielles sur une machine limitée.
 3. Après autorisation de push, ouvrir les PR vers `dev` dans l'ordre ; attendre
    la CI distante et la preview HTTPS. Conserver les commits atomiques.
@@ -82,6 +81,5 @@ finale, joindre les liens de déploiement/QA, puis publier **sur instruction
 explicite**. Rendre le dépôt public est une décision distincte, jamais un
 effet secondaire de ce workflow.
 
-Référence vérifiée : [GitHub CLI — création de release](https://cli.github.com/manual/gh_release_create)
-(`--draft`, `--verify-tag`). Le guide de livraison utilisé a conduit à garder
-préparation, validation et promotion séparées, sans déploiement automatique ajouté.
+Référence : [GitHub CLI — création de release](https://cli.github.com/manual/gh_release_create)
+(`--draft`, `--verify-tag`).

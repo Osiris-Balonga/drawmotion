@@ -1,4 +1,12 @@
-# DrawMotion — plan d'implémentation et de livraison
+# Archive — plan initial d'implémentation
+
+> Document historique, archivé le 27 août 2026. Les décisions ci-dessous
+> décrivent le déroulement initial, pas les instructions actuelles de contribution.
+> Certaines ont été remplacées (état React plutôt que Zustand, interfaces,
+> découpage des tests). Consulter [CONTRIBUTING](../../CONTRIBUTING.md),
+> [l'architecture actuelle](../ARCHITECTURE.md) et [la livraison](../RELEASE.md).
+
+---
 
 Statut : plan approuvé à exécuter séquentiellement  
 Produit : démonstration technologique web de dessin 2D contrôlé par la main  
@@ -178,7 +186,7 @@ Sur un dépôt privé GitHub Free, certaines protections ne sont pas configurabl
 ## 5. Scripts npm obligatoires
 
 Scripts contractuels, actualisés lors du nettoyage des tests. Le découpage et
-les prérequis sont détaillés dans [docs/TESTING.md](./docs/TESTING.md).
+les prérequis sont détaillés dans [docs/TESTING.md](../TESTING.md).
 
 ```json
 {

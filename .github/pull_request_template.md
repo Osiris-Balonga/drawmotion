@@ -1,6 +1,6 @@
 ## Objectif
 
-Décrire en une phrase la capacité livrée et le lot concerné dans `IMPLEMENTATION_PLAN.md`.
+Décrire le problème résolu et le comportement attendu. Lier l'issue si elle existe.
 
 ## Changements
 
@@ -8,10 +8,11 @@ Décrire en une phrase la capacité livrée et le lot concerné dans `IMPLEMENTA
 
 ## Preuves
 
-- [ ] `pnpm validate`
-- [ ] Tests supplémentaires prescrits par le lot
-- [ ] Captures ou rapport manuel joints lorsque le lot le demande
-- [ ] Aucun secret, asset généré ou fichier de build ajouté
+- [ ] Vérifications exécutées indiquées, avec résultats (`pnpm validate` et couverture pour le code)
+- [ ] Régression pertinente couverte ; pas de test répétant ses propres données
+- [ ] Capture ou essai manuel joint si l'interface ou les gestes changent
+- [ ] Aucun secret, fichier privé, rapport ou build ajouté
+- [ ] Provenance et licence des nouveaux assets/dépendances vérifiées, notices conservées
 - [ ] Documentation et ADR mis à jour si une décision a changé
 
 ## Promotion en production
