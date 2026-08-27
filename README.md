@@ -54,6 +54,11 @@ Chaque groupe peut être exécuté séparément avec `pnpm test:unit`,
 Les contrôles d'accessibilité se lancent seuls avec
 `pnpm test:e2e accessibility.spec.ts`, les parcours gestuels avec
 `pnpm test:e2e gestures.spec.ts`.
+Le smoke test de vraie inférence sous CSP se lance avec
+`pnpm test:e2e security.spec.ts` (vidéo factice, modèle/WASM réels).
+
+Compatibilité, confidentialité, diagnostics et vérifications avant publication :
+[guide de compatibilité](./docs/COMPATIBILITY.md) et [sécurité](./SECURITY.md).
 
 Installation navigateur, mode surveillance, conventions et limites :
 [stratégie de tests](./docs/TESTING.md).

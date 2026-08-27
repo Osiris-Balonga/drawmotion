@@ -4,9 +4,10 @@ Statut : plan approuvé à exécuter séquentiellement
 Produit : démonstration technologique web de dessin 2D contrôlé par la main  
 Direction UX : piste C, tutoriel guidé puis toile minimale
 
-Point au 27 août 2026 : prototype fonctionnel et socle du lot 9 en local.
-Le durcissement production (lot 10), la QA réelle et la livraison (lot 11)
-restent à finaliser. Les ajouts du lot 9 sont des simulations de landmarks
+Point au 27 août 2026 : prototype fonctionnel, socle du lot 9 et implémentation
+locale du lot 10. Le lot 10 reste à qualifier sur preview HTTPS et webcam
+physique avant la QA finale et la livraison (lot 11).
+Les ajouts gestuels du lot 9 sont des simulations de landmarks
 dans Chromium, pas une validation du modèle MediaPipe sur une vidéo réelle.
 La fusion, les checks obligatoires GitHub et la publication nécessitent encore
 la validation du mainteneur ; un test local vert ne vaut pas livraison.
@@ -581,6 +582,19 @@ Le job `e2e-chromium` est configuré ; les détails et limites figurent dans
 ajouter ce job aux checks obligatoires de `dev` (pas fait par les tests locaux).
 
 ### Lot 10 — Sécurité, performance et compatibilité
+
+Implémentation locale : file bornée avant transfert, diagnostics bornés en
+développement, réglages accessibles aux formats équivalents à 200 %, panneaux
+défilables, feedback sans animation, erreur de suivi explicite, CSP testée avec
+le vrai Worker/WASM, budgets JS/CSS et workflow sécurité. Dependabot existait
+déjà et est conservé. CodeQL/revue des dépendances sont conditionnels à
+l'éligibilité du dépôt privé (voir `SECURITY.md`). Aucune publication ni
+exécution GitHub distante n'est déduite des résultats locaux.
+
+Les commits restent sur la branche de travail actuelle avec les précédents
+lots locaux ; ne pas recréer artificiellement une branche depuis un `dev`
+non fusionné. La reprise des PR séquentielles nécessite la validation du
+mainteneur. Détails et QA restante : `docs/COMPATIBILITY.md`.
 
 Branche : `chore/production-hardening`  
 PR : `chore: harden DrawMotion for production`

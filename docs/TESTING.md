@@ -109,8 +109,12 @@ Le test de refus simule seulement la première erreur `getUserMedia`, puis
 délègue à l'API native. Aucun hook E2E ni asset vidéo personnel n'est livré
 dans l'application. Les tests n'écrivent pas directement dans son état React.
 
-**Ne sont pas validés par ce dispositif** : chargement/exécution du modèle
-MediaPipe/WASM, reconnaissance d'une vraie main, luminosité/occlusion,
+Le test distinct `security.spec.ts` charge et exécute réellement le Worker,
+le modèle et WASM locaux sous la CSP de production, sur une caméra factice.
+Il vérifie aussi les en-têtes et le blocage d'une connexion externe. Ce n'est
+pas une simulation de l'inférence, mais ce n'est toujours pas une vraie main.
+
+**Ne sont pas validés par ce dispositif** : reconnaissance d'une vraie main, luminosité/occlusion,
 latence matérielle, permission réelle dans chaque navigateur ou compatibilité
 Safari/Firefox. Les invariants du Worker de production sont couverts dans
 Vitest ; les assets ont leur vérification `pnpm verify:vision-assets`.
@@ -198,3 +202,34 @@ Références : [projets Vitest](https://v4.vitest.dev/guide/projects),
 [principes Testing Library](https://testing-library.com/docs/guiding-principles/),
 [duplication des tests](https://martinfowler.com/articles/practical-test-pyramid.html#AvoidTestDuplication),
 [accessibilité avec Playwright](https://playwright.dev/docs/accessibility-testing).
+
+## Compléments du lot 10
+
+- File bornée **avant** l'envoi au Worker synchrone : une image en vol, une
+  remplaçante, fermeture des bitmaps abandonnés ; regression unitaire ciblée.
+- Statistiques roulantes de latence/FPS, bornées et uniquement en développement.
+- Le même parcours de réglage couvre aussi 720×450 et 640×400, équivalents
+  de fenêtres de bureau à 200 %. Il vérifie le panneau complet et l'absence
+  de déplacement de la page après focus, pas seulement la présence de la roue.
+- Réduction de mouvement : feedback de mode encore visible ; échec du Worker :
+  message de récupération et bouton de pause utilisables.
+- Message petit écran vérifié avec axe ; les scans de popover attendent la
+  fin des animations finies avant de mesurer les contrastes (aucune exclusion).
+- `pnpm verify:bundle`, `pnpm verify:vision-assets` et audit des dépendances
+  complètent les tests. Les en-têtes réels sont à vérifier séparément sur HTTPS.
+
+Pour une machine occupée, `pnpm test:e2e --workers=1` exécute exactement les
+mêmes tests en série, sans retry ni augmentation des délais.
+
+Pour vérifier un navigateur déjà installé, dans PowerShell :
+
+```powershell
+$env:E2E_BROWSER_CHANNEL = 'msedge' # ou 'chrome'
+pnpm test:e2e security.spec.ts --workers=1
+Remove-Item Env:E2E_BROWSER_CHANNEL
+```
+
+Le navigateur démarre dans un profil de test isolé ; le profil de l'utilisateur
+et sa webcam ne sont pas utilisés (flux vidéo factice). Sans cette variable,
+la CI utilise le Chromium fourni par Playwright. Ces essais n'attestent pas
+la fluidité du geste réel sur le matériel de l'utilisateur.
