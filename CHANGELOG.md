@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Save the latest drawing and canvas view locally across page reloads, including
+  erasing, assistance and clearing; explain storage failures without blocking drawing.
+- Show pointer cursors on enabled clickable controls, including the dock and navigation.
+- Add the author and a maintainer-approved application preview to the README.
+
 ## 1.0.0-rc.1 — 2026-08-27 (public demo candidate)
 
 ### Features
@@ -36,9 +43,9 @@
 - Quality and latency depend on the webcam, lighting, and hardware; final physical QA is pending.
 - Chrome and Edge on Windows are the initial validation targets. Desktop tests do not certify physical tablets, Safari, or Firefox.
 - Controls support keyboard and mouse, but freehand drawing currently requires a detected hand.
-- No document persistence or collaboration; export before closing the page.
+- No document persistence in this release or collaboration; export before closing the page.
 - PNG captures the visible canvas: zoom out/recenter to include off-screen strokes.
-- Public demo and open-source publication are still pending.
+- Public demo and source are available; stable-release physical QA remains pending.
 
 Dated automated results from [batch 10](docs/qa/lot10-local.md) do not replace
 [final QA](docs/qa/v1.0.0.md).

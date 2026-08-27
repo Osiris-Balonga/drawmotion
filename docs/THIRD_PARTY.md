@@ -51,6 +51,11 @@ icons. MIT covers the maintainer's rights in these assets; it does not guarantee
 exclusivity over generated content or trademark clearance. No personal webcam
 recordings are required by the repository or tests.
 
+`docs/assets/drawmotion-preview.png` is the maintainer-provided application
+screenshot, explicitly approved for the public README on August 27, 2026.
+It includes the camera preview. It is documentation-only and is not shipped
+with the application build or used as a test fixture.
+
 ## Updating notices
 
 1. Update the package and lockfile in the same PR.
