@@ -29,7 +29,7 @@ function classifySequence(ratios: number[], initial: GestureKind) {
   })
 }
 
-describe("gesture jitter and accidental activation resistance", () => {
+describe("gesture pipeline jitter and accidental activation resistance", () => {
   it("does not chatter while a pinched hand jitters inside the dead band", () => {
     expect(
       classifySequence([0.17, 0.19, 0.21, 0.2, 0.23, 0.19], "open-hand"),

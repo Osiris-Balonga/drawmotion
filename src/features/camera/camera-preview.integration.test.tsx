@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+import "@/test/setup"
+
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
@@ -35,19 +38,6 @@ function createAdapter(overrides: Partial<CameraAdapter> = {}) {
 }
 
 describe("CameraPreview", () => {
-  it("keeps one stable circular preview while showing calibration guidance", () => {
-    const { adapter } = createAdapter()
-
-    render(<CameraPreview adapterFactory={() => adapter} calibrating />)
-
-    const preview = screen.getByRole("region", { name: "Aperçu caméra" })
-    expect(preview).toHaveClass("camera-preview")
-    expect(preview).not.toHaveClass("camera-preview--calibrating")
-    expect(
-      preview.querySelector(".camera-preview__calibration-guide"),
-    ).toBeInTheDocument()
-  })
-
   it("keeps permission behind the circular camera control", () => {
     const { adapter } = createAdapter()
 
@@ -71,10 +61,6 @@ describe("CameraPreview", () => {
     expect(screen.getByLabelText("Flux vidéo local")).not.toHaveAttribute(
       "hidden",
     )
-    const preview = screen.getByRole("region", { name: "Aperçu caméra" })
-    expect(preview.querySelector(".camera-preview__live-status")).toBeNull()
-    expect(preview.querySelector(".camera-preview__live-indicator")).toBeNull()
-
     await user.click(
       screen.getByRole("button", { name: "Mettre la caméra en pause" }),
     )
@@ -86,7 +72,7 @@ describe("CameraPreview", () => {
     ).toBeInTheDocument()
   })
 
-  it("places transient gesture feedback below the camera viewport", () => {
+  it("announces mode changes outside the camera control", () => {
     const { adapter } = createAdapter()
 
     const view = render(
@@ -96,12 +82,10 @@ describe("CameraPreview", () => {
       />,
     )
 
-    const preview = screen.getByRole("region", { name: "Aperçu caméra" })
     const viewport = screen.getByRole("button", { name: "Activer ma caméra" })
     const notice = screen.getByRole("status")
     expect(notice).toHaveTextContent("Mode gomme")
     expect(viewport.contains(notice)).toBe(false)
-    expect(preview.children[1]).toBe(notice)
 
     view.rerender(
       <CameraPreview

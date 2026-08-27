@@ -7,14 +7,18 @@ import { GestureCoach, OnboardingPractice } from "./gesture-coach"
 
 describe("GestureCoach", () => {
   it.each([
-    ["cursor", "Le point violet est votre curseur"],
-    ["draw", "Pincez pour poser le stylo"],
-    ["style", "Faites le signe paix pour ouvrir les commandes"],
-    ["shapes", "Transformez un geste en forme nette"],
-    ["correct", "Corrigez sans recommencer"],
+    ["cursor", "Le point violet est votre curseur", "Index tendu"],
+    ["draw", "Pincez pour poser le stylo", "Pouce + index"],
+    [
+      "style",
+      "Faites le signe paix pour ouvrir les commandes",
+      "Signe paix · 0,5 s",
+    ],
+    ["shapes", "Transformez un geste en forme nette", "Cercle assisté"],
+    ["correct", "Corrigez sans recommencer", "Poing pour gommer"],
   ] as const)(
     "announces the %s mission without motion-dependent content",
-    (step, title) => {
+    (step, title, caption) => {
       const state = createOnboardingState(step)
       render(<GestureCoach state={state} onBack={vi.fn()} onSkip={vi.fn()} />)
 
@@ -27,9 +31,7 @@ describe("GestureCoach", () => {
           name: `Progression du tutoriel : mission ${mission + 1} sur 5`,
         }),
       ).toBeInTheDocument()
-      expect(
-        document.querySelector(`[data-lesson-step="${step}"]`),
-      ).toBeInTheDocument()
+      expect(screen.getByText(caption)).toBeInTheDocument()
     },
   )
 
