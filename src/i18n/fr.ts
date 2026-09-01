@@ -164,7 +164,7 @@ export const fr = {
   "commands.label": "Commandes gestuelles",
   "commands.title": "Commandes",
   "commands.back": "Retour aux commandes",
-  "commands.hint": "Pincez pour choisir",
+  "commands.hint": "Maintenez ✌🏾 pour choisir",
   "commands.close": "Fermer les commandes",
   "commands.open": "Ouvrir les commandes",
   "commands.color": "Couleur",
@@ -188,13 +188,13 @@ export const fr = {
     "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
   "tutorial.styleTitle": "Faites le signe paix pour ouvrir les commandes",
   "tutorial.styleDescription":
-    "Tendez l’index et le majeur en signe paix pendant 0,5 seconde, puis choisissez le vert et une autre épaisseur. Le bouton Commandes ou la touche M fonctionne aussi.",
+    "Maintenez le signe paix 0,5 seconde pour ouvrir les commandes. Visez ensuite un choix et gardez le même signe 0,5 seconde pour sélectionner le vert et une autre épaisseur.",
   "tutorial.shapesTitle": "Transformez un geste en forme nette",
   "tutorial.shapesDescription":
-    "Refaites le signe paix, activez Formes, puis dessinez un cercle approximatif.",
+    "Refaites le signe paix, maintenez-le sur Formes pour sélectionner ce mode, puis dessinez un cercle approximatif.",
   "tutorial.correctTitle": "Corrigez sans recommencer",
   "tutorial.correctDescription":
-    "Ouvrez les commandes avec le signe paix et annulez. Pour gommer directement, fermez le poing et déplacez la main.",
+    "Ouvrez les commandes avec le signe paix, puis maintenez-le sur Annuler. Pour gommer directement, fermez le poing et déplacez la main.",
   "tutorial.progress":
     "Progression du tutoriel : mission {current} sur {total}",
   "tutorial.back": "Retour",
@@ -204,7 +204,7 @@ export const fr = {
   "tutorial.finish": "Arrivée",
   "tutorial.indexCaption": "Index tendu",
   "tutorial.pinchCaption": "Pouce + index",
-  "tutorial.peaceCaption": "Signe paix · 0,5 s",
+  "tutorial.peaceCaption": "✌🏾 Maintenez 0,5 s",
   "tutorial.shapeCaption": "Cercle assisté",
   "tutorial.fistCaption": "Poing pour gommer",
   "tutorial.complete": "Vous êtes prêt à dessiner",

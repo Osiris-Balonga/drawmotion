@@ -8,8 +8,16 @@ export function resolveGesturePaletteAction(
   gesture: GestureKind,
   pinchPhase: PinchPhase,
   hasControl: boolean,
+  dwellProgress: number,
 ): GesturePaletteAction {
-  if (pinchPhase === "active" && hasControl) return "select"
+  if (
+    gesture === "menu" &&
+    pinchPhase === "released" &&
+    hasControl &&
+    dwellProgress >= 1
+  ) {
+    return "select"
+  }
   if (gesture === "fist" && pinchPhase === "released") return "close"
   return null
 }

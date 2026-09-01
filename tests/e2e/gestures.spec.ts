@@ -4,12 +4,12 @@ import { expect, test } from "@playwright/test"
 import {
   activateCamera,
   aimAt,
+  dwellOnButton,
   handAt,
   hold,
   inkIn,
   installGestureCamera,
   move,
-  pinchButton,
   playHands,
 } from "./fixtures/gesture-camera"
 
@@ -64,17 +64,17 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
   await playHands(page, hold("menu", end, 18))
   const palette = page.getByRole("region", { name: "Commandes gestuelles" })
   await expect(palette).toBeVisible()
-  await pinchButton(page, "Couleur")
-  await pinchButton(page, "Vert")
+  await dwellOnButton(page, "Couleur")
+  await dwellOnButton(page, "Vert")
   await expect(palette).toBeHidden()
   const dock = page.getByRole("complementary", { name: "Outils de dessin" })
   await expect(
     dock.getByRole("button", { name: "Vert", exact: true }),
   ).toHaveAttribute("aria-pressed", "true")
-  // Reopening by button is also supported; selection remains a real pinch.
+  // Reopening by button is also supported; gesture selection remains a dwell.
   await page.getByRole("button", { name: "Ouvrir les commandes" }).click()
-  await pinchButton(page, "Trait")
-  await pinchButton(page, "12 pixels")
+  await dwellOnButton(page, "Trait")
+  await dwellOnButton(page, "12 pixels")
   await expect(
     page.getByRole("heading", { name: "Transformez un geste en forme nette" }),
   ).toBeVisible()

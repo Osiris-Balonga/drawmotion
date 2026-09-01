@@ -99,7 +99,7 @@ export async function aimAt(page: Page, target: Point) {
   await playHands(page, hold("open", target, 16))
 }
 
-export async function pinchButton(page: Page, name: string) {
+export async function dwellOnButton(page: Page, name: string) {
   const palette = page.getByRole("region", { name: "Commandes gestuelles" })
   await expect(palette.getByRole("button", { name, exact: true })).toBeVisible()
   const bounds = await palette
@@ -112,7 +112,7 @@ export async function pinchButton(page: Page, name: string) {
     y: (bounds.y + bounds.height / 2 - canvas.y) / canvas.height,
   }
   await aimAt(page, target)
-  await playHands(page, hold("pinch", target, 4))
+  await playHands(page, hold("menu", target, 18))
   await playHands(page, hold("open", target))
 }
 

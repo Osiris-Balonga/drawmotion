@@ -103,6 +103,15 @@ describe("GestureCommandPalette", () => {
     const props = renderPalette({ assistanceMode: "shapes" })
 
     await user.click(screen.getByRole("button", { name: "Précision" }))
+    expect(
+      screen.getByRole("button", { name: "Libre" }).querySelector("svg"),
+    ).toHaveClass("lucide-pen-line")
+    expect(
+      screen.getByRole("button", { name: "Stabilisé" }).querySelector("svg"),
+    ).toHaveClass("lucide-activity")
+    expect(
+      screen.getByRole("button", { name: "Formes" }).querySelector("svg"),
+    ).toHaveClass("lucide-shapes")
     expect(screen.getByRole("button", { name: "Formes" })).toHaveAttribute(
       "aria-pressed",
       "true",
