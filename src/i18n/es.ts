@@ -184,7 +184,7 @@ export const es = {
     "Mantén juntos el pulgar y el índice mientras te mueves; sepáralos para terminar el trazo.",
   "tutorial.styleTitle": "Haz el signo de la paz para abrir los comandos",
   "tutorial.styleDescription":
-    "Mantén el signo de la paz medio segundo para abrir los comandos. Apunta a una opción y mantén el mismo signo medio segundo para elegir verde y otro grosor.",
+    "Mantén el signo de la paz medio segundo para abrir los comandos. Suelta, apunta a una opción y repite el signo para elegir verde y otro grosor.",
   "tutorial.shapesTitle": "Convierte un gesto en una forma precisa",
   "tutorial.shapesDescription":
     "Repite el signo de la paz, mantenlo sobre Formas para elegir ese modo y dibuja un círculo aproximado.",

@@ -182,7 +182,7 @@ export const it = {
     "Tieni pollice e indice uniti mentre muovi la mano, poi separali per terminare il tratto.",
   "tutorial.styleTitle": "Fai il segno della pace per aprire i comandi",
   "tutorial.styleDescription":
-    "Tieni il segno della pace per mezzo secondo per aprire i comandi. Puntalo su una scelta e mantienilo per mezzo secondo per scegliere il verde e un altro spessore.",
+    "Tieni il segno della pace per mezzo secondo per aprire i comandi. Rilascialo, punta una scelta e ripeti il segno per scegliere il verde e un altro spessore.",
   "tutorial.shapesTitle": "Trasforma un gesto in una forma precisa",
   "tutorial.shapesDescription":
     "Ripeti il segno della pace, mantienilo su Forme per scegliere la modalità e disegna un cerchio approssimativo.",

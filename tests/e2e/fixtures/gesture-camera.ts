@@ -101,18 +101,31 @@ export async function aimAt(page: Page, target: Point) {
 
 export async function dwellOnButton(page: Page, name: string) {
   const palette = page.getByRole("region", { name: "Commandes gestuelles" })
-  await expect(palette.getByRole("button", { name, exact: true })).toBeVisible()
-  const bounds = await palette
-    .getByRole("button", { name, exact: true })
-    .boundingBox()
+  const button = palette.getByRole("button", { name, exact: true })
+  await expect(button).toBeVisible()
+  const bounds = await button.boundingBox()
   const canvas = await page.locator(".drawing-canvas").boundingBox()
   if (!bounds || !canvas) throw new Error(`Missing gesture target: ${name}`)
   const target = {
     x: (bounds.x + bounds.width / 2 - canvas.x) / canvas.width,
     y: (bounds.y + bounds.height / 2 - canvas.y) / canvas.height,
   }
-  await aimAt(page, target)
+  for (
+    let attempt = 0;
+    attempt < 3 && (await button.getAttribute("data-gesture-hover")) === null;
+    attempt++
+  ) {
+    await aimAt(page, target)
+  }
+  await expect(button).toHaveAttribute("data-gesture-hover", "")
   await playHands(page, hold("menu", target, 18))
+  for (let attempt = 0; attempt < 2 && (await button.isVisible()); attempt++) {
+    // A busy CI worker can place the final frame just below the 550ms dwell.
+    // Small follow-up batches finish the same hold without reaching a second
+    // command after the first one changes the palette page.
+    await playHands(page, hold("menu", target, 6))
+  }
+  await expect(button).toBeHidden()
   await playHands(page, hold("open", target))
 }
 

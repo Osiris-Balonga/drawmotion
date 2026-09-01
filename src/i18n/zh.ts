@@ -167,7 +167,7 @@ export const zh = {
     "移动时保持拇指与食指捏合，分开两指即可结束笔画。",
   "tutorial.styleTitle": "比出胜利手势，打开操作面板",
   "tutorial.styleDescription":
-    "保持 V 字手势半秒以打开操作面板。指向一个选项并继续保持该手势半秒，即可选择绿色和另一种粗细。",
+    "保持 V 字手势半秒以打开操作面板。先放下手势，指向一个选项，再次保持 V 字手势即可选择绿色和另一种粗细。",
   "tutorial.shapesTitle": "将手势转换为规整的形状",
   "tutorial.shapesDescription":
     "再次比出 V 字手势，将其保持在形状选项上以选择该模式，然后大致画一个圆。",

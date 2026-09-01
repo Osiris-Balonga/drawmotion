@@ -188,7 +188,7 @@ export const fr = {
     "Gardez le pouce et l’index pincés en bougeant, puis ouvrez-les pour terminer le trait.",
   "tutorial.styleTitle": "Faites le signe paix pour ouvrir les commandes",
   "tutorial.styleDescription":
-    "Maintenez le signe paix 0,5 seconde pour ouvrir les commandes. Visez ensuite un choix et gardez le même signe 0,5 seconde pour sélectionner le vert et une autre épaisseur.",
+    "Maintenez le signe paix 0,5 seconde pour ouvrir les commandes. Relâchez, visez un choix, puis refaites le signe pour sélectionner le vert et une autre épaisseur.",
   "tutorial.shapesTitle": "Transformez un geste en forme nette",
   "tutorial.shapesDescription":
     "Refaites le signe paix, maintenez-le sur Formes pour sélectionner ce mode, puis dessinez un cercle approximatif.",

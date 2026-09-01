@@ -178,7 +178,7 @@ export const en = {
     "Keep your thumb and index finger pinched as you move, then separate them to finish the stroke.",
   "tutorial.styleTitle": "Make a peace sign to open commands",
   "tutorial.styleDescription":
-    "Hold up a peace sign for half a second to open commands. Aim at a choice and keep the same sign for half a second to select green and another width.",
+    "Hold up a peace sign for half a second to open commands. Release, aim at a choice, then hold the sign again to select green and another width.",
   "tutorial.shapesTitle": "Turn a gesture into a clean shape",
   "tutorial.shapesDescription":
     "Make the peace sign again, hold it over Shapes to select that mode, then draw a rough circle.",
