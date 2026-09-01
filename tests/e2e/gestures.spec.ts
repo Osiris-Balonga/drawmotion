@@ -98,6 +98,7 @@ test("camera, five tutorial missions, fist eraser, history and downloaded PNG", 
     page.getByRole("heading", { name: "Corrigez sans recommencer" }),
   ).toBeVisible()
   await page.getByRole("button", { name: "Annuler", exact: true }).click()
+  await expect(page.locator("[data-celebration-run='1']")).toBeAttached()
   await expect(
     page.getByRole("button", { name: "Passer le tutoriel" }),
   ).toBeHidden()

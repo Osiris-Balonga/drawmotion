@@ -244,6 +244,58 @@
   transition: stroke-dashoffset 80ms linear;
 }
 
+.tutorial-completion-celebration {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-gesture-pointer) + 1);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tutorial-completion-celebration > span {
+  position: absolute;
+  top: 42%;
+  left: var(--confetti-left);
+  width: 0.5rem;
+  height: 0.75rem;
+  background: var(--primary);
+  border-radius: 0.125rem;
+  opacity: 0;
+  animation: tutorial-confetti-burst 1.25s var(--ease-out-quart)
+    var(--confetti-delay) both;
+}
+
+.tutorial-completion-celebration > span[data-tone="1"] {
+  background: var(--success);
+}
+
+.tutorial-completion-celebration > span[data-tone="2"] {
+  background: var(--warning);
+}
+
+.tutorial-completion-celebration > span[data-tone="3"] {
+  background: oklch(0.72 0.16 235);
+}
+
+.tutorial-completion-celebration > span[data-tone="4"] {
+  background: oklch(0.72 0.18 340);
+}
+
+@keyframes tutorial-confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 2rem, 0) rotate(0deg) scale(0.7);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-drift), -44vh, 0)
+      rotate(var(--confetti-rotation)) scale(1);
+  }
+}
+
 .gesture-coach {
   position: absolute;
   right: var(--space-2xl);
