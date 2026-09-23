@@ -3,6 +3,8 @@ allowBuilds:
   # Icons are packaged with the existing Playwright browser, not native scripts.
   sharp: false
 overrides:
+  # Resolve the high-severity prototype-pollution denial-of-service advisory.
+  js-yaml: 4.3.2
   # Pin the patched type-only upstream fix until unconfig publishes valid types.
   "@vite-pwa/assets-generator>unconfig": 7.3.3
   # Optional build-time image tooling must not retain vulnerable libvips builds.
