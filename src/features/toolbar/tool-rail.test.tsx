@@ -96,10 +96,14 @@ describe("ToolRail", () => {
     })
     const preview = trigger.querySelector(".drawing-thickness-preview")
     expect(preview).toHaveAttribute("data-pattern", "dashed")
-    expect(preview).toHaveStyle({
-      borderTopWidth: "3px",
-      color: "rgb(35, 133, 84)",
-    })
+    expect(preview).toHaveAttribute(
+      "style",
+      expect.stringContaining("border-top-width: 3px"),
+    )
+    expect(preview).toHaveAttribute(
+      "style",
+      expect.stringContaining("color: rgb(35, 133, 84)"),
+    )
   })
 
   it("shows dedicated eraser sizes when the eraser is active", async () => {
