@@ -3,19 +3,26 @@ import { describe, expect, it } from "vitest"
 import { resolveGesturePaletteAction } from "./gesture-palette-interaction"
 
 describe("resolveGesturePaletteAction", () => {
-  it("selects whenever an active pinch reaches a palette control", () => {
-    expect(resolveGesturePaletteAction("pinch", "active", true)).toBe("select")
+  it("selects after the menu pose dwells on a palette control", () => {
+    expect(resolveGesturePaletteAction("menu", "released", true, 1)).toBe(
+      "select",
+    )
   })
 
-  it("prioritizes selection when a pinch is briefly classified as a fist", () => {
-    expect(resolveGesturePaletteAction("fist", "active", true)).toBe("select")
+  it("does not select before the dwell completes or while pinching", () => {
+    expect(
+      resolveGesturePaletteAction("menu", "released", true, 0.99),
+    ).toBeNull()
+    expect(resolveGesturePaletteAction("pinch", "active", true, 1)).toBeNull()
   })
 
   it("closes only for a released fist and ignores empty space", () => {
-    expect(resolveGesturePaletteAction("fist", "released", false)).toBe("close")
-    expect(resolveGesturePaletteAction("pinch", "active", false)).toBeNull()
+    expect(resolveGesturePaletteAction("fist", "released", false, 0)).toBe(
+      "close",
+    )
+    expect(resolveGesturePaletteAction("menu", "released", false, 1)).toBeNull()
     expect(
-      resolveGesturePaletteAction("open-hand", "released", true),
+      resolveGesturePaletteAction("open-hand", "released", true, 1),
     ).toBeNull()
   })
 })

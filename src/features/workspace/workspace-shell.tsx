@@ -26,6 +26,7 @@ import {
 } from "@/features/onboarding/onboarding-machine"
 import { loadOnboardingProgress } from "@/features/onboarding/onboarding-persistence"
 import { useWorkspaceOnboarding } from "@/features/onboarding/use-workspace-onboarding"
+import { TutorialCompletionCelebration } from "@/features/onboarding/tutorial-completion-celebration"
 import {
   drawingColors,
   type DrawingColor,
@@ -108,6 +109,7 @@ export function WorkspaceShell() {
   const onboarding = useWorkspaceOnboarding(initialState, changeTool)
   const {
     onboardingState,
+    completionCelebration,
     observeOnboarding,
     restartOnboarding,
     skipOnboarding,
@@ -364,6 +366,7 @@ export function WorkspaceShell() {
               <circle cx="10" cy="10" r="8" />
             </svg>
           </div>
+          <TutorialCompletionCelebration run={completionCelebration} />
         </section>
       </main>
     </div>

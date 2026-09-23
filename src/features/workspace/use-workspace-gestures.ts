@@ -35,6 +35,10 @@ type GestureMenuHold = {
   origin: { x: number; y: number }
 }
 
+type GesturePaletteHold = GestureMenuHold & {
+  control: HTMLButtonElement
+}
+
 type GestureInteractionOptions = {
   stageRef: RefObject<HTMLElement | null>
   drawingRef: RefObject<DrawingCanvasHandle | null>
@@ -72,7 +76,8 @@ export function useWorkspaceGestures({
   const pointerFilterRef = useRef(new PointerMotionFilter())
   const gesturePaletteOpenRef = useRef(false)
   const gesturePaletteHoverRef = useRef<HTMLButtonElement | null>(null)
-  const gesturePalettePinchConsumedRef = useRef(false)
+  const gesturePaletteHoldRef = useRef<GesturePaletteHold | null>(null)
+  const gesturePaletteSelectionArmedRef = useRef(true)
   const gestureMenuHoldRef = useRef<GestureMenuHold | null>(null)
   const lastDrawingGestureAtRef = useRef(Number.NEGATIVE_INFINITY)
   const lastGestureFeedbackRef = useRef<GestureModeFeedback["kind"] | null>(
@@ -131,12 +136,17 @@ export function useWorkspaceGestures({
   const closeGesturePalette = useCallback(() => {
     clearGesturePaletteHover()
     gesturePaletteOpenRef.current = false
-    gesturePalettePinchConsumedRef.current = false
+    gesturePaletteHoldRef.current = null
+    gesturePaletteSelectionArmedRef.current = true
     setGesturePaletteAnchor(null)
   }, [clearGesturePaletteHover])
 
   const openGesturePalette = useCallback(
-    (point: { x: number; y: number }, bounds: DOMRect) => {
+    (
+      point: { x: number; y: number },
+      bounds: DOMRect,
+      selectionArmed = true,
+    ) => {
       const halfWidth = 10.5 * 16
       const topGuard = 8.5 * 16
       const bottomGuard = 13 * 16
@@ -151,7 +161,8 @@ export function useWorkspaceGestures({
         ),
       }
       gesturePaletteOpenRef.current = true
-      gesturePalettePinchConsumedRef.current = false
+      gesturePaletteHoldRef.current = null
+      gesturePaletteSelectionArmedRef.current = selectionArmed
       gestureMenuHoldRef.current = null
       setGesturePaletteAnchor(anchor)
       observeOnboarding({ type: "COMMAND_PALETTE_OPENED" })
@@ -222,8 +233,8 @@ export function useWorkspaceGestures({
       }
       observePointer(mapped, filtered.reliable, bounds)
       if (gesturePaletteOpenRef.current) {
-        if (pinchPhase !== "active") {
-          gesturePalettePinchConsumedRef.current = false
+        if (gesture !== "menu") {
+          gesturePaletteSelectionArmedRef.current = true
         }
         const palette = stageRef.current?.querySelector<HTMLElement>(
           ".gesture-command-palette",
@@ -237,11 +248,45 @@ export function useWorkspaceGestures({
           control?.setAttribute("data-gesture-hover", "")
           gesturePaletteHoverRef.current = control
         }
+        let paletteDwellProgress = 0
+        const canSelectControl =
+          gesture === "menu" &&
+          pinchPhase === "released" &&
+          gesturePaletteSelectionArmedRef.current &&
+          filtered.reliable &&
+          mapped &&
+          control
+        if (canSelectControl) {
+          const hold = gesturePaletteHoldRef.current
+          const moved = hold
+            ? Math.hypot(mapped.x - hold.origin.x, mapped.y - hold.origin.y)
+            : 0
+          if (
+            !hold ||
+            hold.control !== control ||
+            moved > gestureMenuMovementTolerance
+          ) {
+            gesturePaletteHoldRef.current = {
+              control,
+              startedAt: result.timestampMs,
+              origin: mapped,
+            }
+          } else {
+            paletteDwellProgress = Math.min(
+              1,
+              (result.timestampMs - hold.startedAt) /
+                GESTURE_THRESHOLDS.menuPoseHoldMs,
+            )
+          }
+        } else {
+          gesturePaletteHoldRef.current = null
+        }
         updateGesturePointer(
           mapped,
           bounds,
           filtered.reliable,
-          pinchPhase === "active",
+          false,
+          paletteDwellProgress,
         )
         drawingRef.current?.handleIntentions([
           { version: 1, type: "PAUSE", timestampMs: result.timestampMs },
@@ -249,10 +294,12 @@ export function useWorkspaceGestures({
         const paletteAction = resolveGesturePaletteAction(
           gesture,
           pinchPhase,
-          control !== null && !gesturePalettePinchConsumedRef.current,
+          control !== null,
+          paletteDwellProgress,
         )
         if (paletteAction === "select") {
-          gesturePalettePinchConsumedRef.current = true
+          gesturePaletteHoldRef.current = null
+          gesturePaletteSelectionArmedRef.current = false
           control?.click()
         } else if (paletteAction === "close") closeGesturePalette()
         return
@@ -286,7 +333,7 @@ export function useWorkspaceGestures({
               GESTURE_THRESHOLDS.menuPoseHoldMs,
           )
           if (dwellProgress >= 1) {
-            openGesturePalette(mapped, bounds)
+            openGesturePalette(mapped, bounds, false)
             updateGesturePointer(mapped, bounds, true, false, 0)
             drawingRef.current?.handleIntentions([
               { version: 1, type: "PAUSE", timestampMs: result.timestampMs },

@@ -9,6 +9,7 @@ import {
   Eraser,
   Palette,
   PenLine,
+  Shapes,
   Undo2,
   X,
 } from "lucide-react"
@@ -26,6 +27,12 @@ import {
   type DrawingColor,
   type DrawingTool,
 } from "@/features/toolbar/drawing-tools"
+
+const precisionModeIcons = {
+  free: PenLine,
+  stabilized: Activity,
+  shapes: Shapes,
+} as const
 
 type GesturePalettePage = "root" | "color" | "stroke" | "precision"
 
@@ -218,25 +225,28 @@ export function GestureCommandPalette({
           className="gesture-command-palette__choices"
           aria-label={t("tools.precision")}
         >
-          {drawingPrecisionModes.map((mode) => (
-            <Button
-              key={mode.value}
-              aria-label={mode.label}
-              aria-pressed={assistanceMode === mode.value}
-              className="gesture-command-palette__choice"
-              data-gesture-palette-control=""
-              variant="ghost"
-              onClick={() =>
-                selectAndClose(() => onAssistanceModeChange(mode.value))
-              }
-            >
-              <Activity aria-hidden="true" />
-              <span>{mode.label}</span>
-              {assistanceMode === mode.value ? (
-                <Check aria-hidden="true" />
-              ) : null}
-            </Button>
-          ))}
+          {drawingPrecisionModes.map((mode) => {
+            const Icon = precisionModeIcons[mode.value]
+            return (
+              <Button
+                key={mode.value}
+                aria-label={mode.label}
+                aria-pressed={assistanceMode === mode.value}
+                className="gesture-command-palette__choice"
+                data-gesture-palette-control=""
+                variant="ghost"
+                onClick={() =>
+                  selectAndClose(() => onAssistanceModeChange(mode.value))
+                }
+              >
+                <Icon aria-hidden="true" />
+                <span>{mode.label}</span>
+                {assistanceMode === mode.value ? (
+                  <Check aria-hidden="true" />
+                ) : null}
+              </Button>
+            )
+          })}
         </div>
       ) : null}
     </section>

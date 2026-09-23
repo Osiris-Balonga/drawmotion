@@ -30,6 +30,7 @@ export function useWorkspaceOnboarding(
   changeTool: (tool: DrawingTool) => void,
 ) {
   const [onboardingState, setOnboardingState] = useState(initialState)
+  const [completionCelebration, setCompletionCelebration] = useState(0)
   const onboardingStateRef = useRef(initialState)
   const tutorialStrokeRef = useRef<{
     lastPoint: { x: number; y: number } | null
@@ -82,6 +83,7 @@ export function useWorkspaceOnboarding(
         currentStep: next.step,
       })
       if (next.step === "complete") {
+        setCompletionCelebration((run) => run + 1)
         toast.success(t("tutorial.complete"), {
           description: t("tutorial.replayHint"),
         })
@@ -147,6 +149,7 @@ export function useWorkspaceOnboarding(
   )
   return {
     onboardingState,
+    completionCelebration,
     onboardingStateRef,
     observeOnboarding,
     observePointer,

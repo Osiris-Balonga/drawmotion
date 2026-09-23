@@ -12,7 +12,7 @@ describe("GestureCoach", () => {
     [
       "style",
       "Faites le signe paix pour ouvrir les commandes",
-      "Signe paix · 0,5 s",
+      "✌🏾 Maintenez 0,5 s",
     ],
     ["shapes", "Transformez un geste en forme nette", "Cercle assisté"],
     ["correct", "Corrigez sans recommencer", "Poing pour gommer"],
