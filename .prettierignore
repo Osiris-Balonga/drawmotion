@@ -7,3 +7,5 @@ public/vision/wasm/
 public/*.svg
 test-results/
 pnpm-lock.yaml
+# Preserve the MIT-licensed upstream stylesheet byte for byte.
+src/styles/vendor/shadcn.css

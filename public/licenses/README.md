@@ -15,7 +15,8 @@ from the root LICENSE during the build). Third-party works retain their licences
   whose page 2 specifies Apache License, Version 2.0. Asset checksums and download
   provenance are in `public/vision/README.md` in the source repository.
 - `geist-OFL.txt`: Geist variable font 5.3.0, from Fontsource; SIL OFL 1.1.
-- `shadcn-MIT.txt`: shadcn/ui components adapted by DrawMotion and shadcn 4.19.0 CSS.
+- `shadcn-MIT.txt`: shadcn/ui components adapted by DrawMotion and the unchanged
+  shadcn 4.21.0 stylesheet in `src/styles/vendor/shadcn.css`.
 - `tailwindcss-MIT.txt`: Tailwind CSS 4.3.3.
 - `tw-animate-css-MIT.txt`: tw-animate-css 1.4.0.
 
