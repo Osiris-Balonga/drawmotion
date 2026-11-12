@@ -14,7 +14,7 @@ Use `pnpm verify:licenses` to check an existing build.
 | MediaPipe Worker, JS, and WASM                | Apache-2.0, `mediapipe-Apache-2.0.txt`    | `@mediapipe/tasks-vision@1.0.1`                                                      |
 | Hand Landmarker full, float16, version 1      | Apache-2.0, same text                     | Unmodified official model; references below                                          |
 | Geist Variable 5.3.0                          | OFL-1.1, `geist-OFL.txt`                  | `@fontsource-variable/geist`                                                         |
-| Adapted shadcn/ui components and CSS 4.19.0   | MIT, `shadcn-MIT.txt`                     | shadcn/ui with Base UI primitives                                                    |
+| Adapted shadcn/ui components and local CSS    | MIT, `shadcn-MIT.txt`                     | Base UI components; shadcn 4.21.0 stylesheet                                         |
 | Tailwind CSS 4.3.3                            | MIT, `tailwindcss-MIT.txt`                | `tailwindcss`                                                                        |
 | tw-animate-css 1.4.0                          | MIT, `tw-animate-css-MIT.txt`             | `tw-animate-css`                                                                     |
 | Original DrawMotion code                      | MIT, `drawmotion-MIT.txt`                 | Copied from the root LICENSE by Vite                                                 |
@@ -25,6 +25,15 @@ copied from `public/` or automatically the separate Worker build.
 Complementary static texts live in [public/licenses](../public/licenses/README.md).
 Lucide's mixed notices are preserved in its full package license, not reduced
 to an ISC label.
+
+`src/styles/vendor/shadcn.css` is an unmodified copy of
+`shadcn@4.21.0/dist/tailwind.css`, retained under the existing shadcn MIT notice.
+Its SHA-256 is
+`bc7d83425702955b4cb67cb14ede9d603f9d912376d57a2d81d661094d2a782a`.
+The app needs this stylesheet and its adapted components, so it does not install
+the shadcn CLI and its unrelated dependency graph. Keep the stylesheet unchanged
+when applying formatting; review upstream changes and update the provenance when
+updating this local copy.
 
 Packaging verification is not automated legal analysis. After updating a
 dependency, review its license, any NOTICE files, and the final artifact.
